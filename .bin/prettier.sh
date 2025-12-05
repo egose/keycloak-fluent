@@ -1,5 +1,4 @@
 #!/bin/bash
 
-ls $(pnpm bin) | grep prettier
-pnpm prettier --version
-pnpm prettier --write --config-path .prettierrc "$@"
+pnpm exec prettier --version
+pnpm exec prettier --write --config-path .prettierrc "$@"

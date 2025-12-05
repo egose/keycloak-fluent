@@ -5,9 +5,9 @@ runs:
   steps:
     # Cache pnpm store
     - name: Cache pnpm store
-      uses: actions/cache@v3
+      uses: actions/cache@v4.3.0
       with:
-        path: ~/.local/share/pnpm/store/v3
+        path: ~/.local/share/pnpm/store/v4
         key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           pnpm-${{ runner.os }}-
