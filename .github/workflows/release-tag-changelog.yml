@@ -129,12 +129,12 @@ jobs:
 
           echo "head_branch=$branch" >> "$GITHUB_OUTPUT"
           echo "base_branch=$BASE_BRANCH" >> "$GITHUB_OUTPUT"
-          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT
-          echo "pr_title=$pr_title" >> $GITHUB_OUTPUT
+          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+          echo "pr_title=$pr_title" >> "$GITHUB_OUTPUT"
 
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "pr_body<<$EOF" >> "$GITHUB_OUTPUT"
-          echo "$pr_body" >> $GITHUB_OUTPUT
+          echo "$pr_body" >> "$GITHUB_OUTPUT"
           echo "$EOF" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
