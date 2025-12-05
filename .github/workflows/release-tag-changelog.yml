@@ -128,13 +128,15 @@ jobs:
           # Use `jq` to create a JSON-safe string for the PR body
           TAG_BODY=$(git tag -l --format='%(contents)' "$TAG_VERSION")
 
-          echo "pr_title=chore(release): release candidate $TAG_VERSION" >> "$GITHUB_OUTPUT"
-          echo "pr_body<<EOF_BODY" >> "$GITHUB_OUTPUT"
-          echo "$TAG_BODY" >> "$GITHUB_OUTPUT"
-          echo "EOF_BODY" >> "$GITHUB_OUTPUT"
           echo "head_branch=$branch" >> "$GITHUB_OUTPUT"
           echo "base_branch=$BASE_BRANCH" >> "$GITHUB_OUTPUT"
           echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT
+          echo "pr_title=chore(release): release candidate $TAG_VERSION" >> "$GITHUB_OUTPUT"
+
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "pr_body<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$TAG_BODY" >> $GITHUB_OUTPUT
+          echo "$EOF" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
