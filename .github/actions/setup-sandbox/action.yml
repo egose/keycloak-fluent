@@ -1,0 +1,66 @@
+name: Install Docker Compose and Run Custom Script
+description: Installs Docker Compose v2 and runs a custom bash script
+
+inputs:
+  script:
+    description: The bash script to execute
+    required: true
+    default: ''
+  docker-compose-version:
+    description: Docker Compose v2 version to install
+    required: false
+    default: 'v2.40.1'
+  wait-timeout-ms:
+    description: Timeout in milliseconds for wait-on
+    required: false
+    default: '240000'
+
+runs:
+  using: composite
+  steps:
+    - name: Install Docker Compose v2
+      shell: bash
+      run: |
+        set -euo pipefail
+        DOCKER_CONFIG="${DOCKER_CONFIG:-$HOME/.docker}"
+        mkdir -p "$DOCKER_CONFIG/cli-plugins"
+
+        echo "Installing Docker Compose ${{ inputs.docker-compose-version }}..."
+        curl -sSL "https://github.com/docker/compose/releases/download/${{ inputs.docker-compose-version }}/docker-compose-linux-x86_64" \
+          -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
+
+        chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
+        docker compose version
+
+    - name: Run Docker Compose and Custom Script
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        echo "Starting services..."
+        make DAEMON=true up
+
+        echo "Waiting for services to be ready..."
+        (
+          node_modules/.bin/wait-on \
+            http-get://localhost:8080/realms/master/.well-known/openid-configuration \
+            http-get://localhost:8000/api/v1/info \
+            --timeout "${{ inputs.wait-timeout-ms }}"
+        ) &
+        WAIT_PID=$!
+
+        # Periodically check logs until wait-on finishes
+        while kill -0 "$WAIT_PID" 2>/dev/null; do
+          echo "==== $(date) Checking logs ===="
+          make DAEMON=true logs
+          sleep 5
+        done
+
+        wait "$WAIT_PID"  # ensure wait-on exit status is captured
+        echo "wait-on complete!"
+
+        echo "Running provided script..."
+        bash -c "${{ inputs.script }}"
+
+        echo "Stopping services..."
+        make down

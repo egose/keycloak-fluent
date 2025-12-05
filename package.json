@@ -1,0 +1,48 @@
+{
+  "name": "keycloak-fluent",
+  "version": "0.0.0",
+  "description": "Keycloak client extension",
+  "scripts": {
+    "dev": "tsc -w",
+    "build": "rimraf ./build && tsc",
+    "bundle": "tsup",
+    "lint-fix": "eslint --fix .",
+    "test": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest -c=jest-esm.config.mjs --no-cache",
+    "release": "release-it",
+    "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -n .conventional-changelog.mjs -s -r 0 --skip-unstable"
+  },
+  "type": "module",
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@commitlint/format": "^20.0.0",
+    "@eslint/js": "^9.39.1",
+    "@release-it/bumper": "^7.0.5",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/eslint__js": "^8.42.1",
+    "@types/jest": "^30.0.0",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^24.8.1",
+    "conventional-changelog-cli": "^5.0.0",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "eslint": "9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "jest": "^30.2.0",
+    "prettier": "4.0.0-alpha.13",
+    "release-it": "^19.0.6",
+    "rimraf": "^6.1.2",
+    "ts-jest": "^29.4.6",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1",
+    "wait-on": "^9.0.3"
+  },
+  "dependencies": {
+    "@keycloak/keycloak-admin-client": "^26.4.7",
+    "lodash-es": "^4.17.21"
+  }
+}
