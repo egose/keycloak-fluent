@@ -6,6 +6,7 @@ runs:
     - name: Get pnpm store path
       id: pnpm-store
       run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+      shell: bash
 
     - name: Cache pnpm store
       uses: actions/cache@v4
@@ -16,6 +17,5 @@ runs:
           pnpm-${{ runner.os }}-
 
     - name: Install NPM packages
-      run: |
-        pnpm install
+      run: pnpm install
       shell: bash
