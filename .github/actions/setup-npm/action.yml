@@ -3,11 +3,14 @@ description: Setup required NPM packages with caching for pnpm and Cypress
 runs:
   using: composite
   steps:
-    # Cache pnpm store
+    - name: Get pnpm store path
+      id: pnpm-store
+      run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_ENV
+
     - name: Cache pnpm store
-      uses: actions/cache@v4.3.0
+      uses: actions/cache@v4
       with:
-        path: ~/.local/share/pnpm/store/v4
+        path: ${{ env.STORE_PATH }}
         key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           pnpm-${{ runner.os }}-
