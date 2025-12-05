@@ -44,7 +44,6 @@ runs:
         (
           node_modules/.bin/wait-on \
             http-get://localhost:8080/realms/master/.well-known/openid-configuration \
-            http-get://localhost:8000/api/v1/info \
             --timeout "${{ inputs.wait-timeout-ms }}"
         ) &
         WAIT_PID=$!
