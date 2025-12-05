@@ -17,6 +17,9 @@ jobs:
     - name: Setup Tools
       uses: ./.github/actions/setup-tools
 
+    - name: Setup NPM Packages
+      uses: ./.github/actions/setup-npm
+
     - name: Set executable permissions for local format scripts
       run: |
         chmod +x .bin/prettier.sh
