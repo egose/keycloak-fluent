@@ -142,11 +142,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const pr_title = '${{ steps.release-it.outputs.pr_title }}';
-            const pr_body = '${{ steps.release-it.outputs.pr_body }}';
-            const head_branch = '${{ steps.release-it.outputs.head_branch }}';
-            const base_branch = '${{ steps.release-it.outputs.base_branch }}';
-            const version = '${{ steps.release-it.outputs.version }}';
+            const pr_title = `${{ steps.release-it.outputs.pr_title }}`;
+            const pr_body = `${{ steps.release-it.outputs.pr_body }}`;
+            const head_branch = `${{ steps.release-it.outputs.head_branch }}`;
+            const base_branch = `${{ steps.release-it.outputs.base_branch }}`;
+            const version = `${{ steps.release-it.outputs.version }}`;
 
             const { repo, owner } = context.repo;
 
