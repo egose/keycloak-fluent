@@ -1,6 +1,6 @@
 {
   "name": "keycloak-fluent",
-  "version": "0.0.0",
+  "version": "0.0.7",
   "description": "Keycloak client extension",
   "scripts": {
     "dev": "tsc -w",
