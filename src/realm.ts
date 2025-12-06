@@ -6,6 +6,8 @@ import RoleHandle from './role';
 import GroupHandle from './group';
 import UserHandle from './user';
 import IdentityProviderHandle from './identity-provider';
+import ConfidentialBrowserLoginClientHandle from './confidential-browser-login-client';
+import PublicBrowserLoginClientHandle from './public-browser-login-client';
 
 export type RealmInputData = Omit<RealmRepresentation, 'realm'>;
 
@@ -105,5 +107,13 @@ export default class RealmHandle {
 
   public identityProvider(alias: string) {
     return new IdentityProviderHandle(this.core, this, alias);
+  }
+
+  public confidentialBrowserLoginClient(clientId: string) {
+    return new ConfidentialBrowserLoginClientHandle(this.core, this, clientId);
+  }
+
+  public publicBrowserLoginClient(clientId: string) {
+    return new PublicBrowserLoginClientHandle(this.core, this, clientId);
   }
 }
