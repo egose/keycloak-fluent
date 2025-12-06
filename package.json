@@ -1,7 +1,13 @@
 {
-  "name": "keycloak-fluent",
+  "name": "@egose/keycloak-fluent",
   "version": "0.0.1",
-  "description": "Keycloak client extension",
+  "description": "A fluent TypeScript wrapper for the Keycloak Admin API that lets developers manage Keycloak resources through a readable, chainable DSL. It ensures entities exist with desired properties, supports updates and removals, and abstracts away low-level REST complexity.",
+  "keywords": [
+    "keycloak",
+    "extension",
+    "declarative",
+    "fluent"
+  ],
   "scripts": {
     "dev": "tsc -w",
     "build": "rimraf ./build && tsc",
@@ -12,8 +18,16 @@
     "changelog": "conventional-changelog -p conventionalcommits -i CHANGELOG.md -n .conventional-changelog.mjs -s -r 0 --skip-unstable"
   },
   "type": "module",
-  "author": "",
-  "license": "MIT",
+  "author": "J.Dev",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/egose/keycloak-fluent"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
@@ -30,16 +44,19 @@
     "dotenv": "^17.2.3",
     "eslint": "9.39.1",
     "eslint-config-prettier": "^10.1.8",
+    "fs-extra": "^11.3.2",
     "jest": "^30.2.0",
     "prettier": "4.0.0-alpha.13",
     "release-it": "^19.0.6",
     "rimraf": "^6.1.2",
+    "semver": "^7.7.3",
     "ts-jest": "^29.4.6",
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1",
-    "wait-on": "^9.0.3"
+    "wait-on": "^9.0.3",
+    "yargs": "^18.0.0"
   },
   "dependencies": {
     "@keycloak/keycloak-admin-client": "^26.4.7",
