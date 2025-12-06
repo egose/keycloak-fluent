@@ -1,4 +1,11 @@
-## 0.0.1 (2025-12-06)
+## [0.1.0](https://github.com/egose/keycloak-fluent/compare/v0.0.1...v0.1.0) (2025-12-06)
+
+### Features
+
+* add browser login client handles ([285f5c9](https://github.com/egose/keycloak-fluent/commit/285f5c90ed9396d6a3dbb444c17506ee16699df3))
+* **ci:** add NPM publish pipeline ([ab60de0](https://github.com/egose/keycloak-fluent/commit/ab60de0d77491af8dae34f375ee9f63c2ad7c356))
+* **ci:** add publish script ([3d41fe3](https://github.com/egose/keycloak-fluent/commit/3d41fe3e312ed1e7e7c3b40e32598e52a2e9dd32))
+## [0.0.1](https://github.com/egose/keycloak-fluent/compare/570e8983c45cba43dbf0b59498868544985e5b73...v0.0.1) (2025-12-06)
 
 ### Features
 
