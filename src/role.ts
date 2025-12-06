@@ -1,52 +1,62 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import RealmRepresentation from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
-import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import ClientHandle from './client';
+import RealmHandle from './realm';
 
-export default class ClientRoleHandle {
+export type RoleInputData = Omit<RoleRepresentation, 'name | id'>;
+
+export default class RoleHandle {
   public core: KeycloakAdminClient;
-  public realm: RealmRepresentation;
-  public clientHandle: ClientHandle;
-  public client: ClientRepresentation;
+  public realmHandle: RealmHandle;
+  public realmName: string;
   public roleName: string;
   public role?: RoleRepresentation | null;
-  public roleData?: RoleRepresentation;
+  public roleData?: RoleInputData;
 
-  constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, roleName: string) {
+  constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, roleName: string) {
     this.core = core;
-    this.clientHandle = clientHandle;
-    this.client = clientHandle.client!;
-    this.realm = clientHandle.realm;
+    this.realmHandle = realmHandle;
+    this.realmName = realmHandle.realmName;
     this.roleName = roleName;
   }
 
-  public async get(): Promise<RoleRepresentation | null> {
-    this.role = await this.core.roles.findOneByName({ realm: this.realm.realm, name: this.roleName });
+  public async getById(id: string) {
+    const one = await this.core.roles.findOneById({ realm: this.realmName, id });
+    this.role = one ?? null;
 
     if (this.role) {
       this.roleName = this.role.name!;
     }
 
-    return this.role ?? null;
+    return this.role;
   }
 
-  public async create(data: RoleRepresentation) {
-    if (await this.get()) {
-      throw new Error(`Role "${this.roleName}" already exists in client "${this.client.clientId}"`);
+  public async get(): Promise<RoleRepresentation | null> {
+    const one = await this.core.roles.findOneByName({ realm: this.realmName, name: this.roleName });
+    this.role = one ?? null;
+
+    if (this.role) {
+      this.roleName = this.role.name!;
     }
 
-    await this.core.roles.create({ ...data, realm: this.realm.realm });
+    return this.role;
+  }
+
+  public async create(data: RoleInputData) {
+    if (await this.get()) {
+      throw new Error(`Role "${this.roleName}" already exists in realm "${this.realmName}"`);
+    }
+
+    await this.core.roles.create({ ...data, realm: this.realmName, name: this.roleName });
     return this.get();
   }
 
-  public async update(data: RoleRepresentation) {
+  public async update(data: RoleInputData) {
     const one = await this.get();
     if (!one?.id) {
-      throw new Error(`Role "${this.roleName}" not found in client "${this.client.clientId}"`);
+      throw new Error(`Role "${this.roleName}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.roles.update({ realm: this.realm.realm, id: one.id }, { ...data, clientId: this.clientId });
+    await this.core.roles.updateById({ realm: this.realmName, id: one.id }, { ...data, name: this.roleName });
 
     return this.get();
   }
@@ -54,23 +64,24 @@ export default class ClientRoleHandle {
   public async delete() {
     const one = await this.get();
     if (!one?.id) {
-      throw new Error(`Role "${this.roleName}" not found in client "${this.client.clientId}"`);
+      throw new Error(`Role "${this.roleName}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.roles.del({ realm: this.realm.realm, id: one.id });
-    this.client = null;
-    return this.clientId;
+    await this.core.roles.delById({ realm: this.realmName, id: one.id });
+
+    this.role = null;
+    return this.roleName;
   }
 
-  public async ensure(data: RoleRepresentation) {
-    this.clientData = data;
-    const payload = { ...data, clientId: this.clientId };
+  public async ensure(data: RoleInputData) {
+    this.roleData = data;
+
     const one = await this.get();
 
     if (one?.id) {
-      await this.core.roles.update({ realm: this.realm.realm, id: one.id }, payload);
+      await this.core.roles.updateById({ realm: this.realmName, id: one.id }, { ...data, name: this.roleName });
     } else {
-      await this.core.roles.create(payload);
+      await this.core.roles.create({ ...data, realm: this.realmName, name: this.roleName });
     }
 
     await this.get();
@@ -80,10 +91,10 @@ export default class ClientRoleHandle {
   public async discard() {
     const one = await this.get();
     if (one?.id) {
-      await this.core.roles.del({ realm: this.realm.realm, id: one.id });
-      this.client = null;
+      await this.core.roles.delById({ realm: this.realmName, id: one.id });
+      this.role = null;
     }
 
-    return this.clientId;
+    return this.roleName;
   }
 }

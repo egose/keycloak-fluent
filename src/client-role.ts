@@ -1,29 +1,32 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import RealmRepresentation from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import ClientHandle from './client';
 
+export type ClientRoleInputData = Omit<RoleRepresentation, 'name | id'>;
+
 export default class ClientRoleHandle {
   public core: KeycloakAdminClient;
-  public realm: RealmRepresentation;
+  public realmName: string;
   public clientHandle: ClientHandle;
+  public clientId: string;
   public client: ClientRepresentation;
   public roleName: string;
   public role?: RoleRepresentation | null;
-  public roleData?: Omit<RoleRepresentation, 'name | id'>;
+  public roleData?: ClientRoleInputData;
 
   constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, roleName: string) {
     this.core = core;
     this.clientHandle = clientHandle;
+    this.clientId = clientHandle.clientId;
     this.client = clientHandle.client!;
-    this.realm = clientHandle.realm;
+    this.realmName = clientHandle.realmName;
     this.roleName = roleName;
   }
 
   private get query() {
     return {
-      realm: this.realm.realm,
+      realm: this.realmName,
       id: this.client.id!,
       roleName: this.roleName,
     };
@@ -31,7 +34,7 @@ export default class ClientRoleHandle {
 
   private get data() {
     return {
-      realm: this.realm.realm,
+      realm: this.realmName,
       id: this.client.id!,
       name: this.roleName,
     };
@@ -47,7 +50,7 @@ export default class ClientRoleHandle {
     return this.role ?? null;
   }
 
-  public async create(data: Omit<RoleRepresentation, 'name | id'>) {
+  public async create(data: ClientRoleInputData) {
     if (await this.get()) {
       throw new Error(`Role "${this.roleName}" already exists in client "${this.client.clientId}"`);
     }
@@ -56,7 +59,7 @@ export default class ClientRoleHandle {
     return this.get();
   }
 
-  public async update(data: Omit<RoleRepresentation, 'name | id'>) {
+  public async update(data: ClientRoleInputData) {
     const one = await this.get();
     if (!one?.id) {
       throw new Error(`Role "${this.roleName}" not found in client "${this.client.clientId}"`);
@@ -78,7 +81,7 @@ export default class ClientRoleHandle {
     return this.roleName;
   }
 
-  public async ensure(data: Omit<RoleRepresentation, 'name | id'>) {
+  public async ensure(data: ClientRoleInputData) {
     this.roleData = data;
 
     const one = await this.get();

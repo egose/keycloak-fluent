@@ -1,12 +1,19 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import RealmRepresentation from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
 import ClientHandle from './client';
+import ClientScopeHandle from './client-scope';
+import RoleHandle from './role';
+import GroupHandle from './group';
+import UserHandle from './user';
+import IdentityProviderHandle from './identity-provider';
+
+export type RealmInputData = Omit<RealmRepresentation, 'realm'>;
 
 export default class RealmHandle {
   public core: KeycloakAdminClient;
   public realmName: string;
   public realm?: RealmRepresentation | null;
-  public realmData?: Omit<RealmRepresentation, 'realm'>;
+  public realmData?: RealmInputData;
 
   constructor(core: KeycloakAdminClient, realmName: string) {
     this.core = core;
@@ -24,7 +31,7 @@ export default class RealmHandle {
     return this.realm;
   }
 
-  public async create(data: Omit<RealmRepresentation, 'realm'>) {
+  public async create(data: RealmInputData) {
     if (await this.get()) {
       throw new Error(`Realm "${this.realmName}" already exists`);
     }
@@ -33,7 +40,7 @@ export default class RealmHandle {
     return this.get();
   }
 
-  public async update(data: Omit<RealmRepresentation, 'realm'>) {
+  public async update(data: RealmInputData) {
     if (!(await this.get())) {
       throw new Error(`Realm "${this.realmName}" not found`);
     }
@@ -52,7 +59,7 @@ export default class RealmHandle {
     return this.realmName;
   }
 
-  public async ensure(data: Omit<RealmRepresentation, 'realm'>) {
+  public async ensure(data: RealmInputData) {
     this.realmData = data;
 
     const one = await this.get();
@@ -78,5 +85,25 @@ export default class RealmHandle {
 
   public client(clientId: string) {
     return new ClientHandle(this.core, this, clientId);
+  }
+
+  public clientScope(scopeName: string) {
+    return new ClientScopeHandle(this.core, this, scopeName);
+  }
+
+  public role(roleName: string) {
+    return new RoleHandle(this.core, this, roleName);
+  }
+
+  public group(groupName: string) {
+    return new GroupHandle(this.core, this, groupName);
+  }
+
+  public user(username: string) {
+    return new UserHandle(this.core, this, username);
+  }
+
+  public identityProvider(alias: string) {
+    return new IdentityProviderHandle(this.core, this, alias);
   }
 }
