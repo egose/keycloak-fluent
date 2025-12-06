@@ -44,5 +44,10 @@
   "dependencies": {
     "@keycloak/keycloak-admin-client": "^26.4.7",
     "lodash-es": "^4.17.21"
+  },
+  "pnpm": {
+    "overrides": {
+      "conventional-changelog-conventionalcommits": "^9.0.0"
+    }
   }
 }
