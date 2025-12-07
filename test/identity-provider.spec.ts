@@ -1,8 +1,8 @@
 import KeycloakAdminClientFluent from '../src/index';
 
 test('Identity Providers', async () => {
-  const kcClient = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcClient.simpleAuth({
+  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
+  await kcMaster.simpleAuth({
     username: 'admin',
     password: 'password', // pragma: allowlist secret
   });
@@ -11,7 +11,7 @@ test('Identity Providers', async () => {
   const idpName = 'testidp';
   const idpProviderId = 'keycloak-oidc';
 
-  const therealm = await kcClient.realm(realm).ensure({});
+  const therealm = await kcMaster.realm(realm).ensure({});
   const theidp = await therealm.identityProvider(idpName).ensure({ providerId: idpProviderId });
 
   expect(theidp).toBeTruthy();
@@ -19,7 +19,7 @@ test('Identity Providers', async () => {
   expect(theidp?.identityProvider?.alias).toBe(idpName);
   expect(theidp?.identityProvider?.providerId).toBe(idpProviderId);
 
-  const theidp2 = await kcClient.realm(realm).identityProvider(idpName).ensure({ providerId: idpProviderId });
+  const theidp2 = await kcMaster.realm(realm).identityProvider(idpName).ensure({ providerId: idpProviderId });
 
   expect(theidp2).toBeTruthy();
   expect(theidp2?.realmName).toBe(realm);

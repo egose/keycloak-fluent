@@ -33,14 +33,18 @@ export default class KeycloakAdminClientFluent {
   }) {
     const grantType: GrantTypes = password ? 'password' : refreshToken ? 'refresh_token' : 'client_credentials';
 
-    await this.auth({
-      grantType: grantType,
-      clientId,
-      clientSecret,
-      username,
-      password,
-      refreshToken,
-    });
+    try {
+      await this.auth({
+        grantType,
+        clientId,
+        clientSecret,
+        username,
+        password,
+        refreshToken,
+      });
+    } catch (error: any) {
+      throw Error(JSON.stringify(error.responseData));
+    }
   }
 
   realm(name: string) {

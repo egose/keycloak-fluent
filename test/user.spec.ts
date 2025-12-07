@@ -1,8 +1,8 @@
 import KeycloakAdminClientFluent from '../src/index';
 
 test('Users', async () => {
-  const kcClient = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcClient.simpleAuth({
+  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
+  await kcMaster.simpleAuth({
     username: 'admin',
     password: 'password', // pragma: allowlist secret
   });
@@ -11,7 +11,7 @@ test('Users', async () => {
   const username = 'testuser';
   const userFirstname = 'Test';
 
-  const therealm = await kcClient.realm(realm).ensure({});
+  const therealm = await kcMaster.realm(realm).ensure({});
   const theuser = await therealm.user(username).ensure({ firstName: userFirstname });
 
   expect(theuser).toBeTruthy();
@@ -19,7 +19,7 @@ test('Users', async () => {
   expect(theuser?.user?.username).toBe(username);
   expect(theuser?.user?.firstName).toBe(userFirstname);
 
-  const theuser2 = await kcClient
+  const theuser2 = await kcMaster
     .realm(realm)
     .user(username)
     .ensure({ firstName: userFirstname + ' v2' });

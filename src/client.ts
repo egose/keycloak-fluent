@@ -20,9 +20,18 @@ export default class ClientHandle {
     this.clientId = clientId;
   }
 
+  static async getById(core: KeycloakAdminClient, realm: string, id: string) {
+    const one = await core.clients.findOne({ realm, id });
+    return one ?? null;
+  }
+
+  static async getByClientId(core: KeycloakAdminClient, realm: string, clientId: string) {
+    const ones = await core.clients.find({ realm, clientId });
+    return ones.length > 0 ? ones[0] : null;
+  }
+
   public async getById(id: string) {
-    const one = await this.core.clients.findOne({ realm: this.realmName, id });
-    this.client = one ?? null;
+    this.client = await ClientHandle.getById(this.core, this.realmName, this.clientId);
 
     if (this.client) {
       this.clientId = this.client.clientId!;
@@ -32,8 +41,7 @@ export default class ClientHandle {
   }
 
   public async get(): Promise<ClientRepresentation | null> {
-    const ones = await this.core.clients.find({ realm: this.realmName, clientId: this.clientId });
-    this.client = ones.length > 0 ? ones[0] : null;
+    this.client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
 
     if (this.client) {
       this.clientId = this.client.clientId!;

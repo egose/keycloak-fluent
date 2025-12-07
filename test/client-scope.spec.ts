@@ -1,8 +1,8 @@
 import KeycloakAdminClientFluent from '../src/index';
 
 test('Client Scopes', async () => {
-  const kcClient = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcClient.simpleAuth({
+  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
+  await kcMaster.simpleAuth({
     username: 'admin',
     password: 'password', // pragma: allowlist secret
   });
@@ -13,7 +13,7 @@ test('Client Scopes', async () => {
   const scopeProtocolSaml = 'saml';
   const scopeProtocolOpenid = 'openid-connect';
 
-  const therealm = await kcClient.realm(realm).ensure({});
+  const therealm = await kcMaster.realm(realm).ensure({});
   const theclientscope = await therealm
     .clientScope(scopeName)
     .ensure({ description: scopeDescription, protocol: scopeProtocolSaml });
@@ -24,7 +24,7 @@ test('Client Scopes', async () => {
   expect(theclientscope?.clientScope?.description).toBe(scopeDescription);
   expect(theclientscope?.clientScope?.protocol).toBe(scopeProtocolSaml);
 
-  const theclientscope2 = await kcClient
+  const theclientscope2 = await kcMaster
     .realm(realm)
     .clientScope(scopeName)
     .ensure({ description: scopeDescription + ' v2', protocol: scopeProtocolOpenid });

@@ -8,6 +8,12 @@ import UserHandle from './user';
 import IdentityProviderHandle from './identity-provider';
 import ConfidentialBrowserLoginClientHandle from './confidential-browser-login-client';
 import PublicBrowserLoginClientHandle from './public-browser-login-client';
+import ServiceAccountHandle from './service-account';
+import RealmAdminServiceAccountHandle from './realm-admin-service-account';
+
+export const defaultRealmData = Object.freeze({
+  enabled: true,
+});
 
 export type RealmInputData = Omit<RealmRepresentation, 'realm'>;
 
@@ -38,7 +44,7 @@ export default class RealmHandle {
       throw new Error(`Realm "${this.realmName}" already exists`);
     }
 
-    await this.core.realms.create({ ...data, realm: this.realmName });
+    await this.core.realms.create({ ...defaultRealmData, ...data, realm: this.realmName });
     return this.get();
   }
 
@@ -47,7 +53,7 @@ export default class RealmHandle {
       throw new Error(`Realm "${this.realmName}" not found`);
     }
 
-    await this.core.realms.update({ realm: this.realmName }, { ...data });
+    await this.core.realms.update({ realm: this.realmName }, { ...defaultRealmData, ...data });
     return this.get();
   }
 
@@ -66,9 +72,9 @@ export default class RealmHandle {
 
     const one = await this.get();
     if (one) {
-      await this.core.realms.update({ realm: this.realmName }, { ...data });
+      await this.core.realms.update({ realm: this.realmName }, { ...defaultRealmData, ...data });
     } else {
-      await this.core.realms.create({ ...data, realm: this.realmName });
+      await this.core.realms.create({ ...defaultRealmData, ...data, realm: this.realmName });
     }
 
     await this.get();
@@ -115,5 +121,13 @@ export default class RealmHandle {
 
   public publicBrowserLoginClient(clientId: string) {
     return new PublicBrowserLoginClientHandle(this.core, this, clientId);
+  }
+
+  public serviceAccount(clientId: string) {
+    return new ServiceAccountHandle(this.core, this, clientId);
+  }
+
+  public realmAdminServiceAccount(clientId: string) {
+    return new RealmAdminServiceAccountHandle(this.core, this, clientId);
   }
 }
