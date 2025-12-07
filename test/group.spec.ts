@@ -1,8 +1,8 @@
 import KeycloakAdminClientFluent from '../src/index';
 
 test('Groups', async () => {
-  const kcClient = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcClient.simpleAuth({
+  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
+  await kcMaster.simpleAuth({
     username: 'admin',
     password: 'password', // pragma: allowlist secret
   });
@@ -11,7 +11,7 @@ test('Groups', async () => {
   const groupName = 'testgroup';
   const groupDisplayName = 'A group for testing purposes';
 
-  const therealm = await kcClient.realm(realm).ensure({});
+  const therealm = await kcMaster.realm(realm).ensure({});
   const thegroup = await therealm.group(groupName).ensure({ description: groupDisplayName });
 
   expect(thegroup).toBeTruthy();
@@ -19,7 +19,7 @@ test('Groups', async () => {
   expect(thegroup?.group?.name).toBe(groupName);
   expect(thegroup?.group?.description).toBe(groupDisplayName);
 
-  const thegroup2 = await kcClient
+  const thegroup2 = await kcMaster
     .realm(realm)
     .group(groupName)
     .ensure({ description: groupDisplayName + ' v2' });

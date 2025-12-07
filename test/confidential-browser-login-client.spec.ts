@@ -1,8 +1,8 @@
 import KeycloakAdminClientFluent from '../src/index';
 
 test('Confidential Browser Login Clients', async () => {
-  const kcClient = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcClient.simpleAuth({
+  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
+  await kcMaster.simpleAuth({
     username: 'admin',
     password: 'password', // pragma: allowlist secret
   });
@@ -11,7 +11,7 @@ test('Confidential Browser Login Clients', async () => {
   const clientId = 'testconfidentialloginclient';
   const clientDisplayName = 'A confidential browser login client for testing purposes';
 
-  const therealm = await kcClient.realm(realm).ensure({});
+  const therealm = await kcMaster.realm(realm).ensure({});
   const theclient = await therealm.confidentialBrowserLoginClient(clientId).ensure({ description: clientDisplayName });
 
   expect(theclient).toBeTruthy();

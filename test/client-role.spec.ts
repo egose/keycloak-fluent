@@ -1,8 +1,8 @@
 import KeycloakAdminClientFluent from '../src/index';
 
 test('Client Roles', async () => {
-  const kcClient = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcClient.simpleAuth({
+  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
+  await kcMaster.simpleAuth({
     username: 'admin',
     password: 'password', // pragma: allowlist secret
   });
@@ -12,7 +12,7 @@ test('Client Roles', async () => {
   const roleName = 'testrole';
   const roleDescription = 'A role for testing purposes';
 
-  const therealm = await kcClient.realm(realm).ensure({});
+  const therealm = await kcMaster.realm(realm).ensure({});
   const theclient = await therealm.client(clientId).ensure({});
   const therole = await theclient.role(roleName).ensure({ description: roleDescription });
 
