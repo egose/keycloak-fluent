@@ -1,7 +1,7 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ProtocolMapperHandle, { type ProtocolMapperInputData } from './protocol-mapper';
 import ClientHandle from '../clients/client';
-import _merge from 'lodash-es/merge';
+import _merge from 'lodash-es/merge.js';
 
 export interface AudienceProtocolMapperInputData extends ProtocolMapperInputData {
   audience: string;

@@ -1,4 +1,4 @@
-import cloneDeep from 'lodash-es/cloneDeep';
+import cloneDeep from 'lodash-es/cloneDeep.js';
 
 export function deepCloneInstance<T extends object>(instance: T): T {
   const proto = Object.getPrototypeOf(instance);
