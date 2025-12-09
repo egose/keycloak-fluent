@@ -12,7 +12,7 @@ test('Users', async () => {
   const userFirstname = 'Test';
 
   const therealm = await kcMaster.realm(realm).ensure({});
-  const theuser = await therealm.user(username).ensure({ firstName: userFirstname });
+  const theuser = await therealm.user(username).ensure({ firstName: userFirstname, password: username });
 
   expect(theuser).toBeTruthy();
   expect(theuser?.realmName).toBe(realm);
@@ -22,7 +22,7 @@ test('Users', async () => {
   const theuser2 = await kcMaster
     .realm(realm)
     .user(username)
-    .ensure({ firstName: userFirstname + ' v2' });
+    .ensure({ firstName: userFirstname + ' v2', password: username + 'v2' });
 
   const realmadminrole = therealm.client('realm-management').role('realm-admin');
   await theuser2.assignClientRole(realmadminrole);

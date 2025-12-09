@@ -30,7 +30,9 @@ export const defaultUserData = Object.freeze({
   attributes: {},
 });
 
-export type UserInputData = Omit<UserRepresentation, 'username | id'>;
+export type UserInputData = Omit<UserRepresentation, 'username | id'> & {
+  password?: string;
+};
 
 export default class UserHandle {
   public core: KeycloakAdminClient;
@@ -74,7 +76,16 @@ export default class UserHandle {
       throw new Error(`User "${this.username}" already exists in realm "${this.realmName}"`);
     }
 
-    await this.core.users.create({ ...defaultUserData, ...data, realm: this.realmName, username: this.username });
+    const { password, ...rest } = data;
+
+    const { id } = await this.core.users.create({
+      ...defaultUserData,
+      ...rest,
+      realm: this.realmName,
+      username: this.username,
+    });
+
+    if (password) await this.resetPassword(id, password);
     return this.get();
   }
 
@@ -84,8 +95,10 @@ export default class UserHandle {
       throw new Error(`User "${this.username}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.users.update({ realm: this.realmName, id: one.id }, { ...data, username: this.username });
+    const { password, ...rest } = data;
+    await this.core.users.update({ realm: this.realmName, id: one.id }, { ...rest, username: this.username });
 
+    if (password) await this.resetPassword(one.id, password);
     return this.get();
   }
 
@@ -105,11 +118,19 @@ export default class UserHandle {
     this.userData = data;
 
     const one = await this.get();
+    const { password, ...rest } = data;
 
     if (one?.id) {
-      await this.core.users.update({ realm: this.realmName, id: one.id }, { ...data, username: this.username });
+      await this.core.users.update({ realm: this.realmName, id: one.id }, { ...rest, username: this.username });
+      if (password) await this.resetPassword(one.id, password);
     } else {
-      await this.core.users.create({ ...defaultUserData, ...data, realm: this.realmName, username: this.username });
+      const { id } = await this.core.users.create({
+        ...defaultUserData,
+        ...rest,
+        realm: this.realmName,
+        username: this.username,
+      });
+      if (password) await this.resetPassword(id, password);
     }
 
     await this.get();
@@ -124,6 +145,18 @@ export default class UserHandle {
     }
 
     return this.username;
+  }
+
+  private async resetPassword(userId: string, password: string) {
+    await this.core.users.resetPassword({
+      realm: this.realmName,
+      id: userId,
+      credential: {
+        temporary: false,
+        type: 'password',
+        value: password,
+      },
+    });
   }
 
   public async assignClientRole(clientRoleHandle: ClientRoleHandle) {
