@@ -1,3 +1,9 @@
+## [0.2.0](https://github.com/egose/keycloak-fluent/compare/v0.1.0...v0.2.0) (2025-12-09)
+
+### Features
+
+* add protocol mapper handles ([97ff2a1](https://github.com/egose/keycloak-fluent/commit/97ff2a1810bd5dfef735b5b29e1ca3326ef1caf8))
+* add service accounts handles ([2b3c11d](https://github.com/egose/keycloak-fluent/commit/2b3c11dd18b146c994e68ba2144022b110278951))
 ## [0.1.0](https://github.com/egose/keycloak-fluent/compare/v0.0.1...v0.1.0) (2025-12-06)
 
 ### Features
