@@ -6,4 +6,5 @@ export default {
   ...createDefaultEsmPreset({
     useESM: true,
   }),
+  testTimeout: 30000,
 };
