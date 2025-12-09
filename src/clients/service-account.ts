@@ -1,5 +1,5 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import RealmHandle from './realm';
+import RealmHandle from '../realm';
 import ClientHandle, { type ClientInputData } from './client';
 
 export type ServiceAccountInputData = Omit<

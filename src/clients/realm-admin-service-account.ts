@@ -1,7 +1,7 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import RealmHandle from './realm';
+import RealmHandle from '../realm';
 import ClientHandle from './client';
 import ServiceAccountHandle, { type ServiceAccountInputData } from './service-account';
 

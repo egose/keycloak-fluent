@@ -1,7 +1,7 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import ClientHandle from './client';
+import ClientHandle from './clients/client';
 
 export type ClientRoleInputData = Omit<RoleRepresentation, 'name | id'>;
 
@@ -40,8 +40,24 @@ export default class ClientRoleHandle {
     };
   }
 
+  static async getByName(
+    core: KeycloakAdminClient,
+    realm: string,
+    clientId: string,
+    roleName: string,
+    client?: ClientRepresentation | null,
+  ) {
+    client = client ?? (await ClientHandle.getByClientId(core, realm, clientId));
+    if (!client) {
+      throw new Error(`Client "${clientId}" not found in realm "${realm}"`);
+    }
+
+    const one = await core.clients.findRole({ realm, id: client.id!, roleName });
+    return one ?? null;
+  }
+
   public async get(): Promise<RoleRepresentation | null> {
-    this.role = await this.core.clients.findRole(this.query);
+    this.role = await ClientRoleHandle.getByName(this.core, this.realmName, this.clientId, this.roleName, this.client);
 
     if (this.role) {
       this.roleName = this.role.name!;

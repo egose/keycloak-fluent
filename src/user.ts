@@ -1,6 +1,13 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
+import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
+import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
+import { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import RealmHandle from './realm';
+import ClientHandle from './clients/client';
+import ClientRoleHandle from './client-role';
+import GroupHandle from './groups/group';
+import { AbstractGroupHandle } from './groups/abstract-group';
 
 export const defaultUserData = Object.freeze({
   firstName: '',
@@ -53,7 +60,7 @@ export default class UserHandle {
 
   public async get(): Promise<UserRepresentation | null> {
     const ones = await this.core.users.find({ realm: this.realmName, username: this.username, exact: true });
-    this.user = ones.length > 0 ? ones[0] : null;
+    this.user = ones.find((v) => v.username === this.username) ?? null;
 
     if (this.user) {
       this.username = this.user.username!;
@@ -77,10 +84,7 @@ export default class UserHandle {
       throw new Error(`User "${this.username}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.users.update(
-      { realm: this.realmName, id: one.id },
-      { ...defaultUserData, ...data, username: this.username },
-    );
+    await this.core.users.update({ realm: this.realmName, id: one.id }, { ...data, username: this.username });
 
     return this.get();
   }
@@ -103,10 +107,7 @@ export default class UserHandle {
     const one = await this.get();
 
     if (one?.id) {
-      await this.core.users.update(
-        { realm: this.realmName, id: one.id },
-        { ...defaultUserData, ...data, username: this.username },
-      );
+      await this.core.users.update({ realm: this.realmName, id: one.id }, { ...data, username: this.username });
     } else {
       await this.core.users.create({ ...defaultUserData, ...data, realm: this.realmName, username: this.username });
     }
@@ -123,5 +124,105 @@ export default class UserHandle {
     }
 
     return this.username;
+  }
+
+  public async assignClientRole(clientRoleHandle: ClientRoleHandle) {
+    let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
+    if (!client) {
+      client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
+    }
+
+    if (!client) {
+      throw new Error(`Client "${clientRoleHandle.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    let clientRole = clientRoleHandle.role;
+    if (!clientRole) {
+      clientRole = await ClientRoleHandle.getByName(
+        this.core,
+        this.realmName,
+        client.clientId!,
+        clientRoleHandle.roleName,
+        client,
+      );
+    }
+
+    if (!clientRole) {
+      throw new Error(`Client Role "${clientRoleHandle.roleName}" not found in realm "${this.realmName}"`);
+    }
+
+    await this.core.users.addClientRoleMappings({
+      realm: this.realmName,
+      id: this.user?.id!,
+      clientUniqueId: client.id!,
+      roles: [clientRole] as never as RoleMappingPayload[],
+    });
+  }
+
+  public async unassignClientRole(clientRoleHandle: ClientRoleHandle) {
+    let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
+    if (!client) {
+      client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
+    }
+
+    if (!client) {
+      throw new Error(`Client "${clientRoleHandle.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    let clientRole = clientRoleHandle.role;
+    if (!clientRole) {
+      clientRole = await ClientRoleHandle.getByName(
+        this.core,
+        this.realmName,
+        client.clientId!,
+        clientRoleHandle.roleName,
+        client,
+      );
+    }
+
+    if (!clientRole) {
+      throw new Error(`Client Role "${clientRoleHandle.roleName}" not found in realm "${this.realmName}"`);
+    }
+
+    await this.core.users.delClientRoleMappings({
+      realm: this.realmName,
+      id: this.user?.id!,
+      clientUniqueId: client.id!,
+      roles: [clientRole] as never as RoleMappingPayload[],
+    });
+  }
+
+  public async assignGroup(groupHandle: AbstractGroupHandle) {
+    let group: GroupRepresentation | null = groupHandle.group ?? null;
+    if (!group) {
+      group = (await groupHandle.get()) ?? null;
+    }
+
+    if (!group) {
+      throw new Error(`Group "${groupHandle.groupName}" not found in realm "${this.realmName}"`);
+    }
+
+    await this.core.users.addToGroup({
+      realm: this.realmName,
+      id: this.user?.id!,
+      groupId: group.id!,
+    });
+  }
+
+  public async unassignGroup(groupHandle: AbstractGroupHandle) {
+    let group: GroupRepresentation | null = groupHandle.group ?? null;
+    if (!group) {
+      group = (await groupHandle.get()) ?? null;
+    }
+
+    if (!group) {
+      throw new Error(`Group "${groupHandle.groupName}" not found in realm "${this.realmName}"`);
+    }
+
+    await this.core.users.delFromGroup({
+      realm: this.realmName,
+      id: this.user?.id!,
+      groupId: group.id!,
+    });
   }
 }
