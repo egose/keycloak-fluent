@@ -1,7 +1,10 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
-import RealmHandle from './realm';
-import ClientRoleHandle from './client-role';
+import RealmHandle from '../realm';
+import ClientRoleHandle from '../client-role';
+import UserAttributeProtocolMapperHandle from '../protocol-mappers/user-attribute-protocol-mapper';
+import HardcodedClaimProtocolMapperHandle from '../protocol-mappers/hardcoded-claim-protocol-mapper';
+import AudienceProtocolMapperHandle from '../protocol-mappers/audience-protocol-mapper';
 
 export type ClientInputData = Omit<ClientRepresentation, 'realm | clientId | id'>;
 
@@ -27,7 +30,7 @@ export default class ClientHandle {
 
   static async getByClientId(core: KeycloakAdminClient, realm: string, clientId: string) {
     const ones = await core.clients.find({ realm, clientId });
-    return ones.length > 0 ? ones[0] : null;
+    return ones.find((v) => v.clientId === clientId) ?? null;
   }
 
   public async getById(id: string) {
@@ -108,5 +111,17 @@ export default class ClientHandle {
 
   public role(roleName: string) {
     return new ClientRoleHandle(this.core, this, roleName);
+  }
+
+  public userAttributeProtocolMapper(mapperName: string) {
+    return new UserAttributeProtocolMapperHandle(this.core, this, mapperName);
+  }
+
+  public hardcodedClaimProtocolMapper(mapperName: string) {
+    return new HardcodedClaimProtocolMapperHandle(this.core, this, mapperName);
+  }
+
+  public audienceProtocolMapper(mapperName: string) {
+    return new AudienceProtocolMapperHandle(this.core, this, mapperName);
   }
 }

@@ -1,15 +1,15 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import RealmRepresentation from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
-import ClientHandle from './client';
+import ClientHandle from './clients/client';
 import ClientScopeHandle from './client-scope';
 import RoleHandle from './role';
-import GroupHandle from './group';
+import GroupHandle from './groups/group';
 import UserHandle from './user';
 import IdentityProviderHandle from './identity-provider';
-import ConfidentialBrowserLoginClientHandle from './confidential-browser-login-client';
-import PublicBrowserLoginClientHandle from './public-browser-login-client';
-import ServiceAccountHandle from './service-account';
-import RealmAdminServiceAccountHandle from './realm-admin-service-account';
+import ConfidentialBrowserLoginClientHandle from './clients/confidential-browser-login-client';
+import PublicBrowserLoginClientHandle from './clients/public-browser-login-client';
+import ServiceAccountHandle from './clients/service-account';
+import RealmAdminServiceAccountHandle from './clients/realm-admin-service-account';
 
 export const defaultRealmData = Object.freeze({
   enabled: true,
@@ -53,7 +53,7 @@ export default class RealmHandle {
       throw new Error(`Realm "${this.realmName}" not found`);
     }
 
-    await this.core.realms.update({ realm: this.realmName }, { ...defaultRealmData, ...data });
+    await this.core.realms.update({ realm: this.realmName }, { ...data });
     return this.get();
   }
 
@@ -72,7 +72,7 @@ export default class RealmHandle {
 
     const one = await this.get();
     if (one) {
-      await this.core.realms.update({ realm: this.realmName }, { ...defaultRealmData, ...data });
+      await this.core.realms.update({ realm: this.realmName }, { ...data });
     } else {
       await this.core.realms.create({ ...defaultRealmData, ...data, realm: this.realmName });
     }

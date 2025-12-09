@@ -19,9 +19,18 @@ export default class RoleHandle {
     this.roleName = roleName;
   }
 
+  static async getById(core: KeycloakAdminClient, realm: string, id: string) {
+    const one = await core.roles.findOneById({ realm, id });
+    return one ?? null;
+  }
+
+  static async getByName(core: KeycloakAdminClient, realm: string, roleName: string) {
+    const one = await core.roles.findOneByName({ realm, name: roleName });
+    return one ?? null;
+  }
+
   public async getById(id: string) {
-    const one = await this.core.roles.findOneById({ realm: this.realmName, id });
-    this.role = one ?? null;
+    this.role = await RoleHandle.getById(this.core, this.realmName, id);
 
     if (this.role) {
       this.roleName = this.role.name!;
@@ -31,8 +40,7 @@ export default class RoleHandle {
   }
 
   public async get(): Promise<RoleRepresentation | null> {
-    const one = await this.core.roles.findOneByName({ realm: this.realmName, name: this.roleName });
-    this.role = one ?? null;
+    this.role = await RoleHandle.getByName(this.core, this.realmName, this.roleName);
 
     if (this.role) {
       this.roleName = this.role.name!;

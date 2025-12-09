@@ -96,7 +96,7 @@ export default class IdentityProviderHandle {
 
     await this.core.identityProviders.update(
       { realm: this.realmName, alias: one.alias },
-      { ...defaultIdentityProviderData, ...data, alias: this.alias },
+      { ...data, alias: this.alias },
     );
 
     return this.get();
@@ -122,7 +122,7 @@ export default class IdentityProviderHandle {
     if (one?.alias) {
       await this.core.identityProviders.update(
         { realm: this.realmName, alias: one.alias },
-        { ...defaultIdentityProviderData, ...data, alias: this.alias },
+        { ...data, alias: this.alias },
       );
     } else {
       await this.core.identityProviders.create({
