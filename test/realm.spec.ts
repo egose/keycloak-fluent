@@ -14,4 +14,8 @@ test('Realms', async () => {
   expect(one).toBeTruthy();
   expect(one?.realmName).toBe(realm);
   expect(one?.realm?.displayName).toBe(realmDisplayName);
+
+  const searchedRealms = await kcMaster.searchRealms(realm.slice(1, -1));
+  expect(Array.isArray(searchedRealms)).toBe(true);
+  expect(searchedRealms.length).toBeGreaterThan(0);
 });

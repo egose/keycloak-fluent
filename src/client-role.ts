@@ -121,4 +121,19 @@ export default class ClientRoleHandle {
 
     return this.roleName;
   }
+
+  public async listAssignedUsers() {
+    const client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
+    if (!client) {
+      throw new Error(`Client "${this.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    const result = await this.core.clients.findUsersWithRole({
+      realm: this.realmName,
+      id: client.id!,
+      roleName: this.roleName,
+    });
+
+    return result;
+  }
 }

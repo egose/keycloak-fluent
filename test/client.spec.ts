@@ -27,4 +27,8 @@ test('Clients', async () => {
   expect(theclient2?.realmName).toBe(realm);
   expect(theclient2?.client?.clientId).toBe(clientId);
   expect(theclient2?.client?.description).toBe(clientDisplayName + ' v2');
+
+  const searchedClients = await therealm.searchClients(clientId.slice(1, -1));
+  expect(Array.isArray(searchedClients)).toBe(true);
+  expect(searchedClients.length).toBeGreaterThan(0);
 });

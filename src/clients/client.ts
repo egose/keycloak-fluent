@@ -109,6 +109,26 @@ export default class ClientHandle {
     return this.clientId;
   }
 
+  public async searchRoles(keyword: string) {
+    const one = await this.get();
+    if (!one?.id) {
+      throw new Error(`Client "${this.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    const result = await this.core.clients.listRoles({
+      realm: this.realmName,
+      id: one.id,
+    });
+
+    const lowerkeyword = keyword.toLocaleLowerCase();
+
+    return result.filter((item) => {
+      if (!item.name) return false;
+
+      return item.name.toLocaleLowerCase().includes(lowerkeyword);
+    });
+  }
+
   public role(roleName: string) {
     return new ClientRoleHandle(this.core, this, roleName);
   }

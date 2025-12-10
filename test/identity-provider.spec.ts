@@ -25,4 +25,8 @@ test('Identity Providers', async () => {
   expect(theidp2?.realmName).toBe(realm);
   expect(theidp2?.identityProvider?.alias).toBe(idpName);
   expect(theidp2?.identityProvider?.providerId).toBe(idpProviderId);
+
+  const searchedGroups = await therealm.searchIdentityProviders(idpName.slice(1, -1));
+  expect(Array.isArray(searchedGroups)).toBe(true);
+  expect(searchedGroups.length).toBeGreaterThan(0);
 });

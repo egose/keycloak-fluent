@@ -33,4 +33,8 @@ test('Client Scopes', async () => {
   expect(theclientscope2?.clientScope?.name).toBe(scopeName);
   expect(theclientscope2?.clientScope?.description).toBe(scopeDescription + ' v2');
   expect(theclientscope?.clientScope?.protocol).toBe(scopeProtocolSaml);
+
+  const searchedClientScopes = await therealm.searchClientScopes(scopeName.slice(1, -1));
+  expect(Array.isArray(searchedClientScopes)).toBe(true);
+  expect(searchedClientScopes.length).toBeGreaterThan(0);
 });
