@@ -1,3 +1,8 @@
+## [0.4.0](https://github.com/egose/keycloak-fluent/compare/v0.3.0...v0.4.0) (2025-12-10)
+
+### Features
+
+* add search and list methods ([e3bfa0f](https://github.com/egose/keycloak-fluent/commit/e3bfa0f1c92eb9ab5d41952072f469a4f2e109d7))
 ## [0.3.0](https://github.com/egose/keycloak-fluent/compare/v0.2.1...v0.3.0) (2025-12-09)
 
 ### Features
