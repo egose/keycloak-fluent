@@ -1,3 +1,8 @@
+## [0.3.0](https://github.com/egose/keycloak-fluent/compare/v0.2.1...v0.3.0) (2025-12-09)
+
+### Features
+
+* support user passwords ([b2e3638](https://github.com/egose/keycloak-fluent/commit/b2e3638b0db1b1808616692bb2d7f164e684515d))
 ## [0.2.1](https://github.com/egose/keycloak-fluent/compare/v0.2.0...v0.2.1) (2025-12-09)
 ## [0.2.0](https://github.com/egose/keycloak-fluent/compare/v0.1.0...v0.2.0) (2025-12-09)
 
