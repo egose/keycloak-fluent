@@ -225,6 +225,25 @@ export default class UserHandle {
     });
   }
 
+  public async listAssignedClientRoles(clientHandle: ClientHandle) {
+    let client: ClientRepresentation | null = clientHandle.client ?? null;
+    if (!client) {
+      client = (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId)) ?? null;
+    }
+
+    if (!client) {
+      throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    const result = await this.core.users.listClientRoleMappings({
+      realm: this.realmName,
+      id: this.user?.id!,
+      clientUniqueId: client.id!,
+    });
+
+    return result;
+  }
+
   public async assignGroup(groupHandle: AbstractGroupHandle) {
     let group: GroupRepresentation | null = groupHandle.group ?? null;
     if (!group) {
@@ -257,5 +276,30 @@ export default class UserHandle {
       id: this.user?.id!,
       groupId: group.id!,
     });
+  }
+
+  public async listAssignedGroups() {
+    const allGroups: GroupRepresentation[] = [];
+    let first = 0;
+    const max = 100;
+
+    while (true) {
+      const groups = await this.core.users.listGroups({
+        realm: this.realmName,
+        id: this.user?.id!,
+        first,
+        max,
+        briefRepresentation: false,
+      });
+
+      if (!groups || groups.length === 0) {
+        break;
+      }
+
+      allGroups.push(...groups);
+      first += max;
+    }
+
+    return allGroups;
   }
 }

@@ -21,4 +21,8 @@ test('Client Roles', async () => {
   expect(therole?.client.clientId).toBe(clientId);
   expect(therole?.role?.name).toBe(roleName);
   expect(therole?.role?.description).toBe(roleDescription);
+
+  const searchedRoles = await theclient.searchRoles(roleName.slice(1, -1));
+  expect(Array.isArray(searchedRoles)).toBe(true);
+  expect(searchedRoles.length).toBeGreaterThan(0);
 });

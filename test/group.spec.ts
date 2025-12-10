@@ -28,4 +28,8 @@ test('Groups', async () => {
   expect(thegroup2?.realmName).toBe(realm);
   expect(thegroup2?.group?.name).toBe(groupName);
   expect(thegroup2?.group?.description).toBe(groupDisplayName + ' v2');
+
+  const searchedGroups = await therealm.searchRoles(groupName.slice(1, -1));
+  expect(Array.isArray(searchedGroups)).toBe(true);
+  expect(searchedGroups.length).toBeGreaterThan(0);
 });

@@ -50,4 +50,18 @@ export default class KeycloakAdminClientFluent {
   realm(name: string) {
     return new RealmHandle(this.core, name);
   }
+
+  public async searchRealms(keyword: string) {
+    const result = await this.core.realms.find({
+      briefRepresentation: false,
+    });
+
+    const lowerkeyword = keyword.toLocaleLowerCase();
+
+    return result.filter((item) => {
+      if (!item.realm) return false;
+
+      return item.realm.toLocaleLowerCase().includes(lowerkeyword);
+    });
+  }
 }

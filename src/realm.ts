@@ -1,5 +1,6 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import RealmRepresentation from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
+import { ClientQuery } from '@keycloak/keycloak-admin-client/lib/resources/clients';
 import ClientHandle from './clients/client';
 import ClientScopeHandle from './client-scope';
 import RoleHandle from './role';
@@ -89,6 +90,94 @@ export default class RealmHandle {
     }
 
     return this.realmName;
+  }
+
+  public async searchClients(keyword: string, options?: { page?: number; pageSize?: number }) {
+    const { page = 1, pageSize = 100 } = options ?? {};
+    const result = await this.core.clients.find({
+      realm: this.realmName,
+      first: page - 1,
+      max: pageSize,
+      clientId: keyword,
+      search: true,
+    });
+
+    return result;
+  }
+
+  public async searchClientScopes(keyword: string) {
+    const result = await this.core.clientScopes.find({
+      realm: this.realmName,
+    });
+
+    const lowerkeyword = keyword.toLocaleLowerCase();
+
+    return result.filter((item) => {
+      if (!item.name) return false;
+
+      return item.name.toLocaleLowerCase().includes(lowerkeyword);
+    });
+  }
+
+  public async searchRoles(keyword: string, options?: { page?: number; pageSize?: number }) {
+    const { page = 1, pageSize = 100 } = options ?? {};
+
+    const result = await this.core.roles.find({
+      realm: this.realmName,
+      first: page - 1,
+      max: pageSize,
+      search: keyword,
+      briefRepresentation: false,
+    });
+
+    return result;
+  }
+
+  public async searchGroups(keyword: string, options?: { page?: number; pageSize?: number }) {
+    const { page = 1, pageSize = 100 } = options ?? {};
+
+    const result = await this.core.groups.find({
+      realm: this.realmName,
+      first: page - 1,
+      max: pageSize,
+      search: keyword,
+      exact: false,
+      briefRepresentation: false,
+    });
+
+    return result;
+  }
+
+  public async searchUsers(
+    keyword: string,
+    options?: { page?: number; pageSize?: number; attribute?: 'username' | 'firstName' | 'lastName' | 'email' },
+  ) {
+    const { page = 1, pageSize = 100, attribute = 'username' } = options ?? {};
+
+    const result = await this.core.users.find({
+      realm: this.realmName,
+      first: page - 1,
+      max: pageSize,
+      q: `${attribute}:${keyword}`,
+      exact: false,
+      briefRepresentation: false,
+    });
+
+    return result;
+  }
+
+  public async searchIdentityProviders(keyword: string) {
+    const result = await this.core.identityProviders.find({
+      realm: this.realmName,
+    });
+
+    const lowerkeyword = keyword.toLocaleLowerCase();
+
+    return result.filter((item) => {
+      if (!item.alias) return false;
+
+      return item.alias.toLocaleLowerCase().includes(lowerkeyword);
+    });
   }
 
   public client(clientId: string) {

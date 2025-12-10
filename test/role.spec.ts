@@ -28,4 +28,8 @@ test('Roles', async () => {
   expect(therole2?.realmName).toBe(realm);
   expect(therole2?.role?.name).toBe(roleName);
   expect(therole2?.role?.description).toBe(roleDisplayName + ' v2');
+
+  const searchedRoles = await therealm.searchRoles(roleName.slice(1, -1));
+  expect(Array.isArray(searchedRoles)).toBe(true);
+  expect(searchedRoles.length).toBeGreaterThan(0);
 });
