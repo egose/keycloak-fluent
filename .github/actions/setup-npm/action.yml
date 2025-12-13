@@ -19,3 +19,8 @@ runs:
     - name: Install NPM packages
       run: pnpm install
       shell: bash
+
+    - name: Install Website NPM packages
+      run: pnpm install
+      working-directory: website
+      shell: bash
