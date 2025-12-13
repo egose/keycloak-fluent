@@ -1,0 +1,150 @@
+---
+sidebar_label: Nested Child Group
+sidebar_position: 2
+---
+
+# Nested Child Group API
+
+The `NestedChildGroupHandle` class provides a fluent API for managing nested child groups in Keycloak. It allows you to create, update, delete, and retrieve nested child groups within a specific parent group path.
+
+## Class: `NestedChildGroupHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmName: string, parentGroupPath: string, groupName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmName`: The name of the realm where the group resides.
+  - `parentGroupPath`: The path of the parent group.
+  - `groupName`: The name of the nested child group to manage.
+
+---
+
+### Static Methods
+
+#### `getByName(core: KeycloakAdminClient, realm: string, parentGroupPath: string, groupName: string)`
+
+Fetches a nested child group by its name under a specific parent group path.
+
+```typescript
+static async getByName(core: KeycloakAdminClient, realm: string, parentGroupPath: string, groupName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `parentGroupPath`: The path of the parent group.
+  - `groupName`: The name of the nested child group.
+- **Returns**: The nested child group representation or `null` if the group does not exist.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the nested child group by its name and updates the instance's `group` property.
+
+```typescript
+public async get(): Promise<GroupRepresentation | null>
+```
+
+- **Returns**: The nested child group representation or `null` if the group does not exist.
+
+---
+
+#### `create(data: NestedChildGroupInputData)`
+
+Creates a new nested child group under the specified parent group path.
+
+```typescript
+public async create(data: NestedChildGroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new nested child group.
+- **Throws**: An error if the nested child group already exists or the parent group does not exist.
+
+---
+
+#### `update(data: NestedChildGroupInputData)`
+
+Updates the nested child group's details.
+
+```typescript
+public async update(data: NestedChildGroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the nested child group.
+- **Throws**: An error if the nested child group or parent group does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the nested child group.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the nested child group does not exist.
+
+---
+
+#### `ensure(data: NestedChildGroupInputData)`
+
+Ensures the nested child group exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: NestedChildGroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the nested child group.
+
+---
+
+#### `discard()`
+
+Deletes the nested child group if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted nested child group.
+
+---
+
+#### `childGroup(groupName: string)`
+
+Returns a handle for managing a further nested child group.
+
+```typescript
+public childGroup(groupName: string)
+```
+
+- **Parameters**:
+  - `groupName`: The name of the further nested child group.
+- **Returns**: An instance of `NestedChildGroupHandle`.
+
+---
+
+### Types
+
+#### `NestedChildGroupInputData`
+
+The input data type for creating or updating a nested child group.
+
+```typescript
+export type NestedChildGroupInputData = Omit<GroupRepresentation, 'name | id'>;
+```
+
+---
+
+This API provides a comprehensive interface for managing nested child groups within a specific parent group path in Keycloak.

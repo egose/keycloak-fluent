@@ -6,7 +6,6 @@ import { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/rol
 import RealmHandle from './realm';
 import ClientHandle from './clients/client';
 import ClientRoleHandle from './client-role';
-import GroupHandle from './groups/group';
 import { AbstractGroupHandle } from './groups/abstract-group';
 
 export const defaultUserData = Object.freeze({

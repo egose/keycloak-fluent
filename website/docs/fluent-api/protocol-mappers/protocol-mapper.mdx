@@ -1,0 +1,154 @@
+---
+sidebar_label: Protocol Mapper
+sidebar_position: 0
+---
+
+# Protocol Mapper API
+
+The `ProtocolMapperHandle` class provides a fluent API for managing protocol mappers in Keycloak. Protocol mappers are used to map claims or attributes to tokens issued by Keycloak.
+
+## Class: `ProtocolMapperHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, mapperName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `clientHandle`: A handle to the client where the protocol mapper resides.
+  - `mapperName`: The name of the protocol mapper to manage.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the protocol mapper by its name and updates the instance's `clientProtocolMapper` property.
+
+```typescript
+public async get(): Promise<ProtocolMapperRepresentation | null>
+```
+
+- **Returns**: The protocol mapper representation or `null` if the mapper does not exist.
+
+---
+
+#### `create(data: ProtocolMapperInputData)`
+
+Creates a new protocol mapper.
+
+```typescript
+public async create(data: ProtocolMapperInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new protocol mapper.
+- **Throws**: An error if the protocol mapper already exists.
+
+---
+
+#### `update(data: ProtocolMapperInputData)`
+
+Updates the protocol mapper's details.
+
+```typescript
+public async update(data: ProtocolMapperInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the protocol mapper.
+- **Throws**: An error if the protocol mapper does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the protocol mapper.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the protocol mapper does not exist.
+
+---
+
+#### `ensure(data: ProtocolMapperInputData)`
+
+Ensures the protocol mapper exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: ProtocolMapperInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the protocol mapper.
+
+---
+
+#### `discard()`
+
+Deletes the protocol mapper if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted protocol mapper.
+
+---
+
+### Constants
+
+#### `defaultProtocolMapperData`
+
+Default data for creating a protocol mapper.
+
+```typescript
+export const defaultProtocolMapperData = Object.freeze({
+  protocol: 'openid-connect',
+  protocolMapper: '',
+  config: {},
+});
+```
+
+---
+
+### Types
+
+#### `ProtocolMapperProtocol`
+
+The protocol type for the protocol mapper.
+
+```typescript
+export type ProtocolMapperProtocol = 'openid-connect' | 'saml';
+```
+
+---
+
+#### `ProtocolMapperInputData`
+
+The input data type for creating or updating a protocol mapper.
+
+```typescript
+export type ProtocolMapperInputData = Omit<ProtocolMapperRepresentationExt, 'name | id'>;
+```
+
+---
+
+#### `ProtocolMapperRepresentationExt`
+
+An extended representation of the protocol mapper.
+
+```typescript
+export interface ProtocolMapperRepresentationExt extends ProtocolMapperRepresentation {
+  protocol?: ProtocolMapperProtocol;
+}
+```
+
+---
+
+This API provides a comprehensive interface for managing protocol mappers in Keycloak, including creation, updates, deletion, and ensuring their existence.

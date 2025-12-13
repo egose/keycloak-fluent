@@ -1,0 +1,150 @@
+---
+sidebar_label: Role
+sidebar_position: 4
+---
+
+# Role API
+
+The `RoleHandle` class provides a fluent API for managing Keycloak roles. It allows you to create, update, delete, and retrieve roles within a specific realm.
+
+## Class: `RoleHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, roleName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the role resides.
+  - `roleName`: The name of the role to manage.
+
+---
+
+### Static Methods
+
+#### `getById(core: KeycloakAdminClient, realm: string, id: string)`
+
+Fetches a role by its ID.
+
+```typescript
+static async getById(core: KeycloakAdminClient, realm: string, id: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `id`: The ID of the role.
+- **Returns**: The role representation or `null` if the role does not exist.
+
+---
+
+#### `getByName(core: KeycloakAdminClient, realm: string, roleName: string)`
+
+Fetches a role by its name.
+
+```typescript
+static async getByName(core: KeycloakAdminClient, realm: string, roleName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `roleName`: The name of the role.
+- **Returns**: The role representation or `null` if the role does not exist.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the role by its name and updates the instance's `role` property.
+
+```typescript
+public async get(): Promise<RoleRepresentation | null>
+```
+
+- **Returns**: The role representation or `null` if the role does not exist.
+
+---
+
+#### `create(data: RoleInputData)`
+
+Creates a new role.
+
+```typescript
+public async create(data: RoleInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new role.
+- **Throws**: An error if the role already exists.
+
+---
+
+#### `update(data: RoleInputData)`
+
+Updates the role's details.
+
+```typescript
+public async update(data: RoleInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the role.
+- **Throws**: An error if the role does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the role.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the role does not exist.
+
+---
+
+#### `ensure(data: RoleInputData)`
+
+Ensures the role exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: RoleInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the role.
+
+---
+
+#### `discard()`
+
+Deletes the role if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted role.
+
+---
+
+### Types
+
+#### `RoleInputData`
+
+The input data type for creating or updating a role.
+
+```typescript
+export type RoleInputData = Omit<RoleRepresentation, 'name | id'>;
+```
+
+---
+
+This API provides a comprehensive interface for managing Keycloak roles within a specific realm.

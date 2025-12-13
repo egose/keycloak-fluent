@@ -1,6 +1,5 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import RealmRepresentation from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
-import { ClientQuery } from '@keycloak/keycloak-admin-client/lib/resources/clients';
 import ClientHandle from './clients/client';
 import ClientScopeHandle from './client-scope';
 import RoleHandle from './role';

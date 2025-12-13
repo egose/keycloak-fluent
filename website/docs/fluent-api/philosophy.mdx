@@ -1,0 +1,144 @@
+---
+sidebar_label: Philosophy
+sidebar_position: 0
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Philosophy
+
+`keycloak-fluent` is designed to make **Keycloak administration** in Node.js more **expressive**, **discoverable**, and **chainable** — without sacrificing the flexibility of the official [`@keycloak/keycloak-admin-client`](https://www.npmjs.com/package/@keycloak/keycloak-admin-client).
+
+---
+
+## Why?
+
+The official Keycloak Admin Client is powerful, but it can feel **low-level**:
+- You need to know exact method names and parameters.
+- There's minimal guidance on resource relationships.
+- Repetitive boilerplate for realm, client, and user operations.
+
+We wanted a wrapper that:
+- Removes repetitive setup.
+- Encourages **fluent chaining** of operations.
+- Feels natural to read and write — like sentences.
+- Is easy to explore in an IDE with autocomplete.
+
+---
+
+## Core Ideas
+
+### 1. Fluent Interface
+Instead of:
+
+```ts
+await adminClient.realms.create({ realm: 'demo', displayName: 'My Demo Realm', enabled: true });
+const clients = await adminClient.clients.find({ realm: 'demo', clientId: 'frontend', search: true });
+```
+
+You can write:
+
+```ts
+const realm = await kc.realm('demo').ensure({ displayName: 'My Demo Realm' });
+const clients = await realm.searchClients('frontend');
+```
+
+Each method returns a **handle** for a specific resource (Realm, Client, User, etc.), so operations are naturally grouped.
+
+---
+
+### 2. Resource-Centric Design
+Keycloak's model revolves around **resources**:
+- Realm
+- Client
+- User
+- Role
+- Group
+- Identity Provider
+- Service Account
+
+`keycloak-fluent` mirrors this model:
+- `kc.realm('myrealm')` → **RealmHandle**
+- `.client('app-client')` → **ClientHandle**
+- `.user('alice')` → **UserHandle**
+
+This makes it easy to navigate **from the root down to the exact entity** you want to work with.
+
+---
+
+### 3. Safe & Declarative
+Many operations have **ensure** and **discard** helpers:
+- `ensure` → Create or update as needed.
+- `discard` → Delete if exists.
+
+This helps when writing **idempotent scripts** for provisioning Keycloak environments.
+
+---
+
+### 4. Discoverability
+Because each handle exposes only **relevant methods**, you don't need to remember every API endpoint — just follow the chain:
+
+```ts
+kc.realm('demo').user('bob').ensure({...});
+```
+
+Your IDE will guide you via autocomplete.
+
+---
+
+### 5. Opinionated Defaults
+We provide sensible defaults:
+- `enabled: true` when creating realms.
+- Pagination defaults (`page = 1`, `pageSize = 100`).
+- `briefRepresentation: false` for richer data.
+
+These can be overridden if needed.
+
+---
+
+## Summary
+
+`keycloak-fluent` exists to make **Keycloak Admin APIs**:
+- Easier to use
+- More readable
+- Less error-prone
+- More fun to write
+
+It's a **developer experience layer** on top of the official client — perfect for automation scripts, provisioning pipelines, and admin tooling.
+
+---
+
+<Tabs>
+  <TabItem value="before" label="Before (vanilla client)">
+    ```ts
+    const adminClient = new KeycloakAdminClient();
+    await adminClient.auth({ username, password, grantType: 'password' });
+
+    const realms = await adminClient.realms.find({});
+    const demoRealm = realms.find((realm) => realm.realm === 'demo');
+    if (!demoRealm) {
+      await adminClient.realms.create({ realm: 'demo', displayName: 'My Demo Realm', enabled: true });
+    } else {
+      await adminClient.realms.update({ realm: 'demo' }, { displayName: 'My Demo Realm', enabled: true });
+    }
+
+    const groups = await adminClient.groups.find({ realm: 'demo', search: 'demo-group', exact: true });
+    const demoGroup = groups.find((group) => group.name === 'demo-group');
+    if (!demoGroup) {
+      await adminClient.groups.create({ realm: 'demo', name: 'demo-group', description: 'My Demo Group' });
+    } else {
+      await adminClient.groups.update({ realm: 'demo', id: demoGroup.id! }, { name: 'demo-group', description: 'My Demo Group' });
+    }
+    ```
+  </TabItem>
+  <TabItem value="after" label="After (fluent)">
+    ```ts
+    const fluentClient = new KeycloakAdminClientFluent();
+    await fluentClient.simpleAuth({ username, password });
+
+    const realm = await fluentClient.realm('demo').ensure({ displayName: 'My Demo Realm' });
+    await realm.group('demo-group').ensure({ description: 'My Demo Group' });
+    ```
+  </TabItem>
+</Tabs>

@@ -1,0 +1,82 @@
+---
+sidebar_label: Audience Protocol Mapper
+sidebar_position: 3
+---
+
+# Audience Protocol Mapper API
+
+The `AudienceProtocolMapperHandle` class extends the `ProtocolMapperHandle` class and provides a specialized API for managing audience protocol mappers in Keycloak. These mappers add audience claims to tokens issued by Keycloak.
+
+## Class: `AudienceProtocolMapperHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, mapperName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `clientHandle`: A handle to the client where the protocol mapper resides.
+  - `mapperName`: The name of the audience protocol mapper to manage.
+
+---
+
+### Instance Methods
+
+#### `create(data: AudienceProtocolMapperInputData)`
+
+Creates a new audience protocol mapper.
+
+```typescript
+public async create(data: AudienceProtocolMapperInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new audience protocol mapper.
+- **Throws**: An error if the protocol mapper already exists.
+
+---
+
+#### `update(data: AudienceProtocolMapperInputData)`
+
+Updates the audience protocol mapper's details.
+
+```typescript
+public async update(data: AudienceProtocolMapperInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the audience protocol mapper.
+- **Throws**: An error if the protocol mapper does not exist.
+
+---
+
+#### `ensure(data: AudienceProtocolMapperInputData)`
+
+Ensures the audience protocol mapper exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: AudienceProtocolMapperInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the audience protocol mapper.
+
+---
+
+### Types
+
+#### `AudienceProtocolMapperInputData`
+
+The input data type for creating or updating an audience protocol mapper.
+
+```typescript
+export interface AudienceProtocolMapperInputData extends ProtocolMapperInputData {
+  audience: string;
+}
+```
+
+---
+
+This API provides a specialized interface for managing audience protocol mappers in Keycloak, ensuring they are configured with the appropriate defaults for adding audience claims to tokens.

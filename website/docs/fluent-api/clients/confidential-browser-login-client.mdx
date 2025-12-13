@@ -1,0 +1,88 @@
+---
+sidebar_label: Confidential Browser Login Client
+sidebar_position: 1
+---
+
+# Confidential Browser Login Client API
+
+The `ConfidentialBrowserLoginClientHandle` class extends the `ClientHandle` class and provides a specialized API for managing confidential browser login clients in Keycloak. These clients are configured for confidential access and browser-based login flows.
+
+## Class: `ConfidentialBrowserLoginClientHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, clientId: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the client resides.
+  - `clientId`: The ID of the confidential browser login client to manage.
+
+---
+
+### Instance Methods
+
+#### `create(data: ConfidentialBrowserLoginClientInputData)`
+
+Creates a new confidential browser login client.
+
+```typescript
+public async create(data: ConfidentialBrowserLoginClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new confidential browser login client.
+- **Throws**: An error if the client already exists.
+
+---
+
+#### `update(data: ConfidentialBrowserLoginClientInputData)`
+
+Updates the confidential browser login client's details.
+
+```typescript
+public async update(data: ConfidentialBrowserLoginClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the confidential browser login client.
+- **Throws**: An error if the client does not exist.
+
+---
+
+#### `ensure(data: ConfidentialBrowserLoginClientInputData)`
+
+Ensures the confidential browser login client exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: ConfidentialBrowserLoginClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the confidential browser login client.
+
+---
+
+### Types
+
+#### `ConfidentialBrowserLoginClientInputData`
+
+The input data type for creating or updating a confidential browser login client.
+
+```typescript
+export type ConfidentialBrowserLoginClientInputData = Omit<
+  ClientInputData,
+  | 'protocol'
+  | 'publicClient'
+  | 'standardFlowEnabled'
+  | 'directAccessGrantsEnabled'
+  | 'implicitFlowEnabled'
+  | 'serviceAccountsEnabled'
+>;
+```
+
+---
+
+This API provides a specialized interface for managing confidential browser login clients in Keycloak, ensuring they are configured with the appropriate defaults for secure and browser-based login flows.

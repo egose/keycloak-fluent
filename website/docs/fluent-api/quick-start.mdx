@@ -1,0 +1,76 @@
+---
+sidebar_label: Quick Start
+sidebar_position: 1
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import CodeBlock from '@theme/CodeBlock';
+
+# Quick Start
+
+You can install the package using the npm package manager.
+
+## Installation
+
+```bash npm2yarn
+npm install @egose/keycloak-fluent --save
+```
+
+## Usage
+
+### Configure Keycloak Connection
+
+You can configure the Keycloak connection using either a **user account** or a **service account**.
+
+- **Keycloak client creation**:
+
+```ts
+const kc = new KeycloakAdminClientFluent({
+  baseUrl: 'http://localhost:8080',
+  realmName: 'master',
+});
+```
+
+- **Connect using a user account**:
+
+```ts
+await kc.auth({
+  username: 'admin',
+  password: 'admin', // pragma: allowlist secret
+  clientId: 'admin-cli',
+});
+```
+
+- **Connect using a service account**:
+
+```ts
+await kc.auth({
+  clientId: 'my-service-account',
+  clientSecret: 'my-secret', // pragma: allowlist secret
+});
+```
+
+### Resource Handlers
+
+You can create resource handlers for Keycloak resources such as **realms**, **users**, **groups**, **roles**, and **clients**.
+
+The `ensure` method will create the resource if it does not exist, or patch the existing resource, and then return the resource handler.
+
+```ts
+const realm = await kc.realm("my-realm").ensure({
+  displayName: "My Realm",
+});
+
+const user = await realm.user("john.doe").ensure({
+  firstName: "John",
+  lastName: "Doe",
+  email: "john.doe@example.com",
+});
+
+const group = await realm.group("my-group").ensure({
+  description: "My Group",
+});
+
+await user.assignGroup(group);
+```

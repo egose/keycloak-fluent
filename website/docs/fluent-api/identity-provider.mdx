@@ -1,0 +1,186 @@
+---
+sidebar_label: Identity Provider
+sidebar_position: 7
+---
+
+# Identity Provider API
+
+The `IdentityProviderHandle` class provides a fluent API for managing Keycloak identity providers. It allows you to create, update, delete, and retrieve identity providers within a specific realm.
+
+## Class: `IdentityProviderHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the identity provider resides.
+  - `alias`: The alias of the identity provider to manage.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the identity provider by its alias and updates the instance's `identityProvider` property.
+
+```typescript
+public async get(): Promise<IdentityProviderRepresentation | null>
+```
+
+- **Returns**: The identity provider representation or `null` if the identity provider does not exist.
+
+---
+
+#### `create(data: IdentityProviderInputData)`
+
+Creates a new identity provider.
+
+```typescript
+public async create(data: IdentityProviderInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new identity provider.
+- **Throws**: An error if the identity provider already exists.
+
+---
+
+#### `update(data: IdentityProviderInputData)`
+
+Updates the identity provider's details.
+
+```typescript
+public async update(data: IdentityProviderInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the identity provider.
+- **Throws**: An error if the identity provider does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the identity provider.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the identity provider does not exist.
+
+---
+
+#### `ensure(data: IdentityProviderInputData)`
+
+Ensures the identity provider exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: IdentityProviderInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the identity provider.
+
+---
+
+#### `discard()`
+
+Deletes the identity provider if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The alias of the deleted identity provider.
+
+---
+
+### Constants
+
+#### `defaultIdentityProviderData`
+
+Default data for creating an identity provider.
+
+```typescript
+export const defaultIdentityProviderData = Object.freeze({
+  displayName: '',
+  providerId: '',
+  config: {
+    metadataDescriptorUrl: '',
+    authorizationUrl: '',
+    tokenUrl: '',
+    jwksUrl: '',
+    logoutUrl: '',
+    userInfoUrl: '',
+    tokenIntrospectionUrl: '',
+    issuer: '',
+    validateSignature: 'true',
+    pkceEnabled: 'false',
+    clientAuthMethod: 'client_secret_post',
+    clientId: '',
+    clientSecret: '',
+    clientAssertionSigningAlg: '',
+    useJwksUrl: 'true',
+    guiOrder: '',
+  },
+});
+```
+
+---
+
+### Types
+
+#### `IdentityProviderProviderId`
+
+The provider ID for the identity provider.
+
+```typescript
+export type IdentityProviderProviderId =
+  | 'saml'
+  | 'oauth2'
+  | 'oidc'
+  | 'keycloak-oidc'
+  | 'google'
+  | 'facebook'
+  | 'twitter'
+  | 'linkedin-openid-connect'
+  | 'github'
+  | 'gitlab'
+  | 'bitbucket'
+  | 'paypal'
+  | 'openshift-v4'
+  | 'microsoft'
+  | 'stackoverflow';
+```
+
+---
+
+#### `IdentityProviderInputData`
+
+The input data type for creating or updating an identity provider.
+
+```typescript
+export type IdentityProviderInputData = Omit<IdentityProviderRepresentationExt, 'alias'>;
+```
+
+---
+
+#### `IdentityProviderRepresentationExt`
+
+An extended representation of the identity provider.
+
+```typescript
+export interface IdentityProviderRepresentationExt extends IdentityProviderRepresentation {
+  providerId?: IdentityProviderProviderId;
+}
+```
+
+---
+
+This API provides a comprehensive interface for managing Keycloak identity providers within a specific realm.

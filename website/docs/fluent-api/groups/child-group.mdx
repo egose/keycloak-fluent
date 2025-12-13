@@ -1,0 +1,149 @@
+---
+sidebar_label: Child Group
+sidebar_position: 1
+---
+
+# Child Group API
+
+The `ChildGroupHandle` class provides a fluent API for managing child groups in Keycloak. It allows you to create, update, delete, and retrieve child groups within a specific parent group.
+
+## Class: `ChildGroupHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, parentGroupHandle: GroupHandle, groupName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `parentGroupHandle`: A handle to the parent group where the child group resides.
+  - `groupName`: The name of the child group to manage.
+
+---
+
+### Static Methods
+
+#### `getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string)`
+
+Fetches a child group by its name under a specific parent group.
+
+```typescript
+static async getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `parentGroupName`: The name of the parent group.
+  - `groupName`: The name of the child group.
+- **Returns**: The child group representation or `null` if the child group does not exist.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the child group by its name and updates the instance's `group` property.
+
+```typescript
+public async get(): Promise<GroupRepresentation | null>
+```
+
+- **Returns**: The child group representation or `null` if the child group does not exist.
+
+---
+
+#### `create(data: ChildGroupInputData)`
+
+Creates a new child group under the parent group.
+
+```typescript
+public async create(data: ChildGroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new child group.
+- **Throws**: An error if the child group already exists or the parent group does not exist.
+
+---
+
+#### `update(data: ChildGroupInputData)`
+
+Updates the child group's details.
+
+```typescript
+public async update(data: ChildGroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the child group.
+- **Throws**: An error if the child group or parent group does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the child group.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the child group does not exist.
+
+---
+
+#### `ensure(data: ChildGroupInputData)`
+
+Ensures the child group exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: ChildGroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the child group.
+
+---
+
+#### `discard()`
+
+Deletes the child group if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted child group.
+
+---
+
+#### `childGroup(groupName: string)`
+
+Returns a handle for managing a nested child group.
+
+```typescript
+public childGroup(groupName: string)
+```
+
+- **Parameters**:
+  - `groupName`: The name of the nested child group.
+- **Returns**: An instance of `NestedChildGroupHandle`.
+
+---
+
+### Types
+
+#### `ChildGroupInputData`
+
+The input data type for creating or updating a child group.
+
+```typescript
+export type ChildGroupInputData = Omit<GroupRepresentation, 'name | id'>;
+```
+
+---
+
+This API provides a comprehensive interface for managing child groups within a specific parent group in Keycloak.
