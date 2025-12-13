@@ -1,0 +1,289 @@
+---
+sidebar_label: Realm
+sidebar_position: 2
+---
+
+# Realm API
+
+The `RealmHandle` class provides a fluent API for managing Keycloak realms. It allows you to create, update, delete, and search for realms, as well as interact with various Keycloak entities such as clients, roles, groups, and users.
+
+## Class: `RealmHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmName`: The name of the realm to manage.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the current realm's details.
+
+```typescript
+public async get(): Promise<RealmRepresentation | null>
+```
+
+- **Returns**: The realm representation or `null` if the realm does not exist.
+
+---
+
+#### `create(data: RealmInputData)`
+
+Creates a new realm.
+
+```typescript
+public async create(data: RealmInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new realm.
+- **Throws**: An error if the realm already exists.
+
+---
+
+#### `update(data: RealmInputData)`
+
+Updates the realm's details.
+
+```typescript
+public async update(data: RealmInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the realm.
+- **Throws**: An error if the realm does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the realm.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the realm does not exist.
+
+---
+
+#### `ensure(data: RealmInputData)`
+
+Ensures the realm exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: RealmInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the realm.
+
+---
+
+#### `discard()`
+
+Deletes the realm if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted realm.
+
+---
+
+#### `searchClients(keyword: string, options?: { page?: number; pageSize?: number })`
+
+Searches for clients in the realm.
+
+```typescript
+public async searchClients(keyword: string, options?: { page?: number; pageSize?: number })
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+  - `options`: Pagination options.
+- **Returns**: A list of matching clients.
+
+---
+
+#### `searchClientScopes(keyword: string)`
+
+Searches for client scopes in the realm.
+
+```typescript
+public async searchClientScopes(keyword: string)
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+- **Returns**: A list of matching client scopes.
+
+---
+
+#### `searchRoles(keyword: string, options?: { page?: number; pageSize?: number })`
+
+Searches for roles in the realm.
+
+```typescript
+public async searchRoles(keyword: string, options?: { page?: number; pageSize?: number })
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+  - `options`: Pagination options.
+- **Returns**: A list of matching roles.
+
+---
+
+#### `searchGroups(keyword: string, options?: { page?: number; pageSize?: number })`
+
+Searches for groups in the realm.
+
+```typescript
+public async searchGroups(keyword: string, options?: { page?: number; pageSize?: number })
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+  - `options`: Pagination options.
+- **Returns**: A list of matching groups.
+
+---
+
+#### `searchUsers(keyword: string, options?: { page?: number; pageSize?: number; attribute?: 'username' | 'firstName' | 'lastName' | 'email' })`
+
+Searches for users in the realm.
+
+```typescript
+public async searchUsers(keyword: string, options?: { page?: number; pageSize?: number; attribute?: 'username' | 'firstName' | 'lastName' | 'email' })
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+  - `options`: Pagination options and the attribute to search by.
+- **Returns**: A list of matching users.
+
+---
+
+#### `searchIdentityProviders(keyword: string)`
+
+Searches for identity providers in the realm.
+
+```typescript
+public async searchIdentityProviders(keyword: string)
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+- **Returns**: A list of matching identity providers.
+
+---
+
+### Entity-Specific Methods
+
+#### `client(clientId: string)`
+
+Returns a handle for managing a specific client.
+
+```typescript
+public client(clientId: string)
+```
+
+#### `clientScope(scopeName: string)`
+
+Returns a handle for managing a specific client scope.
+
+```typescript
+public clientScope(scopeName: string)
+```
+
+#### `role(roleName: string)`
+
+Returns a handle for managing a specific role.
+
+```typescript
+public role(roleName: string)
+```
+
+#### `group(groupName: string)`
+
+Returns a handle for managing a specific group.
+
+```typescript
+public group(groupName: string)
+```
+
+#### `user(username: string)`
+
+Returns a handle for managing a specific user.
+
+```typescript
+public user(username: string)
+```
+
+#### `identityProvider(alias: string)`
+
+Returns a handle for managing a specific identity provider.
+
+```typescript
+public identityProvider(alias: string)
+```
+
+#### `confidentialBrowserLoginClient(clientId: string)`
+
+Returns a handle for managing a confidential browser login client.
+
+```typescript
+public confidentialBrowserLoginClient(clientId: string)
+```
+
+#### `publicBrowserLoginClient(clientId: string)`
+
+Returns a handle for managing a public browser login client.
+
+```typescript
+public publicBrowserLoginClient(clientId: string)
+```
+
+#### `serviceAccount(clientId: string)`
+
+Returns a handle for managing a service account.
+
+```typescript
+public serviceAccount(clientId: string)
+```
+
+#### `realmAdminServiceAccount(clientId: string)`
+
+Returns a handle for managing a realm admin service account.
+
+```typescript
+public realmAdminServiceAccount(clientId: string)
+```
+
+---
+
+### Constants
+
+#### `defaultRealmData`
+
+Default data for creating a realm.
+
+```typescript
+export const defaultRealmData = Object.freeze({
+  enabled: true,
+});
+```
+
+---
+
+This API provides a comprehensive interface for managing Keycloak realms and their associated entities.

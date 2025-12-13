@@ -1,0 +1,148 @@
+---
+sidebar_label: Client Role
+sidebar_position: 9
+---
+
+# Client Role API
+
+The `ClientRoleHandle` class provides a fluent API for managing roles associated with a specific client in Keycloak. It allows you to create, update, delete, and retrieve client roles, as well as list users assigned to those roles.
+
+## Class: `ClientRoleHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, roleName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `clientHandle`: A handle to the client where the role resides.
+  - `roleName`: The name of the client role to manage.
+
+---
+
+### Static Methods
+
+#### `getByName(core: KeycloakAdminClient, realm: string, clientId: string, roleName: string, client?: ClientRepresentation | null)`
+
+Fetches a client role by its name.
+
+```typescript
+static async getByName(core: KeycloakAdminClient, realm: string, clientId: string, roleName: string, client?: ClientRepresentation | null)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `clientId`: The ID of the client.
+  - `roleName`: The name of the role.
+  - `client`: (Optional) The client representation.
+- **Returns**: The role representation or `null` if the role does not exist.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the client role by its name and updates the instance's `role` property.
+
+```typescript
+public async get(): Promise<RoleRepresentation | null>
+```
+
+- **Returns**: The role representation or `null` if the role does not exist.
+
+---
+
+#### `create(data: ClientRoleInputData)`
+
+Creates a new client role.
+
+```typescript
+public async create(data: ClientRoleInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new client role.
+- **Throws**: An error if the role already exists.
+
+---
+
+#### `update(data: ClientRoleInputData)`
+
+Updates the client role's details.
+
+```typescript
+public async update(data: ClientRoleInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the client role.
+- **Throws**: An error if the role does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the client role.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the role does not exist.
+
+---
+
+#### `ensure(data: ClientRoleInputData)`
+
+Ensures the client role exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: ClientRoleInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the client role.
+
+---
+
+#### `discard()`
+
+Deletes the client role if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted client role.
+
+---
+
+#### `listAssignedUsers()`
+
+Lists all users assigned to the client role.
+
+```typescript
+public async listAssignedUsers()
+```
+
+- **Returns**: A list of users assigned to the role.
+
+---
+
+### Types
+
+#### `ClientRoleInputData`
+
+The input data type for creating or updating a client role.
+
+```typescript
+export type ClientRoleInputData = Omit<RoleRepresentation, 'name | id'>;
+```
+
+---
+
+This API provides a comprehensive interface for managing client roles in Keycloak, including role creation, updates, deletion, and user assignments.

@@ -1,0 +1,231 @@
+---
+sidebar_label: User
+sidebar_position: 3
+---
+
+# User API
+
+The `UserHandle` class provides a fluent API for managing Keycloak users. It allows you to create, update, delete, and manage user roles, groups, and other attributes within a specific realm.
+
+## Class: `UserHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, username: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the user resides.
+  - `username`: The username of the user to manage.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the user by their username.
+
+```typescript
+public async get(): Promise<UserRepresentation | null>
+```
+
+- **Returns**: The user representation or `null` if the user does not exist.
+
+---
+
+#### `create(data: UserInputData)`
+
+Creates a new user.
+
+```typescript
+public async create(data: UserInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new user, including optional password.
+- **Throws**: An error if the user already exists.
+
+---
+
+#### `update(data: UserInputData)`
+
+Updates the user's details.
+
+```typescript
+public async update(data: UserInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the user, including optional password.
+- **Throws**: An error if the user does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the user.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the user does not exist.
+
+---
+
+#### `ensure(data: UserInputData)`
+
+Ensures the user exists. If they do, updates them; otherwise, creates them.
+
+```typescript
+public async ensure(data: UserInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the user, including optional password.
+
+---
+
+#### `discard()`
+
+Deletes the user if they exist.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The username of the deleted user.
+
+---
+
+#### `assignClientRole(clientRoleHandle: ClientRoleHandle)`
+
+Assigns a client role to the user.
+
+```typescript
+public async assignClientRole(clientRoleHandle: ClientRoleHandle)
+```
+
+- **Parameters**:
+  - `clientRoleHandle`: A handle to the client role to assign.
+- **Throws**: An error if the client or role does not exist.
+
+---
+
+#### `unassignClientRole(clientRoleHandle: ClientRoleHandle)`
+
+Unassigns a client role from the user.
+
+```typescript
+public async unassignClientRole(clientRoleHandle: ClientRoleHandle)
+```
+
+- **Parameters**:
+  - `clientRoleHandle`: A handle to the client role to unassign.
+- **Throws**: An error if the client or role does not exist.
+
+---
+
+#### `listAssignedClientRoles(clientHandle: ClientHandle)`
+
+Lists all client roles assigned to the user for a specific client.
+
+```typescript
+public async listAssignedClientRoles(clientHandle: ClientHandle)
+```
+
+- **Parameters**:
+  - `clientHandle`: A handle to the client.
+- **Returns**: A list of assigned client roles.
+
+---
+
+#### `assignGroup(groupHandle: AbstractGroupHandle)`
+
+Assigns the user to a group.
+
+```typescript
+public async assignGroup(groupHandle: AbstractGroupHandle)
+```
+
+- **Parameters**:
+  - `groupHandle`: A handle to the group to assign.
+- **Throws**: An error if the group does not exist.
+
+---
+
+#### `unassignGroup(groupHandle: AbstractGroupHandle)`
+
+Removes the user from a group.
+
+```typescript
+public async unassignGroup(groupHandle: AbstractGroupHandle)
+```
+
+- **Parameters**:
+  - `groupHandle`: A handle to the group to unassign.
+- **Throws**: An error if the group does not exist.
+
+---
+
+#### `listAssignedGroups()`
+
+Lists all groups the user is assigned to.
+
+```typescript
+public async listAssignedGroups()
+```
+
+- **Returns**: A list of assigned groups.
+
+---
+
+### Constants
+
+#### `defaultUserData`
+
+Default data for creating a user.
+
+```typescript
+export const defaultUserData = Object.freeze({
+  firstName: '',
+  lastName: '',
+  email: '',
+  emailVerified: false,
+  enabled: true,
+  totp: false,
+  disableableCredentialTypes: [],
+  requiredActions: [],
+  notBefore: 0,
+  access: {
+    manageGroupMembership: true,
+    resetPassword: true,
+    view: true,
+    mapRoles: true,
+    impersonate: true,
+    manage: true,
+  },
+  attributes: {},
+});
+```
+
+---
+
+### Types
+
+#### `UserInputData`
+
+The input data type for creating or updating a user.
+
+```typescript
+export type UserInputData = Omit<UserRepresentation, 'username | id'> & {
+  password?: string;
+};
+```
+
+---
+
+This API provides a comprehensive interface for managing Keycloak users and their associated roles, groups, and attributes.

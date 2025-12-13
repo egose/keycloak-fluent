@@ -1,0 +1,171 @@
+---
+sidebar_label: Client Scope
+sidebar_position: 6
+---
+
+# Client Scope API
+
+The `ClientScopeHandle` class provides a fluent API for managing Keycloak client scopes. It allows you to create, update, delete, and retrieve client scopes within a specific realm.
+
+## Class: `ClientScopeHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, scopeName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the client scope resides.
+  - `scopeName`: The name of the client scope to manage.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the client scope by its name and updates the instance's `clientScope` property.
+
+```typescript
+public async get(): Promise<ClientScopeRepresentation | null>
+```
+
+- **Returns**: The client scope representation or `null` if the client scope does not exist.
+
+---
+
+#### `create(data: ClientScopeInputData)`
+
+Creates a new client scope.
+
+```typescript
+public async create(data: ClientScopeInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new client scope.
+- **Throws**: An error if the client scope already exists.
+
+---
+
+#### `update(data: ClientScopeInputData)`
+
+Updates the client scope's details.
+
+```typescript
+public async update(data: ClientScopeInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the client scope.
+- **Throws**: An error if the client scope does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the client scope.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the client scope does not exist.
+
+---
+
+#### `ensure(data: ClientScopeInputData)`
+
+Ensures the client scope exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: ClientScopeInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the client scope.
+
+---
+
+#### `discard()`
+
+Deletes the client scope if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted client scope.
+
+---
+
+### Constants
+
+#### `defaultScopeData`
+
+Default data for creating a client scope.
+
+```typescript
+export const defaultScopeData = Object.freeze({
+  description: '',
+  type: 'none',
+  protocol: 'openid-connect',
+  attributes: {
+    'display.on.consent.screen': 'true',
+    'include.in.token.scope': 'false',
+    'consent.screen.text': '',
+    'gui.order': '',
+  },
+});
+```
+
+---
+
+### Types
+
+#### `ClientScopeType`
+
+The type of the client scope.
+
+```typescript
+export type ClientScopeType = 'none' | 'default' | 'optional';
+```
+
+---
+
+#### `ClientScopeProtocol`
+
+The protocol of the client scope.
+
+```typescript
+export type ClientScopeProtocol = 'openid-connect' | 'saml';
+```
+
+---
+
+#### `ClientScopeInputData`
+
+The input data type for creating or updating a client scope.
+
+```typescript
+export type ClientScopeInputData = Omit<ClientScopeRepresentationExt, 'name | id'>;
+```
+
+---
+
+#### `ClientScopeRepresentationExt`
+
+An extended representation of the client scope.
+
+```typescript
+export interface ClientScopeRepresentationExt extends ClientScopeRepresentation {
+  type?: ClientScopeType;
+  protocol?: ClientScopeProtocol;
+}
+```
+
+---
+
+This API provides a comprehensive interface for managing Keycloak client scopes within a specific realm.

@@ -1,0 +1,220 @@
+---
+sidebar_label: Client
+sidebar_position: 0
+---
+
+# Client API
+
+The `ClientHandle` class provides a fluent API for managing Keycloak clients. It allows you to create, update, delete, and retrieve clients within a specific realm, as well as manage client roles and protocol mappers.
+
+## Class: `ClientHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, clientId: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the client resides.
+  - `clientId`: The ID of the client to manage.
+
+---
+
+### Static Methods
+
+#### `getById(core: KeycloakAdminClient, realm: string, id: string)`
+
+Fetches a client by its ID.
+
+```typescript
+static async getById(core: KeycloakAdminClient, realm: string, id: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `id`: The ID of the client.
+- **Returns**: The client representation or `null` if the client does not exist.
+
+---
+
+#### `getByClientId(core: KeycloakAdminClient, realm: string, clientId: string)`
+
+Fetches a client by its client ID.
+
+```typescript
+static async getByClientId(core: KeycloakAdminClient, realm: string, clientId: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `clientId`: The client ID of the client.
+- **Returns**: The client representation or `null` if the client does not exist.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the client by its client ID and updates the instance's `client` property.
+
+```typescript
+public async get(): Promise<ClientRepresentation | null>
+```
+
+- **Returns**: The client representation or `null` if the client does not exist.
+
+---
+
+#### `create(data: ClientInputData)`
+
+Creates a new client.
+
+```typescript
+public async create(data: ClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new client.
+- **Throws**: An error if the client already exists.
+
+---
+
+#### `update(data: ClientInputData)`
+
+Updates the client's details.
+
+```typescript
+public async update(data: ClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the client.
+- **Throws**: An error if the client does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the client.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the client does not exist.
+
+---
+
+#### `ensure(data: ClientInputData)`
+
+Ensures the client exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: ClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the client.
+
+---
+
+#### `discard()`
+
+Deletes the client if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The client ID of the deleted client.
+
+---
+
+#### `searchRoles(keyword: string)`
+
+Searches for roles associated with the client.
+
+```typescript
+public async searchRoles(keyword: string)
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+- **Returns**: A list of roles matching the keyword.
+
+---
+
+#### `role(roleName: string)`
+
+Returns a handle for managing a specific client role.
+
+```typescript
+public role(roleName: string)
+```
+
+- **Parameters**:
+  - `roleName`: The name of the role.
+- **Returns**: An instance of `ClientRoleHandle`.
+
+---
+
+#### `userAttributeProtocolMapper(mapperName: string)`
+
+Returns a handle for managing a user attribute protocol mapper.
+
+```typescript
+public userAttributeProtocolMapper(mapperName: string)
+```
+
+- **Parameters**:
+  - `mapperName`: The name of the protocol mapper.
+- **Returns**: An instance of `UserAttributeProtocolMapperHandle`.
+
+---
+
+#### `hardcodedClaimProtocolMapper(mapperName: string)`
+
+Returns a handle for managing a hardcoded claim protocol mapper.
+
+```typescript
+public hardcodedClaimProtocolMapper(mapperName: string)
+```
+
+- **Parameters**:
+  - `mapperName`: The name of the protocol mapper.
+- **Returns**: An instance of `HardcodedClaimProtocolMapperHandle`.
+
+---
+
+#### `audienceProtocolMapper(mapperName: string)`
+
+Returns a handle for managing an audience protocol mapper.
+
+```typescript
+public audienceProtocolMapper(mapperName: string)
+```
+
+- **Parameters**:
+  - `mapperName`: The name of the protocol mapper.
+- **Returns**: An instance of `AudienceProtocolMapperHandle`.
+
+---
+
+### Types
+
+#### `ClientInputData`
+
+The input data type for creating or updating a client.
+
+```typescript
+export type ClientInputData = Omit<ClientRepresentation, 'realm | clientId | id'>;
+```
+
+---
+
+This API provides a comprehensive interface for managing Keycloak clients, their roles, and protocol mappers within a specific realm.

@@ -1,0 +1,89 @@
+---
+sidebar_label: Public Browser Login Client
+sidebar_position: 2
+---
+
+# Public Browser Login Client API
+
+The `PublicBrowserLoginClientHandle` class extends the `ClientHandle` class and provides a specialized API for managing public browser login clients in Keycloak. These clients are configured for public access and browser-based login flows.
+
+## Class: `PublicBrowserLoginClientHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, clientId: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the client resides.
+  - `clientId`: The ID of the public browser login client to manage.
+
+---
+
+### Instance Methods
+
+#### `create(data: PublicBrowserLoginClientInputData)`
+
+Creates a new public browser login client.
+
+```typescript
+public async create(data: PublicBrowserLoginClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new public browser login client.
+- **Throws**: An error if the client already exists.
+
+---
+
+#### `update(data: PublicBrowserLoginClientInputData)`
+
+Updates the public browser login client's details.
+
+```typescript
+public async update(data: PublicBrowserLoginClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the public browser login client.
+- **Throws**: An error if the client does not exist.
+
+---
+
+#### `ensure(data: PublicBrowserLoginClientInputData)`
+
+Ensures the public browser login client exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: PublicBrowserLoginClientInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the public browser login client.
+
+---
+
+### Types
+
+#### `PublicBrowserLoginClientInputData`
+
+The input data type for creating or updating a public browser login client.
+
+```typescript
+export type PublicBrowserLoginClientInputData = Omit<
+  ClientInputData,
+  | 'protocol'
+  | 'publicClient'
+  | 'standardFlowEnabled'
+  | 'directAccessGrantsEnabled'
+  | 'implicitFlowEnabled'
+  | 'serviceAccountsEnabled'
+  | 'secret'
+>;
+```
+
+---
+
+This API provides a specialized interface for managing public browser login clients in Keycloak, ensuring they are configured with the appropriate defaults for public and browser-based login flows.

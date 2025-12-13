@@ -1,0 +1,180 @@
+---
+sidebar_label: Group
+sidebar_position: 0
+---
+
+# Group API
+
+The `GroupHandle` class provides a fluent API for managing Keycloak groups. It allows you to create, update, delete, and retrieve groups within a specific realm, as well as manage child groups.
+
+## Class: `GroupHandle`
+
+### Constructor
+
+```typescript
+constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, groupName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realmHandle`: A handle to the realm where the group resides.
+  - `groupName`: The name of the group to manage.
+
+---
+
+### Static Methods
+
+#### `getById(core: KeycloakAdminClient, realm: string, id: string)`
+
+Fetches a group by its ID.
+
+```typescript
+static async getById(core: KeycloakAdminClient, realm: string, id: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `id`: The ID of the group.
+- **Returns**: The group representation or `null` if the group does not exist.
+
+---
+
+#### `getByName(core: KeycloakAdminClient, realm: string, groupName: string)`
+
+Fetches a group by its name.
+
+```typescript
+static async getByName(core: KeycloakAdminClient, realm: string, groupName: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `groupName`: The name of the group.
+- **Returns**: The group representation or `null` if the group does not exist.
+
+---
+
+#### `getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)`
+
+Fetches a group by its path.
+
+```typescript
+static async getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)
+```
+
+- **Parameters**:
+  - `core`: An instance of `KeycloakAdminClient`.
+  - `realm`: The name of the realm.
+  - `groupPath`: The path of the group (e.g., `/parent/child`).
+- **Returns**: The group representation or `null` if the group does not exist.
+
+---
+
+### Instance Methods
+
+#### `get()`
+
+Fetches the group by its name and updates the instance's `group` property.
+
+```typescript
+public async get(): Promise<GroupRepresentation | null>
+```
+
+- **Returns**: The group representation or `null` if the group does not exist.
+
+---
+
+#### `create(data: GroupInputData)`
+
+Creates a new group.
+
+```typescript
+public async create(data: GroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the new group.
+- **Throws**: An error if the group already exists.
+
+---
+
+#### `update(data: GroupInputData)`
+
+Updates the group's details.
+
+```typescript
+public async update(data: GroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The updated data for the group.
+- **Throws**: An error if the group does not exist.
+
+---
+
+#### `delete()`
+
+Deletes the group.
+
+```typescript
+public async delete()
+```
+
+- **Throws**: An error if the group does not exist.
+
+---
+
+#### `ensure(data: GroupInputData)`
+
+Ensures the group exists. If it does, updates it; otherwise, creates it.
+
+```typescript
+public async ensure(data: GroupInputData)
+```
+
+- **Parameters**:
+  - `data`: The data for the group.
+
+---
+
+#### `discard()`
+
+Deletes the group if it exists.
+
+```typescript
+public async discard()
+```
+
+- **Returns**: The name of the deleted group.
+
+---
+
+#### `childGroup(childGroupName: string)`
+
+Returns a handle for managing a child group.
+
+```typescript
+public childGroup(childGroupName: string)
+```
+
+- **Parameters**:
+  - `childGroupName`: The name of the child group.
+- **Returns**: An instance of `ChildGroupHandle`.
+
+---
+
+### Types
+
+#### `GroupInputData`
+
+The input data type for creating or updating a group.
+
+```typescript
+export type GroupInputData = Omit<GroupRepresentation, 'name | id'>;
+```
+
+---
+
+This API provides a comprehensive interface for managing Keycloak groups and their child groups within a specific realm.
