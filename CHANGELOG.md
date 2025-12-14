@@ -1,3 +1,8 @@
+## [0.5.0](https://github.com/egose/keycloak-fluent/compare/v0.4.0...v0.5.0) (2025-12-14)
+
+### Features
+
+* add docsaurus static documentation ([becfcc3](https://github.com/egose/keycloak-fluent/commit/becfcc3ae2f66bd9e8427ac8a7354cdf96117bd5))
 ## [0.4.0](https://github.com/egose/keycloak-fluent/compare/v0.3.0...v0.4.0) (2025-12-10)
 
 ### Features
