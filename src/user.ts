@@ -2,8 +2,9 @@ import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
-import { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
+import RoleRepresentation, { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import RealmHandle from './realm';
+import RoleHandle from './role';
 import ClientHandle from './clients/client';
 import ClientRoleHandle from './client-role';
 import { AbstractGroupHandle } from './groups/abstract-group';
@@ -155,6 +156,40 @@ export default class UserHandle {
         type: 'password',
         value: password,
       },
+    });
+  }
+
+  public async assignRole(roleHandle: RoleHandle) {
+    let role: RoleRepresentation | null = roleHandle.role ?? null;
+    if (!role) {
+      role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
+    }
+
+    if (!role) {
+      throw new Error(`Role "${roleHandle.roleName}" not found in realm "${this.realmName}"`);
+    }
+
+    await this.core.users.addRealmRoleMappings({
+      realm: this.realmName,
+      id: this.user?.id!,
+      roles: [role] as never as RoleMappingPayload[],
+    });
+  }
+
+  public async unassignRole(roleHandle: RoleHandle) {
+    let role: RoleRepresentation | null = roleHandle.role ?? null;
+    if (!role) {
+      role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
+    }
+
+    if (!role) {
+      throw new Error(`Role "${roleHandle.roleName}" not found in realm "${this.realmName}"`);
+    }
+
+    await this.core.users.delRealmRoleMappings({
+      realm: this.realmName,
+      id: this.user?.id!,
+      roles: [role] as never as RoleMappingPayload[],
     });
   }
 

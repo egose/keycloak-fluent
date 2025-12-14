@@ -101,6 +101,34 @@ public async discard()
 
 ---
 
+#### `assignRole(roleHandle: RoleHandle)`
+
+Assigns a realm role to the user.
+
+```typescript
+public async assignRole(roleHandle: RoleHandle)
+```
+
+- **Parameters**:
+  - `roleHandle`: A handle to the realm role to assign.
+- **Throws**: An error if the role does not exist.
+
+---
+
+#### `unassignRole(roleHandle: RoleHandle)`
+
+Unassigns a realm role from the user.
+
+```typescript
+public async unassignRole(roleHandle: RoleHandle)
+```
+
+- **Parameters**:
+  - `roleHandle`: A handle to the realm role to unassign.
+- **Throws**: An error if the role does not exist.
+
+---
+
 #### `assignClientRole(clientRoleHandle: ClientRoleHandle)`
 
 Assigns a client role to the user.

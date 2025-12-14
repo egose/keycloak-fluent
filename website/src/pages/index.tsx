@@ -15,7 +15,7 @@ function HomepageHeader() {
         <div>
           <Link
             className="inline-block px-6 py-3 bg-orange-800 !text-white text-base font-medium rounded-lg shadow hover:bg-orange-900 transition"
-            to="/fluent-api/philosophy/"
+            to="/about/philosophy/"
           >
             Documentation
           </Link>

@@ -67,9 +67,21 @@ const config: Config = {
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'fluentApi',
+          sidebarId: 'about',
           position: 'left',
-          label: 'Fluent API',
+          label: 'About',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'api',
+          position: 'left',
+          label: 'API',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'example',
+          position: 'left',
+          label: 'Examples',
         },
         // { to: '/blog', label: 'Blog', position: 'left' },
         {

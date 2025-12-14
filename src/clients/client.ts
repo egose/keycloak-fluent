@@ -2,6 +2,7 @@ import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import RealmHandle from '../realm';
 import ClientRoleHandle from '../client-role';
+import ProtocolMapperHandle from '../protocol-mappers/protocol-mapper';
 import UserAttributeProtocolMapperHandle from '../protocol-mappers/user-attribute-protocol-mapper';
 import HardcodedClaimProtocolMapperHandle from '../protocol-mappers/hardcoded-claim-protocol-mapper';
 import AudienceProtocolMapperHandle from '../protocol-mappers/audience-protocol-mapper';
@@ -131,6 +132,10 @@ export default class ClientHandle {
 
   public role(roleName: string) {
     return new ClientRoleHandle(this.core, this, roleName);
+  }
+
+  public protocolMapper(mapperName: string) {
+    return new ProtocolMapperHandle(this.core, this, mapperName);
   }
 
   public userAttributeProtocolMapper(mapperName: string) {

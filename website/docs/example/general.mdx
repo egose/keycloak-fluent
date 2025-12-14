@@ -1,0 +1,22 @@
+---
+sidebar_label: General
+sidebar_position: 0
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import CodeBlock from '@theme/CodeBlock';
+
+# General Example
+
+This example demonstrates a full end-to-end setup using `keycloak-fluent`. It shows how to authenticate against the master realm, create and configure a custom realm, and then provision common Keycloak resources such as users, roles, groups, clients, service accounts, and protocol mappers using a fluent, chainable API.
+
+The snippet is intentionally comprehensive to illustrate how different building blocks fit together in a real-world scenario. In practice, you would typically split this logic across smaller scripts or services depending on your provisioning needs.
+
+---
+
+```mdx-code-block
+import QuickStartBackend from '!!raw-loader!../../.samples/general.ts';
+
+<CodeBlock language="ts">{QuickStartBackend}</CodeBlock>
+```
