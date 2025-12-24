@@ -19,8 +19,11 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Setup NPM Packages
+        uses: ./.github/actions/setup-npm
+
       - name: Create Release Tag
-        uses: egose/actions/release-tag@e1d8d82f674a51abe3850a89349c231dd7513a68
+        uses: egose/actions/release-tag@5dfa6fc0c0153a43fb5a127047e724dee0f2ed07
         with:
           tag: ${{ github.event.inputs.tag }}
           ssh-key: ${{ secrets.SSH_KEY }}
