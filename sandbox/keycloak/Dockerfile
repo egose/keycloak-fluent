@@ -17,7 +17,7 @@ RUN ./mkcert localhost \
     && chmod 644 localhost-key.pem
 
 # ===== Stage 2: Keycloak with TLS certs =====
-FROM quay.io/keycloak/keycloak:26.4.1
+FROM quay.io/keycloak/keycloak:26.4.7
 
 # Copy certs from build stage
 COPY --from=build /opt/mkcert/localhost.pem /opt/keycloak/conf/server.crt.pem
