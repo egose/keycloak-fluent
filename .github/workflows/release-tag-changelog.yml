@@ -19,7 +19,12 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+      - name: Checkout Repository
+        uses: actions/checkout@v6.0.1
+        with:
+          ssh-key: ${{ secrets.SSH_KEY }}
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Setup Tools
         uses: ./.github/actions/setup-tools
@@ -28,8 +33,7 @@ jobs:
         uses: ./.github/actions/setup-npm
 
       - name: Create Release Tag
-        uses: egose/actions/release-tag@5dfa6fc0c0153a43fb5a127047e724dee0f2ed07
+        uses: egose/actions/release-tag@0425e57961cb8700a4e8b75d81245956b7dc778d
         with:
           tag: ${{ github.event.inputs.tag }}
-          ssh-key: ${{ secrets.SSH_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
