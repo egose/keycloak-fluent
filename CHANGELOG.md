@@ -1,3 +1,4 @@
+## [0.5.1](https://github.com/egose/keycloak-fluent/compare/v0.5.0...v0.5.1) (2025-12-24)
 ## [0.5.0](https://github.com/egose/keycloak-fluent/compare/v0.4.0...v0.5.0) (2025-12-14)
 
 ### Features

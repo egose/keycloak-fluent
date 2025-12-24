@@ -1,6 +1,6 @@
 {
   "name": "@egose/keycloak-fluent",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A fluent TypeScript wrapper for the Keycloak Admin API that lets developers manage Keycloak resources through a readable, chainable DSL. It ensures entities exist with desired properties, supports updates and removals, and abstracts away low-level REST complexity.",
   "keywords": [
     "keycloak",
