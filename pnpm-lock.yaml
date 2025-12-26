@@ -32,7 +32,7 @@ importers:
         version: 9.39.2
       '@release-it/bumper':
         specifier: ^7.0.5
-        version: 7.0.5(release-it@19.2.1(@types/node@24.10.4))
+        version: 7.0.5(release-it@19.2.2(@types/node@24.10.4))
       '@types/eslint-config-prettier':
         specifier: ^6.11.3
         version: 6.11.3
@@ -74,7 +74,7 @@ importers:
         version: 4.0.0-alpha.13
       release-it:
         specifier: ^19.0.6
-        version: 19.2.1(@types/node@24.10.4)
+        version: 19.2.2(@types/node@24.10.4)
       rimraf:
         specifier: ^6.1.2
         version: 6.1.2
@@ -3018,8 +3018,8 @@ packages:
     resolution: {integrity: sha512-9u/XQ1pvrQtYyMpZe7DXKv2p5CNvyVwzUB6uhLAnQwHMSgKMBR62lc7AHljaeteeHXn11XTAaLLUVZYVZyuRBQ==}
     engines: {node: '>= 20.19.0'}
 
-  release-it@19.2.1:
-    resolution: {integrity: sha512-Tu9kZKtCJkrLG6nD0OLbVdVP8wHgpQBpRvtZQmdEgGHDwg0FiiHmdnnPskTQllPWJFMtpHo3O7MHtr8/AWEFbA==}
+  release-it@19.2.2:
+    resolution: {integrity: sha512-57TBUTBbBXLJsPufYS+Hsb1dSZKZ0ktiYgPkNc3Pmlq/QQtH9X0oD0SG2ib5CsXHTI11m19pyK60NXmvtE6cLg==}
     engines: {node: ^20.12.0 || >=22.0.0}
     hasBin: true
 
@@ -4452,7 +4452,7 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@release-it/bumper@7.0.5(release-it@19.2.1(@types/node@24.10.4))':
+  '@release-it/bumper@7.0.5(release-it@19.2.2(@types/node@24.10.4))':
     dependencies:
       '@iarna/toml': 3.0.0
       cheerio: 1.1.2
@@ -4461,7 +4461,7 @@ snapshots:
       ini: 5.0.0
       js-yaml: 4.1.1
       lodash-es: 4.17.22
-      release-it: 19.2.1(@types/node@24.10.4)
+      release-it: 19.2.2(@types/node@24.10.4)
       semver: 7.7.3
 
   '@rollup/rollup-android-arm-eabi@4.53.3':
@@ -6717,7 +6717,7 @@ snapshots:
 
   readdirp@5.0.0: {}
 
-  release-it@19.2.1(@types/node@24.10.4):
+  release-it@19.2.2(@types/node@24.10.4):
     dependencies:
       '@nodeutils/defaults-deep': 1.1.0
       '@octokit/rest': 22.0.1
