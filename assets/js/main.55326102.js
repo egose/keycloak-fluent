@@ -20937,7 +20937,7 @@ __webpack_require__.r(__webpack_exports__);
     "footer": {
       "style": "dark",
       "links": [],
-      "copyright": "Copyright © 2025 Egose. Built with Docusaurus."
+      "copyright": "Copyright © 2026 Egose. Built with Docusaurus."
     },
     "prism": {
       "theme": {
