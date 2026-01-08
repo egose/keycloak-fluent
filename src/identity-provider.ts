@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation';
 import RealmHandle from './realm';
@@ -31,13 +32,13 @@ export const defaultIdentityProviderData = Object.freeze({
     userInfoUrl: '',
     tokenIntrospectionUrl: '',
     issuer: '',
-    validateSignature: 'true',
-    pkceEnabled: 'false',
     clientAuthMethod: 'client_secret_post',
     clientId: '',
     clientSecret: '',
     clientAssertionSigningAlg: '',
-    useJwksUrl: 'true',
+    useJwksUrl: 'false',
+    validateSignature: 'false',
+    pkceEnabled: 'false',
     guiOrder: '',
   },
 });
@@ -47,6 +48,17 @@ export interface IdentityProviderRepresentationExt extends IdentityProviderRepre
 }
 
 export type IdentityProviderInputData = Omit<IdentityProviderRepresentationExt, 'alias'>;
+
+const getIdentityProviderDataDefaults = (data: Partial<IdentityProviderInputData>) => {
+  const merged: IdentityProviderInputData = _merge({}, defaultIdentityProviderData, data);
+  if (!merged.config) merged.config = {};
+
+  if (merged.config.jwksUrl !== '') {
+    merged.config.useJwksUrl = 'true';
+  }
+
+  return merged;
+};
 
 export default class IdentityProviderHandle {
   public core: KeycloakAdminClient;
@@ -80,8 +92,7 @@ export default class IdentityProviderHandle {
     }
 
     await this.core.identityProviders.create({
-      ...defaultIdentityProviderData,
-      ...data,
+      ...getIdentityProviderDataDefaults(data),
       realm: this.realmName,
       alias: this.alias,
     });
@@ -126,8 +137,7 @@ export default class IdentityProviderHandle {
       );
     } else {
       await this.core.identityProviders.create({
-        ...defaultIdentityProviderData,
-        ...data,
+        ...getIdentityProviderDataDefaults(data),
         realm: this.realmName,
         alias: this.alias,
       });
