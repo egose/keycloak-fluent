@@ -1,32 +1,30 @@
-import KeycloakAdminClientFluent from '../src/index';
+import { expect, test } from 'vitest';
+import { withEnsuredMasterRealm } from './test-utils';
 
 test('Identity Providers', async () => {
-  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcMaster.simpleAuth({
-    username: 'admin',
-    password: 'password', // pragma: allowlist secret
+  await withEnsuredMasterRealm('testidprealm', async ({ kcMaster, realm, realmHandle }) => {
+    const idpName = 'testidp';
+    const idpProviderId = 'keycloak-oidc';
+
+    const identityProviderHandle = await realmHandle.identityProvider(idpName).ensure({ providerId: idpProviderId });
+
+    expect(identityProviderHandle).toBeTruthy();
+    expect(identityProviderHandle?.realmName).toBe(realm);
+    expect(identityProviderHandle?.identityProvider?.alias).toBe(idpName);
+    expect(identityProviderHandle?.identityProvider?.providerId).toBe(idpProviderId);
+
+    const updatedIdentityProviderHandle = await kcMaster
+      .realm(realm)
+      .identityProvider(idpName)
+      .ensure({ providerId: idpProviderId });
+
+    expect(updatedIdentityProviderHandle).toBeTruthy();
+    expect(updatedIdentityProviderHandle?.realmName).toBe(realm);
+    expect(updatedIdentityProviderHandle?.identityProvider?.alias).toBe(idpName);
+    expect(updatedIdentityProviderHandle?.identityProvider?.providerId).toBe(idpProviderId);
+
+    const searchedIdentityProviders = await realmHandle.searchIdentityProviders(idpName.slice(1, -1));
+    expect(Array.isArray(searchedIdentityProviders)).toBe(true);
+    expect(searchedIdentityProviders.length).toBeGreaterThan(0);
   });
-
-  const realm = 'testidprealm';
-  const idpName = 'testidp';
-  const idpProviderId = 'keycloak-oidc';
-
-  const therealm = await kcMaster.realm(realm).ensure({});
-  const theidp = await therealm.identityProvider(idpName).ensure({ providerId: idpProviderId });
-
-  expect(theidp).toBeTruthy();
-  expect(theidp?.realmName).toBe(realm);
-  expect(theidp?.identityProvider?.alias).toBe(idpName);
-  expect(theidp?.identityProvider?.providerId).toBe(idpProviderId);
-
-  const theidp2 = await kcMaster.realm(realm).identityProvider(idpName).ensure({ providerId: idpProviderId });
-
-  expect(theidp2).toBeTruthy();
-  expect(theidp2?.realmName).toBe(realm);
-  expect(theidp2?.identityProvider?.alias).toBe(idpName);
-  expect(theidp2?.identityProvider?.providerId).toBe(idpProviderId);
-
-  const searchedGroups = await therealm.searchIdentityProviders(idpName.slice(1, -1));
-  expect(Array.isArray(searchedGroups)).toBe(true);
-  expect(searchedGroups.length).toBeGreaterThan(0);
 });

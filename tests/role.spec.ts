@@ -1,35 +1,30 @@
-import KeycloakAdminClientFluent from '../src/index';
+import { expect, test } from 'vitest';
+import { withEnsuredMasterRealm } from './test-utils';
 
 test('Roles', async () => {
-  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcMaster.simpleAuth({
-    username: 'admin',
-    password: 'password', // pragma: allowlist secret
+  await withEnsuredMasterRealm('testrolerealm', async ({ kcMaster, realm, realmHandle }) => {
+    const roleName = 'testrole';
+    const roleDisplayName = 'A role for testing purposes';
+
+    const roleHandle = await realmHandle.role(roleName).ensure({ description: roleDisplayName });
+
+    expect(roleHandle).toBeTruthy();
+    expect(roleHandle?.realmName).toBe(realm);
+    expect(roleHandle?.role?.name).toBe(roleName);
+    expect(roleHandle?.role?.description).toBe(roleDisplayName);
+
+    const updatedRoleHandle = await kcMaster
+      .realm(realm)
+      .role(roleName)
+      .ensure({ description: roleDisplayName + ' v2' });
+
+    expect(updatedRoleHandle).toBeTruthy();
+    expect(updatedRoleHandle?.realmName).toBe(realm);
+    expect(updatedRoleHandle?.role?.name).toBe(roleName);
+    expect(updatedRoleHandle?.role?.description).toBe(roleDisplayName + ' v2');
+
+    const searchedRoles = await realmHandle.searchRoles(roleName.slice(1, -1));
+    expect(Array.isArray(searchedRoles)).toBe(true);
+    expect(searchedRoles.length).toBeGreaterThan(0);
   });
-
-  const realm = 'testrolerealm';
-  const roleName = 'testrole';
-  const roleDisplayName = 'A role for testing purposes';
-
-  const therealm = await kcMaster.realm(realm).ensure({});
-  const therole = await therealm.role(roleName).ensure({ description: roleDisplayName });
-
-  expect(therole).toBeTruthy();
-  expect(therole?.realmName).toBe(realm);
-  expect(therole?.role?.name).toBe(roleName);
-  expect(therole?.role?.description).toBe(roleDisplayName);
-
-  const therole2 = await kcMaster
-    .realm(realm)
-    .role(roleName)
-    .ensure({ description: roleDisplayName + ' v2' });
-
-  expect(therole2).toBeTruthy();
-  expect(therole2?.realmName).toBe(realm);
-  expect(therole2?.role?.name).toBe(roleName);
-  expect(therole2?.role?.description).toBe(roleDisplayName + ' v2');
-
-  const searchedRoles = await therealm.searchRoles(roleName.slice(1, -1));
-  expect(Array.isArray(searchedRoles)).toBe(true);
-  expect(searchedRoles.length).toBeGreaterThan(0);
 });

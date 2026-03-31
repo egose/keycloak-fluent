@@ -1,48 +1,45 @@
-import KeycloakAdminClientFluent from '../src/index';
+import { expect, test } from 'vitest';
+import { withEnsuredMasterRealm } from './test-utils';
 
 test('Protocol Mappers', async () => {
-  const kcMaster = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName: 'master' });
-  await kcMaster.simpleAuth({
-    username: 'admin',
-    password: 'password', // pragma: allowlist secret
+  await withEnsuredMasterRealm('testprotocolmapperrealm', async ({ realm, realmHandle }) => {
+    const clientId = 'testprotocolmapperclient';
+
+    const clientHandle = await realmHandle.client(clientId).ensure({});
+
+    const userattributemapperName = 'testuserattributemapper';
+    const userAttributeMapperHandle = await clientHandle
+      .userAttributeProtocolMapper(userattributemapperName)
+      .ensure({ userAttribute: 'username', claimName: 'UzerName' });
+
+    expect(userAttributeMapperHandle).toBeTruthy();
+    expect(userAttributeMapperHandle?.realmName).toBe(realm);
+    expect(userAttributeMapperHandle?.client.clientId).toBe(clientId);
+    expect(userAttributeMapperHandle?.clientProtocolMapper?.name).toBe(userattributemapperName);
+    expect(userAttributeMapperHandle?.clientProtocolMapper?.config?.['user.attribute']).toBe('username');
+    expect(userAttributeMapperHandle?.clientProtocolMapper?.config?.['claim.name']).toBe('UzerName');
+
+    const hardcodedclaimmappername = 'testhardcodedclaimmapper';
+    const hardcodedClaimMapperHandle = await clientHandle
+      .hardcodedClaimProtocolMapper(hardcodedclaimmappername)
+      .ensure({ claimName: 'mygroup', claimValue: 'fluent' });
+
+    expect(hardcodedClaimMapperHandle).toBeTruthy();
+    expect(hardcodedClaimMapperHandle?.realmName).toBe(realm);
+    expect(hardcodedClaimMapperHandle?.client.clientId).toBe(clientId);
+    expect(hardcodedClaimMapperHandle?.clientProtocolMapper?.name).toBe(hardcodedclaimmappername);
+    expect(hardcodedClaimMapperHandle?.clientProtocolMapper?.config?.['claim.name']).toBe('mygroup');
+    expect(hardcodedClaimMapperHandle?.clientProtocolMapper?.config?.['claim.value']).toBe('fluent');
+
+    const audienceMappername = 'testaudiencemapper';
+    const audienceMapperHandle = await clientHandle
+      .audienceProtocolMapper(audienceMappername)
+      .ensure({ audience: 'myaudience' });
+
+    expect(audienceMapperHandle).toBeTruthy();
+    expect(audienceMapperHandle?.realmName).toBe(realm);
+    expect(audienceMapperHandle?.client.clientId).toBe(clientId);
+    expect(audienceMapperHandle?.clientProtocolMapper?.name).toBe(audienceMappername);
+    expect(audienceMapperHandle?.clientProtocolMapper?.config?.['included.custom.audience']).toBe('myaudience');
   });
-
-  const realm = 'testprotocolmapperrealm';
-  const clientId = 'testprotocolmapperclient';
-
-  const therealm = await kcMaster.realm(realm).ensure({});
-  const theclient = await therealm.client(clientId).ensure({});
-
-  const userattributemapperName = 'testuserattributemapper';
-  const userattributemapper = await theclient
-    .userAttributeProtocolMapper(userattributemapperName)
-    .ensure({ userAttribute: 'username', claimName: 'UzerName' });
-
-  expect(userattributemapper).toBeTruthy();
-  expect(userattributemapper?.realmName).toBe(realm);
-  expect(userattributemapper?.client.clientId).toBe(clientId);
-  expect(userattributemapper?.clientProtocolMapper?.name).toBe(userattributemapperName);
-  expect(userattributemapper?.clientProtocolMapper?.config?.['user.attribute']).toBe('username');
-  expect(userattributemapper?.clientProtocolMapper?.config?.['claim.name']).toBe('UzerName');
-
-  const hardcodedclaimmappername = 'testhardcodedclaimmapper';
-  const hardcodedclaimmapper = await theclient
-    .hardcodedClaimProtocolMapper(hardcodedclaimmappername)
-    .ensure({ claimName: 'mygroup', claimValue: 'fluent' });
-
-  expect(hardcodedclaimmapper).toBeTruthy();
-  expect(hardcodedclaimmapper?.realmName).toBe(realm);
-  expect(hardcodedclaimmapper?.client.clientId).toBe(clientId);
-  expect(hardcodedclaimmapper?.clientProtocolMapper?.name).toBe(hardcodedclaimmappername);
-  expect(hardcodedclaimmapper?.clientProtocolMapper?.config?.['claim.name']).toBe('mygroup');
-  expect(hardcodedclaimmapper?.clientProtocolMapper?.config?.['claim.value']).toBe('fluent');
-
-  const audienceMappername = 'testaudiencemapper';
-  const audienceMapper = await theclient.audienceProtocolMapper(audienceMappername).ensure({ audience: 'myaudience' });
-
-  expect(audienceMapper).toBeTruthy();
-  expect(audienceMapper?.realmName).toBe(realm);
-  expect(audienceMapper?.client.clientId).toBe(clientId);
-  expect(audienceMapper?.clientProtocolMapper?.name).toBe(audienceMappername);
-  expect(audienceMapper?.clientProtocolMapper?.config?.['included.custom.audience']).toBe('myaudience');
 });
