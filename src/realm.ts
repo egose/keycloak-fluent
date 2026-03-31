@@ -1,11 +1,36 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
+import type AdminEventRepresentation from '@keycloak/keycloak-admin-client/lib/defs/adminEventRepresentation';
+import type EventRepresentation from '@keycloak/keycloak-admin-client/lib/defs/eventRepresentation';
+import type EventType from '@keycloak/keycloak-admin-client/lib/defs/eventTypes';
+import type { RealmEventsConfigRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/realmEventsConfigRepresentation';
 import RealmRepresentation from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
 import ClientHandle from './clients/client';
 import ClientScopeHandle from './client-scope';
+import AuthenticationFlowHandle from './authentication-flow';
 import RoleHandle from './role';
 import GroupHandle from './groups/group';
 import UserHandle from './user';
 import IdentityProviderHandle from './identity-provider';
+
+function isTransientAdminError(error: unknown) {
+  return error instanceof Error && error.message.includes('unknown_error');
+}
+
+async function retryTransientAdminError<T>(operation: () => Promise<T>, attempts = 3) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!isTransientAdminError(error) || attempt === attempts - 1) {
+        throw error;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    }
+  }
+
+  throw new Error('Unreachable');
+}
 import ConfidentialBrowserLoginClientHandle from './clients/confidential-browser-login-client';
 import PublicBrowserLoginClientHandle from './clients/public-browser-login-client';
 import ServiceAccountHandle from './clients/service-account';
@@ -16,6 +41,30 @@ export const defaultRealmData = Object.freeze({
 });
 
 export type RealmInputData = Omit<RealmRepresentation, 'realm'>;
+export type RealmEventsConfigInputData = RealmEventsConfigRepresentation;
+export type RealmEventsQuery = {
+  client?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  ipAddress?: string;
+  page?: number;
+  pageSize?: number;
+  type?: EventType | EventType[];
+  user?: string;
+};
+export type RealmAdminEventsQuery = {
+  authClient?: string;
+  authIpAddress?: string;
+  authRealm?: string;
+  authUser?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  operationTypes?: string;
+  page?: number;
+  pageSize?: number;
+  resourcePath?: string;
+  resourceTypes?: string;
+};
 
 function getPaginationParams(options?: { page?: number; pageSize?: number }) {
   const page = Math.max(1, options?.page ?? 1);
@@ -39,7 +88,7 @@ export default class RealmHandle {
   }
 
   public async get(): Promise<RealmRepresentation | null> {
-    const one = await this.core.realms.findOne({ realm: this.realmName });
+    const one = await retryTransientAdminError(() => this.core.realms.findOne({ realm: this.realmName }));
     this.realm = one ?? null;
 
     if (this.realm?.realm) {
@@ -99,6 +148,62 @@ export default class RealmHandle {
     }
 
     return this.realmName;
+  }
+
+  public async getEventsConfig(): Promise<RealmEventsConfigRepresentation> {
+    return retryTransientAdminError(() => this.core.realms.getConfigEvents({ realm: this.realmName }));
+  }
+
+  public async updateEventsConfig(data: RealmEventsConfigInputData) {
+    await retryTransientAdminError(() => this.core.realms.updateConfigEvents({ realm: this.realmName }, data));
+    return this.getEventsConfig();
+  }
+
+  public async findEvents(query?: RealmEventsQuery): Promise<EventRepresentation[]> {
+    const { first, max } = getPaginationParams(query);
+
+    return retryTransientAdminError(() =>
+      this.core.realms.findEvents({
+        realm: this.realmName,
+        client: query?.client,
+        dateFrom: query?.dateFrom,
+        dateTo: query?.dateTo,
+        first,
+        ipAddress: query?.ipAddress,
+        max,
+        type: query?.type,
+        user: query?.user,
+      }),
+    );
+  }
+
+  public async clearEvents() {
+    await retryTransientAdminError(() => this.core.realms.clearEvents({ realm: this.realmName }));
+  }
+
+  public async findAdminEvents(query?: RealmAdminEventsQuery): Promise<AdminEventRepresentation[]> {
+    const { first, max } = getPaginationParams(query);
+
+    return retryTransientAdminError(() =>
+      this.core.realms.findAdminEvents({
+        realm: this.realmName,
+        authClient: query?.authClient,
+        authIpAddress: query?.authIpAddress,
+        authRealm: query?.authRealm,
+        authUser: query?.authUser,
+        dateFrom: query?.dateFrom,
+        dateTo: query?.dateTo,
+        first,
+        max,
+        operationTypes: query?.operationTypes,
+        resourcePath: query?.resourcePath,
+        resourceTypes: query?.resourceTypes,
+      }),
+    );
+  }
+
+  public async clearAdminEvents() {
+    await retryTransientAdminError(() => this.core.realms.clearAdminEvents({ realm: this.realmName }));
   }
 
   public async searchClients(keyword: string, options?: { page?: number; pageSize?: number }) {
@@ -190,8 +295,25 @@ export default class RealmHandle {
     });
   }
 
+  public async searchAuthenticationFlows(keyword: string) {
+    const flows = await retryTransientAdminError(() =>
+      this.core.authenticationManagement.getFlows({ realm: this.realmName }),
+    );
+    const lowerkeyword = keyword.toLocaleLowerCase();
+
+    return flows.filter((item) => {
+      if (!item.alias) return false;
+
+      return item.alias.toLocaleLowerCase().includes(lowerkeyword);
+    });
+  }
+
   public client(clientId: string) {
     return new ClientHandle(this.core, this, clientId);
+  }
+
+  public authenticationFlow(alias: string) {
+    return new AuthenticationFlowHandle(this.core, this, alias);
   }
 
   public clientScope(scopeName: string) {

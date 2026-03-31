@@ -42,10 +42,22 @@ export default class GroupHandle extends AbstractGroupHandle {
     return one ?? null;
   }
 
-  static async getByName(core: KeycloakAdminClient, realm: string, groupName: string) {
-    const groups = await core.groups.find({ realm, search: groupName, exact: true });
-    const group = groups.find((v) => v.name === groupName);
-    return group ?? null;
+  static async getByName(core: KeycloakAdminClient, realm: string, groupName: string, attempts = 3) {
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        const groups = await core.groups.find({ realm, search: groupName, exact: true });
+        const group = groups.find((v) => v.name === groupName);
+        return group ?? null;
+      } catch (error) {
+        if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
+          throw error;
+        }
+
+        await sleep(50 * (attempt + 1));
+      }
+    }
+
+    return null;
   }
 
   static async listSubGroups(core: KeycloakAdminClient, realm: string, parentId: string, attempts = 3) {

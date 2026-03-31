@@ -1,6 +1,30 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientScopeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientScopeRepresentation';
 import RealmHandle from './realm';
+import ClientScopeProtocolMapperHandle from './protocol-mappers/client-scope-protocol-mapper';
+import ClientScopeUserAttributeProtocolMapperHandle from './protocol-mappers/client-scope-user-attribute-protocol-mapper';
+import ClientScopeHardcodedClaimProtocolMapperHandle from './protocol-mappers/client-scope-hardcoded-claim-protocol-mapper';
+import ClientScopeAudienceProtocolMapperHandle from './protocol-mappers/client-scope-audience-protocol-mapper';
+
+function isTransientAdminError(error: unknown) {
+  return error instanceof Error && error.message.includes('unknown_error');
+}
+
+async function retryTransientAdminError<T>(operation: () => Promise<T>, attempts = 3) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!isTransientAdminError(error) || attempt === attempts - 1) {
+        throw error;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    }
+  }
+
+  throw new Error('Unreachable');
+}
 
 export type ClientScopeType = 'none' | 'default' | 'optional';
 export type ClientScopeProtocol = 'openid-connect' | 'saml';
@@ -39,7 +63,7 @@ export default class ClientScopeHandle {
   }
 
   public async getById(id: string) {
-    const one = await this.core.clientScopes.findOne({ realm: this.realmName, id });
+    const one = await retryTransientAdminError(() => this.core.clientScopes.findOne({ realm: this.realmName, id }));
     this.clientScope = one ?? null;
 
     if (this.clientScope) {
@@ -50,7 +74,7 @@ export default class ClientScopeHandle {
   }
 
   public async get(): Promise<ClientScopeRepresentation | null> {
-    const all = await this.core.clientScopes.find({ realm: this.realmName });
+    const all = await retryTransientAdminError(() => this.core.clientScopes.find({ realm: this.realmName }));
     this.clientScope = all.find((c) => c.name === this.scopeName) ?? null;
 
     if (this.clientScope) {
@@ -65,7 +89,9 @@ export default class ClientScopeHandle {
       throw new Error(`Client Scope "${this.scopeName}" already exists in realm "${this.realmName}"`);
     }
 
-    await this.core.clientScopes.create({ ...defaultScopeData, ...data, realm: this.realmName, name: this.scopeName });
+    await retryTransientAdminError(() =>
+      this.core.clientScopes.create({ ...defaultScopeData, ...data, realm: this.realmName, name: this.scopeName }),
+    );
     return this.get();
   }
 
@@ -75,9 +101,11 @@ export default class ClientScopeHandle {
       throw new Error(`Client Scope "${this.scopeName}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.clientScopes.update(
-      { realm: this.realmName, id: one.id },
-      { ...defaultScopeData, ...data, name: this.scopeName },
+    await retryTransientAdminError(() =>
+      this.core.clientScopes.update(
+        { realm: this.realmName, id: one.id },
+        { ...defaultScopeData, ...data, name: this.scopeName },
+      ),
     );
 
     return this.get();
@@ -89,7 +117,7 @@ export default class ClientScopeHandle {
       throw new Error(`Client Scope "${this.scopeName}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.clientScopes.del({ realm: this.realmName, id: one.id });
+    await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: one.id }));
     this.clientScope = null;
     return this.scopeName;
   }
@@ -100,17 +128,21 @@ export default class ClientScopeHandle {
     const one = await this.get();
 
     if (one?.id) {
-      await this.core.clientScopes.update(
-        { realm: this.realmName, id: one.id },
-        { ...defaultScopeData, ...data, name: this.scopeName },
+      await retryTransientAdminError(() =>
+        this.core.clientScopes.update(
+          { realm: this.realmName, id: one.id },
+          { ...defaultScopeData, ...data, name: this.scopeName },
+        ),
       );
     } else {
-      await this.core.clientScopes.create({
-        ...defaultScopeData,
-        ...data,
-        realm: this.realmName,
-        name: this.scopeName,
-      });
+      await retryTransientAdminError(() =>
+        this.core.clientScopes.create({
+          ...defaultScopeData,
+          ...data,
+          realm: this.realmName,
+          name: this.scopeName,
+        }),
+      );
     }
 
     await this.get();
@@ -120,10 +152,26 @@ export default class ClientScopeHandle {
   public async discard() {
     const one = await this.get();
     if (one?.id) {
-      await this.core.clientScopes.del({ realm: this.realmName, id: one.id });
+      await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: one.id }));
       this.clientScope = null;
     }
 
     return this.scopeName;
+  }
+
+  public protocolMapper(mapperName: string) {
+    return new ClientScopeProtocolMapperHandle(this.core, this, mapperName);
+  }
+
+  public userAttributeProtocolMapper(mapperName: string) {
+    return new ClientScopeUserAttributeProtocolMapperHandle(this.core, this, mapperName);
+  }
+
+  public hardcodedClaimProtocolMapper(mapperName: string) {
+    return new ClientScopeHardcodedClaimProtocolMapperHandle(this.core, this, mapperName);
+  }
+
+  public audienceProtocolMapper(mapperName: string) {
+    return new ClientScopeAudienceProtocolMapperHandle(this.core, this, mapperName);
   }
 }

@@ -2,6 +2,7 @@ import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation';
 import RealmHandle from './realm';
+import IdentityProviderMapperHandle from './identity-provider-mapper';
 
 export type IdentityProviderProviderId =
   | 'saml'
@@ -73,6 +74,15 @@ export default class IdentityProviderHandle {
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
     this.alias = alias;
+  }
+
+  private async requireIdentityProvider(): Promise<IdentityProviderRepresentation & { alias: string }> {
+    const identityProvider = this.identityProvider ?? (await this.get());
+    if (!identityProvider?.alias) {
+      throw new Error(`Identity Provider "${this.alias}" not found in realm "${this.realmName}"`);
+    }
+
+    return identityProvider as IdentityProviderRepresentation & { alias: string };
   }
 
   public async get(): Promise<IdentityProviderRepresentation | null> {
@@ -158,5 +168,27 @@ export default class IdentityProviderHandle {
     }
 
     return this.alias;
+  }
+
+  public async listMappers() {
+    const identityProvider = await this.requireIdentityProvider();
+
+    return this.core.identityProviders.findMappers({
+      realm: this.realmName,
+      alias: identityProvider.alias,
+    });
+  }
+
+  public async listMapperTypes() {
+    const identityProvider = await this.requireIdentityProvider();
+
+    return this.core.identityProviders.findMapperTypes({
+      realm: this.realmName,
+      alias: identityProvider.alias,
+    });
+  }
+
+  public mapper(mapperName: string) {
+    return new IdentityProviderMapperHandle(this.core, this, mapperName);
   }
 }
