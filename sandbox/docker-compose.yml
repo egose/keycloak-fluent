@@ -1,7 +1,7 @@
 services:
   postgres:
     platform: linux/amd64
-    container_name: postgres
+    container_name: kc_fluent_postgres
     image: postgres:18.1-alpine3.22
     environment:
       POSTGRES_USER: postgres
@@ -19,7 +19,7 @@ services:
       - ./initdb:/docker-entrypoint-initdb.d
   keycloak:
     platform: linux/amd64
-    container_name: keycloak
+    container_name: kc_fluent_keycloak
     build:
       context: ./keycloak
       dockerfile: Dockerfile
