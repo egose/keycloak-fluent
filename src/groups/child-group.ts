@@ -21,7 +21,7 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
     const group = await GroupHandle.getByName(core, realm, parentGroupName);
     if (!group) return null;
 
-    const subGroups = await core.groups.listSubGroups({ realm, parentId: group.id! });
+    const subGroups = await GroupHandle.listSubGroups(core, realm, group.id!);
     const subgroup = subGroups.find((v) => v.name === groupName);
     return subgroup ?? null;
   }
@@ -64,7 +64,7 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
       },
     );
 
-    return this.get();
+    return this.getWithRetry();
   }
 
   public async update(data: ChildGroupInputData) {
@@ -120,6 +120,9 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
           name: this.groupName,
         },
       );
+
+      await this.getWithRetry();
+      return this;
     }
 
     await this.get();

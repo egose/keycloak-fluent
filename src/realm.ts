@@ -17,6 +17,16 @@ export const defaultRealmData = Object.freeze({
 
 export type RealmInputData = Omit<RealmRepresentation, 'realm'>;
 
+function getPaginationParams(options?: { page?: number; pageSize?: number }) {
+  const page = Math.max(1, options?.page ?? 1);
+  const pageSize = Math.max(1, options?.pageSize ?? 100);
+
+  return {
+    first: (page - 1) * pageSize,
+    max: pageSize,
+  };
+}
+
 export default class RealmHandle {
   public core: KeycloakAdminClient;
   public realmName: string;
@@ -92,11 +102,11 @@ export default class RealmHandle {
   }
 
   public async searchClients(keyword: string, options?: { page?: number; pageSize?: number }) {
-    const { page = 1, pageSize = 100 } = options ?? {};
+    const { first, max } = getPaginationParams(options);
     const result = await this.core.clients.find({
       realm: this.realmName,
-      first: page - 1,
-      max: pageSize,
+      first,
+      max,
       clientId: keyword,
       search: true,
     });
@@ -119,12 +129,12 @@ export default class RealmHandle {
   }
 
   public async searchRoles(keyword: string, options?: { page?: number; pageSize?: number }) {
-    const { page = 1, pageSize = 100 } = options ?? {};
+    const { first, max } = getPaginationParams(options);
 
     const result = await this.core.roles.find({
       realm: this.realmName,
-      first: page - 1,
-      max: pageSize,
+      first,
+      max,
       search: keyword,
       briefRepresentation: false,
     });
@@ -133,12 +143,12 @@ export default class RealmHandle {
   }
 
   public async searchGroups(keyword: string, options?: { page?: number; pageSize?: number }) {
-    const { page = 1, pageSize = 100 } = options ?? {};
+    const { first, max } = getPaginationParams(options);
 
     const result = await this.core.groups.find({
       realm: this.realmName,
-      first: page - 1,
-      max: pageSize,
+      first,
+      max,
       search: keyword,
       exact: false,
       briefRepresentation: false,
@@ -151,12 +161,13 @@ export default class RealmHandle {
     keyword: string,
     options?: { page?: number; pageSize?: number; attribute?: 'username' | 'firstName' | 'lastName' | 'email' },
   ) {
-    const { page = 1, pageSize = 100, attribute = 'username' } = options ?? {};
+    const { attribute = 'username' } = options ?? {};
+    const { first, max } = getPaginationParams(options);
 
     const result = await this.core.users.find({
       realm: this.realmName,
-      first: page - 1,
-      max: pageSize,
+      first,
+      max,
       q: `${attribute}:${keyword}`,
       exact: false,
       briefRepresentation: false,

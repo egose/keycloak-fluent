@@ -10,7 +10,7 @@ export default class ClientRoleHandle {
   public realmName: string;
   public clientHandle: ClientHandle;
   public clientId: string;
-  public client: ClientRepresentation;
+  public client?: ClientRepresentation | null;
   public roleName: string;
   public role?: RoleRepresentation | null;
   public roleData?: ClientRoleInputData;
@@ -19,25 +19,39 @@ export default class ClientRoleHandle {
     this.core = core;
     this.clientHandle = clientHandle;
     this.clientId = clientHandle.clientId;
-    this.client = clientHandle.client!;
+    this.client = clientHandle.client ?? null;
     this.realmName = clientHandle.realmName;
     this.roleName = roleName;
   }
 
-  private get query() {
+  private getQuery(client: ClientRepresentation) {
     return {
       realm: this.realmName,
-      id: this.client.id!,
+      id: client.id!,
       roleName: this.roleName,
     };
   }
 
-  private get data() {
+  private getData(client: ClientRepresentation) {
     return {
       realm: this.realmName,
-      id: this.client.id!,
+      id: client.id!,
       name: this.roleName,
     };
+  }
+
+  private async resolveClient() {
+    if (this.client?.id) {
+      return this.client;
+    }
+
+    const client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
+    if (!client) {
+      throw new Error(`Client "${this.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    this.client = client;
+    return client;
   }
 
   static async getByName(
@@ -57,7 +71,8 @@ export default class ClientRoleHandle {
   }
 
   public async get(): Promise<RoleRepresentation | null> {
-    this.role = await ClientRoleHandle.getByName(this.core, this.realmName, this.clientId, this.roleName, this.client);
+    const client = await this.resolveClient();
+    this.role = await ClientRoleHandle.getByName(this.core, this.realmName, this.clientId, this.roleName, client);
 
     if (this.role) {
       this.roleName = this.role.name!;
@@ -67,31 +82,35 @@ export default class ClientRoleHandle {
   }
 
   public async create(data: ClientRoleInputData) {
+    const client = await this.resolveClient();
+
     if (await this.get()) {
-      throw new Error(`Role "${this.roleName}" already exists in client "${this.client.clientId}"`);
+      throw new Error(`Role "${this.roleName}" already exists in client "${client.clientId}"`);
     }
 
-    await this.core.clients.createRole({ ...data, ...this.data });
+    await this.core.clients.createRole({ ...data, ...this.getData(client) });
     return this.get();
   }
 
   public async update(data: ClientRoleInputData) {
+    const client = await this.resolveClient();
     const one = await this.get();
     if (!one?.id) {
-      throw new Error(`Role "${this.roleName}" not found in client "${this.client.clientId}"`);
+      throw new Error(`Role "${this.roleName}" not found in client "${client.clientId}"`);
     }
 
-    await this.core.clients.updateRole(this.query, { ...data, name: this.roleName });
+    await this.core.clients.updateRole(this.getQuery(client), { ...data, name: this.roleName });
     return this.get();
   }
 
   public async delete() {
+    const client = await this.resolveClient();
     const one = await this.get();
     if (!one?.id) {
-      throw new Error(`Role "${this.roleName}" not found in client "${this.client.clientId}"`);
+      throw new Error(`Role "${this.roleName}" not found in client "${client.clientId}"`);
     }
 
-    await this.core.clients.delRole(this.query);
+    await this.core.clients.delRole(this.getQuery(client));
 
     this.role = null;
     return this.roleName;
@@ -99,13 +118,14 @@ export default class ClientRoleHandle {
 
   public async ensure(data: ClientRoleInputData) {
     this.roleData = data;
+    const client = await this.resolveClient();
 
     const one = await this.get();
 
     if (one?.id) {
-      await this.core.clients.updateRole(this.query, { ...data, name: this.roleName });
+      await this.core.clients.updateRole(this.getQuery(client), { ...data, name: this.roleName });
     } else {
-      await this.core.clients.createRole({ ...data, ...this.data });
+      await this.core.clients.createRole({ ...data, ...this.getData(client) });
     }
 
     await this.get();
@@ -113,9 +133,10 @@ export default class ClientRoleHandle {
   }
 
   public async discard() {
+    const client = await this.resolveClient();
     const one = await this.get();
     if (one?.id) {
-      await this.core.clients.delRole(this.query);
+      await this.core.clients.delRole(this.getQuery(client));
       this.role = null;
     }
 
@@ -123,10 +144,7 @@ export default class ClientRoleHandle {
   }
 
   public async listAssignedUsers() {
-    const client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
-    if (!client) {
-      throw new Error(`Client "${this.clientId}" not found in realm "${this.realmName}"`);
-    }
+    const client = await this.resolveClient();
 
     const result = await this.core.clients.findUsersWithRole({
       realm: this.realmName,

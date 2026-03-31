@@ -53,7 +53,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
       },
     );
 
-    return this.get();
+    return this.getWithRetry();
   }
 
   public async update(data: NestedChildGroupInputData) {
@@ -109,6 +109,9 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
           name: this.groupName,
         },
       );
+
+      await this.getWithRetry();
+      return this;
     }
 
     await this.get();

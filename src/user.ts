@@ -159,7 +159,17 @@ export default class UserHandle {
     });
   }
 
+  private async requireUser(): Promise<UserRepresentation & { id: string }> {
+    const user = this.user ?? (await this.get());
+    if (!user?.id) {
+      throw new Error(`User "${this.username}" not found in realm "${this.realmName}"`);
+    }
+
+    return user as UserRepresentation & { id: string };
+  }
+
   public async assignRole(roleHandle: RoleHandle) {
+    const user = await this.requireUser();
     let role: RoleRepresentation | null = roleHandle.role ?? null;
     if (!role) {
       role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
@@ -171,12 +181,13 @@ export default class UserHandle {
 
     await this.core.users.addRealmRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       roles: [role] as never as RoleMappingPayload[],
     });
   }
 
   public async unassignRole(roleHandle: RoleHandle) {
+    const user = await this.requireUser();
     let role: RoleRepresentation | null = roleHandle.role ?? null;
     if (!role) {
       role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
@@ -188,12 +199,13 @@ export default class UserHandle {
 
     await this.core.users.delRealmRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       roles: [role] as never as RoleMappingPayload[],
     });
   }
 
   public async assignClientRole(clientRoleHandle: ClientRoleHandle) {
+    const user = await this.requireUser();
     let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
     if (!client) {
       client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
@@ -220,13 +232,14 @@ export default class UserHandle {
 
     await this.core.users.addClientRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       clientUniqueId: client.id!,
       roles: [clientRole] as never as RoleMappingPayload[],
     });
   }
 
   public async unassignClientRole(clientRoleHandle: ClientRoleHandle) {
+    const user = await this.requireUser();
     let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
     if (!client) {
       client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
@@ -253,13 +266,14 @@ export default class UserHandle {
 
     await this.core.users.delClientRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       clientUniqueId: client.id!,
       roles: [clientRole] as never as RoleMappingPayload[],
     });
   }
 
   public async listAssignedClientRoles(clientHandle: ClientHandle) {
+    const user = await this.requireUser();
     let client: ClientRepresentation | null = clientHandle.client ?? null;
     if (!client) {
       client = (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId)) ?? null;
@@ -271,7 +285,7 @@ export default class UserHandle {
 
     const result = await this.core.users.listClientRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       clientUniqueId: client.id!,
     });
 
@@ -279,6 +293,7 @@ export default class UserHandle {
   }
 
   public async assignGroup(groupHandle: AbstractGroupHandle) {
+    const user = await this.requireUser();
     let group: GroupRepresentation | null = groupHandle.group ?? null;
     if (!group) {
       group = (await groupHandle.get()) ?? null;
@@ -290,12 +305,13 @@ export default class UserHandle {
 
     await this.core.users.addToGroup({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       groupId: group.id!,
     });
   }
 
   public async unassignGroup(groupHandle: AbstractGroupHandle) {
+    const user = await this.requireUser();
     let group: GroupRepresentation | null = groupHandle.group ?? null;
     if (!group) {
       group = (await groupHandle.get()) ?? null;
@@ -307,12 +323,13 @@ export default class UserHandle {
 
     await this.core.users.delFromGroup({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       groupId: group.id!,
     });
   }
 
   public async listAssignedGroups() {
+    const user = await this.requireUser();
     const allGroups: GroupRepresentation[] = [];
     let first = 0;
     const max = 100;
@@ -320,7 +337,7 @@ export default class UserHandle {
     while (true) {
       const groups = await this.core.users.listGroups({
         realm: this.realmName,
-        id: this.user?.id!,
+        id: user.id,
         first,
         max,
         briefRepresentation: false,

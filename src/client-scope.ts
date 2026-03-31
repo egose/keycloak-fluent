@@ -62,7 +62,7 @@ export default class ClientScopeHandle {
 
   public async create(data: ClientScopeInputData) {
     if (await this.get()) {
-      throw new Error(`Client Scope "${this.clientScope}" already exists in realm "${this.realmName}"`);
+      throw new Error(`Client Scope "${this.scopeName}" already exists in realm "${this.realmName}"`);
     }
 
     await this.core.clientScopes.create({ ...defaultScopeData, ...data, realm: this.realmName, name: this.scopeName });

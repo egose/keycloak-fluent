@@ -17,6 +17,23 @@ export abstract class AbstractGroupHandle {
 
   public abstract get(): Promise<GroupRepresentation | null>;
 
+  protected async getWithRetry(attempts = 4, delayMs = 50): Promise<GroupRepresentation | null> {
+    let group: GroupRepresentation | null = null;
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      group = await this.get();
+      if (group) {
+        return group;
+      }
+
+      if (attempt < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)));
+      }
+    }
+
+    return group;
+  }
+
   public async listAssignedUsers() {
     const one = await this.get();
     if (!one?.id) {

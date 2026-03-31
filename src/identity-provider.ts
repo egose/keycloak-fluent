@@ -105,9 +105,11 @@ export default class IdentityProviderHandle {
       throw new Error(`Identity Provider "${this.alias}" not found in realm "${this.realmName}"`);
     }
 
+    const normalizedData = getIdentityProviderDataDefaults(data);
+
     await this.core.identityProviders.update(
       { realm: this.realmName, alias: one.alias },
-      { ...data, alias: this.alias },
+      { ...normalizedData, alias: this.alias },
     );
 
     return this.get();
@@ -127,17 +129,18 @@ export default class IdentityProviderHandle {
 
   public async ensure(data: IdentityProviderInputData) {
     this.identityProviderData = data;
+    const normalizedData = getIdentityProviderDataDefaults(data);
 
     const one = await this.get();
 
     if (one?.alias) {
       await this.core.identityProviders.update(
         { realm: this.realmName, alias: one.alias },
-        { ...data, alias: this.alias },
+        { ...normalizedData, alias: this.alias },
       );
     } else {
       await this.core.identityProviders.create({
-        ...getIdentityProviderDataDefaults(data),
+        ...normalizedData,
         realm: this.realmName,
         alias: this.alias,
       });

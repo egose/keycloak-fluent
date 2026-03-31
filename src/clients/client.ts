@@ -35,7 +35,7 @@ export default class ClientHandle {
   }
 
   public async getById(id: string) {
-    this.client = await ClientHandle.getById(this.core, this.realmName, this.clientId);
+    this.client = await ClientHandle.getById(this.core, this.realmName, id);
 
     if (this.client) {
       this.clientId = this.client.clientId!;
