@@ -7,7 +7,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default defineConfig(
   {
-    ignores: ['**/build/**', '**/dist/**', '**/node_modules/**'],
+    ignores: ['**/build/**', '**/dist/**', '**/node_modules/**', '**/website/.docusaurus/**'],
   },
   eslint.configs.recommended,
   tseslint.configs.recommended,
@@ -17,6 +17,8 @@ export default defineConfig(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       'no-undef': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      'preserve-caught-error': 'off',
     },
   },
 );

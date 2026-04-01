@@ -18,7 +18,7 @@ export default function Layout(props) {
 
     if (adElement && adElement.getAttribute('data-ad-status') !== 'filled') {
       try {
-        // @ts-ignore
+        // @ts-expect-error: adsbygoogle is not defined on the window object in standard types
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
         console.error('AdSense push error:', e);
