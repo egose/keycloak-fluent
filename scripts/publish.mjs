@@ -17,6 +17,27 @@ const writeJson = (dir, object) => {
   fse.writeFileSync(dir, Buffer.from(JSON.stringify(object, null, 2), 'utf-8'));
 };
 
+const rewritePublishPath = (value) => {
+  if (!_isString(value)) return value;
+  if (value === 'dist' || value === './dist') return './';
+  if (value.startsWith('./dist/')) return `./${value.slice('./dist/'.length)}`;
+  if (value.startsWith('dist/')) return `./${value.slice('dist/'.length)}`;
+
+  return value;
+};
+
+const rewritePublishValue = (value) => {
+  if (_isString(value)) return rewritePublishPath(value);
+  if (_isArray(value)) return value.map(rewritePublishValue);
+  if (_isPlainObject(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [key, rewritePublishValue(nestedValue)]),
+    );
+  }
+
+  return value;
+};
+
 async function main() {
   const originalPackageJSON = 'package.json';
   const targetPackageJSON = `${PUBLISH_DIR}/package.json`;
@@ -32,6 +53,7 @@ async function main() {
     'version',
     'description',
     'keywords',
+    'files',
     'homepage',
     'bugs',
     'license',
@@ -64,10 +86,11 @@ async function main() {
     const packageJSON = {
       ...packageData,
       name,
-      main: './index.cjs',
-      module: './index.js',
-      types: './index.d.ts',
-      exports: {
+      files: ['**/*', '!**/*.map'],
+      main: rewritePublishPath(packageData.main) || './index.cjs',
+      module: rewritePublishPath(packageData.module) || './index.js',
+      types: rewritePublishPath(packageData.types) || './index.d.ts',
+      exports: (_isPlainObject(packageData.exports) ? rewritePublishValue(packageData.exports) : undefined) || {
         '.': {
           require: './index.cjs',
           import: './index.js',
