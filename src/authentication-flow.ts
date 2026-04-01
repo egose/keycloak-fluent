@@ -1,6 +1,12 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import type AuthenticationExecutionInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticationExecutionInfoRepresentation';
+import type AuthenticatorConfigInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigInfoRepresentation';
+import type AuthenticatorConfigRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation';
+import type { AuthenticationProviderRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation';
 import type AuthenticationFlowRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticationFlowRepresentation';
+import type RequiredActionConfigInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/requiredActionConfigInfoRepresentation';
+import type RequiredActionConfigRepresentation from '@keycloak/keycloak-admin-client/lib/defs/requiredActionConfigRepresentation';
+import type RequiredActionProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/requiredActionProviderRepresentation';
 import RealmHandle from './realm';
 
 function isTransientAdminError(error: unknown) {
@@ -36,6 +42,9 @@ export type AuthenticationSubFlowInputData = {
   type?: string;
   provider?: string;
   description?: string;
+};
+export type AuthenticationExecutionsQuery = {
+  flowAlias?: string;
 };
 
 export default class AuthenticationFlowHandle {
@@ -239,6 +248,234 @@ export default class AuthenticationFlowHandle {
         type: data.type ?? 'basic-flow',
         provider: data.provider ?? 'basic-flow',
         description: data.description ?? '',
+      }),
+    );
+  }
+
+  public async updateExecution(
+    execution: AuthenticationExecutionInfoRepresentation,
+    query?: AuthenticationExecutionsQuery,
+  ) {
+    const flowAlias = query?.flowAlias ?? this.alias;
+
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.updateExecution(
+        {
+          realm: this.realmName,
+          flow: flowAlias,
+        },
+        execution,
+      ),
+    );
+
+    return this.listExecutions();
+  }
+
+  public async deleteExecution(id: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.delExecution({
+        realm: this.realmName,
+        id,
+      }),
+    );
+  }
+
+  public async raiseExecutionPriority(id: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.raisePriorityExecution({
+        realm: this.realmName,
+        id,
+      }),
+    );
+  }
+
+  public async lowerExecutionPriority(id: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.lowerPriorityExecution({
+        realm: this.realmName,
+        id,
+      }),
+    );
+  }
+
+  public async listClientAuthenticatorProviders(): Promise<AuthenticationProviderRepresentation[]> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getClientAuthenticatorProviders({
+        realm: this.realmName,
+      } as any),
+    );
+  }
+
+  public async listAuthenticatorProviders(): Promise<AuthenticationProviderRepresentation[]> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getAuthenticatorProviders({
+        realm: this.realmName,
+      } as any),
+    );
+  }
+
+  public async listFormActionProviders(): Promise<AuthenticationProviderRepresentation[]> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getFormActionProviders({
+        realm: this.realmName,
+      } as any),
+    );
+  }
+
+  public async listFormProviders(): Promise<AuthenticationProviderRepresentation[]> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getFormProviders({
+        realm: this.realmName,
+      } as any),
+    );
+  }
+
+  public async getConfigDescription(providerId: string): Promise<AuthenticatorConfigInfoRepresentation> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getConfigDescription({
+        realm: this.realmName,
+        providerId,
+      }),
+    );
+  }
+
+  public async createConfig(data: AuthenticatorConfigRepresentation): Promise<AuthenticatorConfigRepresentation> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.createConfig({
+        realm: this.realmName,
+        ...data,
+      }),
+    );
+  }
+
+  public async getConfig(id: string): Promise<AuthenticatorConfigRepresentation> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getConfig({
+        realm: this.realmName,
+        id,
+      }),
+    );
+  }
+
+  public async updateConfig(data: AuthenticatorConfigRepresentation) {
+    if (!data.id) {
+      throw new Error('Authentication config id is required');
+    }
+
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.updateConfig({
+        realm: this.realmName,
+        ...data,
+      }),
+    );
+
+    return this.getConfig(data.id);
+  }
+
+  public async deleteConfig(id: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.delConfig({
+        realm: this.realmName,
+        id,
+      }),
+    );
+  }
+
+  public async listRequiredActions(): Promise<RequiredActionProviderRepresentation[]> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getRequiredActions({
+        realm: this.realmName,
+      } as any),
+    );
+  }
+
+  public async getRequiredAction(alias: string): Promise<RequiredActionProviderRepresentation> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getRequiredActionForAlias({
+        realm: this.realmName,
+        alias,
+      }),
+    );
+  }
+
+  public async updateRequiredAction(alias: string, data: RequiredActionProviderRepresentation) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.updateRequiredAction(
+        {
+          realm: this.realmName,
+          alias,
+        },
+        data,
+      ),
+    );
+
+    return this.getRequiredAction(alias);
+  }
+
+  public async deleteRequiredAction(alias: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.deleteRequiredAction({
+        realm: this.realmName,
+        alias,
+      }),
+    );
+  }
+
+  public async raiseRequiredActionPriority(alias: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.raiseRequiredActionPriority({
+        realm: this.realmName,
+        alias,
+      }),
+    );
+  }
+
+  public async lowerRequiredActionPriority(alias: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.lowerRequiredActionPriority({
+        realm: this.realmName,
+        alias,
+      }),
+    );
+  }
+
+  public async getRequiredActionConfigDescription(alias: string): Promise<RequiredActionConfigInfoRepresentation> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getRequiredActionConfigDescription({
+        realm: this.realmName,
+        alias,
+      }),
+    );
+  }
+
+  public async getRequiredActionConfig(alias: string): Promise<RequiredActionConfigRepresentation> {
+    return retryTransientAdminError(() =>
+      this.core.authenticationManagement.getRequiredActionConfig({
+        realm: this.realmName,
+        alias,
+      }),
+    );
+  }
+
+  public async updateRequiredActionConfig(alias: string, data: RequiredActionConfigRepresentation) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.updateRequiredActionConfig(
+        {
+          realm: this.realmName,
+          alias,
+        },
+        data,
+      ),
+    );
+
+    return this.getRequiredActionConfig(alias);
+  }
+
+  public async removeRequiredActionConfig(alias: string) {
+    await retryTransientAdminError(() =>
+      this.core.authenticationManagement.removeRequiredActionConfig({
+        realm: this.realmName,
+        alias,
       }),
     );
   }

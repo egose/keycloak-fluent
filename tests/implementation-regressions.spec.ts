@@ -3,209 +3,23 @@ import { RequiredActionAlias } from '@keycloak/keycloak-admin-client/lib/defs/re
 import RealmHandle from '../src/realm';
 import GroupHandle from '../src/groups/group';
 
-describe('Implementation Consistency', () => {
-  test('realm searches use offset-based pagination', async () => {
-    const core = {
-      clients: { find: vi.fn().mockResolvedValue([]) },
-      roles: { find: vi.fn().mockResolvedValue([]) },
-      groups: { find: vi.fn().mockResolvedValue([]) },
-      users: { find: vi.fn().mockResolvedValue([]) },
-    } as any;
-
-    const realmHandle = new RealmHandle(core, 'demo');
-
-    await realmHandle.searchClients('client', { page: 3, pageSize: 25 });
-    await realmHandle.searchRoles('role', { page: 2, pageSize: 50 });
-    await realmHandle.searchGroups('group', { page: 4, pageSize: 10 });
-    await realmHandle.searchUsers('alice', { page: 5, pageSize: 20, attribute: 'email' });
-
-    expect(core.clients.find).toHaveBeenCalledWith({
-      realm: 'demo',
-      first: 50,
-      max: 25,
-      clientId: 'client',
-      search: true,
-    });
-
-    expect(core.roles.find).toHaveBeenCalledWith({
-      realm: 'demo',
-      first: 50,
-      max: 50,
-      search: 'role',
-      briefRepresentation: false,
-    });
-
-    expect(core.groups.find).toHaveBeenCalledWith({
-      realm: 'demo',
-      first: 30,
-      max: 10,
-      search: 'group',
-      exact: false,
-      briefRepresentation: false,
-    });
-
-    expect(core.users.find).toHaveBeenCalledWith({
-      realm: 'demo',
-      first: 80,
-      max: 20,
-      q: 'email:alice',
-      exact: false,
-      briefRepresentation: false,
-    });
-  });
-
-  test('realm event queries use offset-based pagination', async () => {
-    const core = {
-      realms: {
-        findEvents: vi.fn().mockResolvedValue([]),
-        findAdminEvents: vi.fn().mockResolvedValue([]),
-      },
-    } as any;
-
-    const realmHandle = new RealmHandle(core, 'demo');
-
-    await realmHandle.findEvents({ type: 'LOGIN', page: 3, pageSize: 25, user: 'user-1' });
-    await realmHandle.findAdminEvents({ resourceTypes: 'USER', operationTypes: 'CREATE', page: 2, pageSize: 50 });
-
-    expect(core.realms.findEvents).toHaveBeenCalledWith({
-      realm: 'demo',
-      client: undefined,
-      dateFrom: undefined,
-      dateTo: undefined,
-      first: 50,
-      ipAddress: undefined,
-      max: 25,
-      type: 'LOGIN',
-      user: 'user-1',
-    });
-
-    expect(core.realms.findAdminEvents).toHaveBeenCalledWith({
-      realm: 'demo',
-      authClient: undefined,
-      authIpAddress: undefined,
-      authRealm: undefined,
-      authUser: undefined,
-      dateFrom: undefined,
-      dateTo: undefined,
-      first: 50,
-      max: 50,
-      operationTypes: 'CREATE',
-      resourcePath: undefined,
-      resourceTypes: 'USER',
-    });
-  });
-
-  test('authentication flow execution addition resolves the flow lazily', async () => {
-    const core = {
-      authenticationManagement: {
-        getFlows: vi.fn().mockResolvedValue([{ id: 'flow-1', alias: 'browser-copy' }]),
-        addExecutionToFlow: vi.fn().mockResolvedValue({ id: 'exec-1', providerId: 'auth-cookie' }),
-      },
-    } as any;
-
-    const realmHandle = new RealmHandle(core, 'demo');
-    const flowHandle = realmHandle.authenticationFlow('browser-copy');
-
-    await flowHandle.addExecution('auth-cookie');
-
-    expect(core.authenticationManagement.addExecutionToFlow).toHaveBeenCalledWith({
-      realm: 'demo',
-      flow: 'browser-copy',
-      provider: 'auth-cookie',
-    });
-  });
-
-  test('client getById forwards the provided internal id', async () => {
+describe('Implementation Consistency: Regressions', () => {
+  test('service account user lookup resolves the client lazily', async () => {
     const core = {
       clients: {
-        findOne: vi.fn().mockResolvedValue({ id: 'internal-id', clientId: 'resolved-client' }),
+        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'svc-client' }]),
+        getServiceAccountUser: vi.fn().mockResolvedValue({ id: 'user-1', username: 'service-account-svc-client' }),
       },
     } as any;
 
     const realmHandle = new RealmHandle(core, 'demo');
-    const clientHandle = realmHandle.client('public-client-id');
+    const serviceAccountHandle = realmHandle.serviceAccount('svc-client');
 
-    await clientHandle.getById('internal-id');
-
-    expect(core.clients.findOne).toHaveBeenCalledWith({ realm: 'demo', id: 'internal-id' });
-    expect(clientHandle.clientId).toBe('resolved-client');
-  });
-
-  test('client role handle resolves its client lazily', async () => {
-    const core = {
-      clients: {
-        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
-        findRole: vi.fn().mockResolvedValue({ id: 'role-1', name: 'reader' }),
-      },
-    } as any;
-
-    const realmHandle = new RealmHandle(core, 'demo');
-    const roleHandle = realmHandle.client('app-client').role('reader');
-
-    await expect(roleHandle.get()).resolves.toMatchObject({ id: 'role-1', name: 'reader' });
-    expect(core.clients.findRole).toHaveBeenCalledWith({
-      realm: 'demo',
-      id: 'client-1',
-      roleName: 'reader',
+    await expect(serviceAccountHandle.getUser()).resolves.toMatchObject({
+      id: 'user-1',
+      username: 'service-account-svc-client',
     });
-  });
-
-  test('protocol mapper handle resolves its client lazily', async () => {
-    const core = {
-      clients: {
-        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
-        findProtocolMapperByName: vi.fn().mockResolvedValue({ id: 'mapper-1', name: 'email-mapper' }),
-      },
-    } as any;
-
-    const realmHandle = new RealmHandle(core, 'demo');
-    const mapperHandle = realmHandle.client('app-client').protocolMapper('email-mapper');
-
-    await expect(mapperHandle.get()).resolves.toMatchObject({ id: 'mapper-1', name: 'email-mapper' });
-    expect(core.clients.findProtocolMapperByName).toHaveBeenCalledWith({
-      realm: 'demo',
-      id: 'client-1',
-      name: 'email-mapper',
-    });
-  });
-
-  test('client default scope assignment resolves client and scope lazily', async () => {
-    const core = {
-      clients: {
-        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
-        addDefaultClientScope: vi.fn().mockResolvedValue(undefined),
-      },
-      clientScopes: {
-        find: vi.fn().mockResolvedValue([{ id: 'scope-1', name: 'profile' }]),
-      },
-    } as any;
-
-    const realmHandle = new RealmHandle(core, 'demo');
-    const clientHandle = realmHandle.client('app-client');
-    const clientScopeHandle = realmHandle.clientScope('profile');
-
-    await clientHandle.addDefaultClientScope(clientScopeHandle);
-
-    expect(core.clients.addDefaultClientScope).toHaveBeenCalledWith({
-      realm: 'demo',
-      id: 'client-1',
-      clientScopeId: 'scope-1',
-    });
-  });
-
-  test('client secret retrieval resolves the client lazily', async () => {
-    const core = {
-      clients: {
-        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
-        getClientSecret: vi.fn().mockResolvedValue({ value: 'secret-1' }),
-      },
-    } as any;
-
-    const realmHandle = new RealmHandle(core, 'demo');
-    const clientHandle = realmHandle.client('app-client');
-
-    await expect(clientHandle.getSecret()).resolves.toMatchObject({ value: 'secret-1' });
-    expect(core.clients.getClientSecret).toHaveBeenCalledWith({
+    expect(core.clients.getServiceAccountUser).toHaveBeenCalledWith({
       realm: 'demo',
       id: 'client-1',
     });

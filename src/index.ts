@@ -6,6 +6,8 @@ import { getToken, Credentials } from '@keycloak/keycloak-admin-client/lib/utils
 import { GrantTypes } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import RealmHandle from './realm';
+import ServerInfoHandle from './server-info';
+import WhoAmIHandle from './who-am-i';
 
 export default class KeycloakAdminClientFluent {
   public core: KeycloakAdminClient;
@@ -49,6 +51,14 @@ export default class KeycloakAdminClientFluent {
 
   realm(name: string) {
     return new RealmHandle(this.core, name);
+  }
+
+  public serverInfo() {
+    return new ServerInfoHandle(this.core);
+  }
+
+  public whoAmI(currentRealm: string, realmName?: string) {
+    return new WhoAmIHandle(this.core, currentRealm, realmName);
   }
 
   public async searchRealms(keyword: string) {

@@ -17,7 +17,7 @@ RUN ./mkcert localhost \
     && chmod 644 localhost-key.pem
 
 # ===== Stage 2: Keycloak with TLS certs =====
-FROM quay.io/keycloak/keycloak:26.5.2
+FROM quay.io/keycloak/keycloak:26.5.6
 
 # Copy certs from build stage
 COPY --from=build /opt/mkcert/localhost.pem /opt/keycloak/conf/server.crt.pem
@@ -37,4 +37,4 @@ EXPOSE 8443
 
 # Start Keycloak with HTTPS enabled
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
-CMD ["start", "--optimized"]
+CMD ["start", "--optimized", "--features=organizations"]
