@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[613],{
+(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[692],{
 
 /***/ 416:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
@@ -96,7 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 5800:
+/***/ 9837:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -108,24 +108,24 @@ __webpack_require__.d(__webpack_exports__, {
   contentTitle: () => (/* binding */ contentTitle),
   "default": () => (/* binding */ MDXContent),
   frontMatter: () => (/* binding */ frontMatter),
-  metadata: () => (/* reexport */ site_docs_api_identity_provider_mdx_011_namespaceObject),
+  metadata: () => (/* reexport */ site_docs_api_client_role_mdx_2bc_namespaceObject),
   toc: () => (/* binding */ toc)
 });
 
-;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-identity-provider-mdx-011.json
-const site_docs_api_identity_provider_mdx_011_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/identity-provider","title":"Identity Provider API","description":"The IdentityProviderHandle class provides a fluent API for managing Keycloak identity providers. It allows you to create, update, delete, and retrieve identity providers within a specific realm.","source":"@site/docs/api/identity-provider.mdx","sourceDirName":"api","slug":"/api/identity-provider","permalink":"/api/identity-provider","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":7,"frontMatter":{"sidebar_label":"Identity Provider","sidebar_position":7},"sidebar":"api","previous":{"title":"Client Scope","permalink":"/api/client-scope"},"next":{"title":"Client","permalink":"/api/clients/client"}}');
+;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-client-role-mdx-2bc.json
+const site_docs_api_client_role_mdx_2bc_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/client-role","title":"Client Role API","description":"The ClientRoleHandle class provides a fluent API for managing roles associated with a specific client in Keycloak. It allows you to create, update, delete, and retrieve client roles, as well as list users assigned to those roles.","source":"@site/docs/api/client-role.mdx","sourceDirName":"api","slug":"/api/client-role","permalink":"/api/client-role","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":9,"frontMatter":{"sidebar_label":"Client Role","sidebar_position":9},"sidebar":"api","previous":{"title":"Realm Admin Service Account","permalink":"/api/clients/realm-admin-service-account"},"next":{"title":"Organization","permalink":"/api/organization"}}');
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-;// ./docs/api/identity-provider.mdx
+;// ./docs/api/client-role.mdx
 
 
 const frontMatter = {
-	sidebar_label: 'Identity Provider',
-	sidebar_position: 7
+	sidebar_label: 'Client Role',
+	sidebar_position: 9
 };
-const contentTitle = 'Identity Provider API';
+const contentTitle = 'Client Role API';
 
 const assets = {
 
@@ -134,13 +134,21 @@ const assets = {
 
 
 const toc = [{
-  "value": "Class: <code>IdentityProviderHandle</code>",
-  "id": "class-identityproviderhandle",
+  "value": "Class: <code>ClientRoleHandle</code>",
+  "id": "class-clientrolehandle",
   "level": 2
 }, {
   "value": "Constructor",
   "id": "constructor",
   "level": 3
+}, {
+  "value": "Static Methods",
+  "id": "static-methods",
+  "level": 3
+}, {
+  "value": "<code>getByName(core: KeycloakAdminClient, realm: string, clientId: string, roleName: string, client?: ClientRepresentation | null)</code>",
+  "id": "getbynamecore-keycloakadminclient-realm-string-clientid-string-rolename-string-client-clientrepresentation--null",
+  "level": 4
 }, {
   "value": "Instance Methods",
   "id": "instance-methods",
@@ -150,48 +158,36 @@ const toc = [{
   "id": "get",
   "level": 4
 }, {
-  "value": "<code>create(data: IdentityProviderInputData)</code>",
-  "id": "createdata-identityproviderinputdata",
+  "value": "<code>create(data: ClientRoleInputData)</code>",
+  "id": "createdata-clientroleinputdata",
   "level": 4
 }, {
-  "value": "<code>update(data: IdentityProviderInputData)</code>",
-  "id": "updatedata-identityproviderinputdata",
+  "value": "<code>update(data: ClientRoleInputData)</code>",
+  "id": "updatedata-clientroleinputdata",
   "level": 4
 }, {
   "value": "<code>delete()</code>",
   "id": "delete",
   "level": 4
 }, {
-  "value": "<code>ensure(data: IdentityProviderInputData)</code>",
-  "id": "ensuredata-identityproviderinputdata",
+  "value": "<code>ensure(data: ClientRoleInputData)</code>",
+  "id": "ensuredata-clientroleinputdata",
   "level": 4
 }, {
   "value": "<code>discard()</code>",
   "id": "discard",
   "level": 4
 }, {
-  "value": "Constants",
-  "id": "constants",
-  "level": 3
-}, {
-  "value": "<code>defaultIdentityProviderData</code>",
-  "id": "defaultidentityproviderdata",
+  "value": "<code>listAssignedUsers()</code>",
+  "id": "listassignedusers",
   "level": 4
 }, {
   "value": "Types",
   "id": "types",
   "level": 3
 }, {
-  "value": "<code>IdentityProviderProviderId</code>",
-  "id": "identityproviderproviderid",
-  "level": 4
-}, {
-  "value": "<code>IdentityProviderInputData</code>",
-  "id": "identityproviderinputdata",
-  "level": 4
-}, {
-  "value": "<code>IdentityProviderRepresentationExt</code>",
-  "id": "identityproviderrepresentationext",
+  "value": "<code>ClientRoleInputData</code>",
+  "id": "clientroleinputdata",
   "level": 4
 }];
 function _createMdxContent(props) {
@@ -214,17 +210,17 @@ function _createMdxContent(props) {
   return (0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
     children: [(0,jsx_runtime.jsx)(_components.header, {
       children: (0,jsx_runtime.jsx)(_components.h1, {
-        id: "identity-provider-api",
-        children: "Identity Provider API"
+        id: "client-role-api",
+        children: "Client Role API"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "IdentityProviderHandle"
-      }), " class provides a fluent API for managing Keycloak identity providers. It allows you to create, update, delete, and retrieve identity providers within a specific realm."]
+        children: "ClientRoleHandle"
+      }), " class provides a fluent API for managing roles associated with a specific client in Keycloak. It allows you to create, update, delete, and retrieve client roles, as well as list users assigned to those roles."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.h2, {
-      id: "class-identityproviderhandle",
+      id: "class-clientrolehandle",
       children: ["Class: ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "IdentityProviderHandle"
+        children: "ClientRoleHandle"
       })]
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "constructor",
@@ -232,7 +228,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string)\n"
+        children: "constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, roleName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -247,14 +243,65 @@ function _createMdxContent(props) {
             }), "."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "realmHandle"
-            }), ": A handle to the realm where the identity provider resides."]
+              children: "clientHandle"
+            }), ": A handle to the client where the role resides."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "alias"
-            }), ": The alias of the identity provider to manage."]
+              children: "roleName"
+            }), ": The name of the client role to manage."]
           }), "\n"]
         }), "\n"]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
+      id: "static-methods",
+      children: "Static Methods"
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "getbynamecore-keycloakadminclient-realm-string-clientid-string-rolename-string-client-clientrepresentation--null",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "getByName(core: KeycloakAdminClient, realm: string, clientId: string, roleName: string, client?: ClientRepresentation | null)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Fetches a client role by its name."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "static async getByName(core: KeycloakAdminClient, realm: string, clientId: string, roleName: string, client?: ClientRepresentation | null)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "core"
+            }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
+              children: "KeycloakAdminClient"
+            }), "."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "realm"
+            }), ": The name of the realm."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "clientId"
+            }), ": The ID of the client."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "roleName"
+            }), ": The name of the role."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "client"
+            }), ": (Optional) The client representation."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": The role representation or ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "null"
+        }), " if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "instance-methods",
@@ -265,33 +312,33 @@ function _createMdxContent(props) {
         children: "get()"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["Fetches the identity provider by its alias and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "identityProvider"
+      children: ["Fetches the client role by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "role"
       }), " property."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async get(): Promise<IdentityProviderRepresentation | null>\n"
+        children: "public async get(): Promise<RoleRepresentation | null>\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The identity provider representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The role representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
-        }), " if the identity provider does not exist."]
+        }), " if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "createdata-identityproviderinputdata",
+      id: "createdata-clientroleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "create(data: IdentityProviderInputData)"
+        children: "create(data: ClientRoleInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Creates a new identity provider."
+      children: "Creates a new client role."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async create(data: IdentityProviderInputData)\n"
+        children: "public async create(data: ClientRoleInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -301,25 +348,25 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the new identity provider."]
+            }), ": The data for the new client role."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the identity provider already exists."]
+        }), ": An error if the role already exists."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "updatedata-identityproviderinputdata",
+      id: "updatedata-clientroleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "update(data: IdentityProviderInputData)"
+        children: "update(data: ClientRoleInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Updates the identity provider's details."
+      children: "Updates the client role's details."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async update(data: IdentityProviderInputData)\n"
+        children: "public async update(data: ClientRoleInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -329,13 +376,13 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The updated data for the identity provider."]
+            }), ": The updated data for the client role."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the identity provider does not exist."]
+        }), ": An error if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "delete",
@@ -343,7 +390,7 @@ function _createMdxContent(props) {
         children: "delete()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the identity provider."
+      children: "Deletes the client role."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -353,19 +400,19 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the identity provider does not exist."]
+        }), ": An error if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "ensuredata-identityproviderinputdata",
+      id: "ensuredata-clientroleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ensure(data: IdentityProviderInputData)"
+        children: "ensure(data: ClientRoleInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Ensures the identity provider exists. If it does, updates it; otherwise, creates it."
+      children: "Ensures the client role exists. If it does, updates it; otherwise, creates it."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async ensure(data: IdentityProviderInputData)\n"
+        children: "public async ensure(data: ClientRoleInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -375,7 +422,7 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the identity provider."]
+            }), ": The data for the client role."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -385,7 +432,7 @@ function _createMdxContent(props) {
         children: "discard()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the identity provider if it exists."
+      children: "Deletes the client role if it exists."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -395,64 +442,43 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The alias of the deleted identity provider."]
+        }), ": The name of the deleted client role."]
       }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
-      id: "constants",
-      children: "Constants"
-    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "defaultidentityproviderdata",
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "listassignedusers",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "defaultIdentityProviderData"
+        children: "listAssignedUsers()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Default data for creating an identity provider."
+      children: "Lists all users assigned to the client role."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export const defaultIdentityProviderData = Object.freeze({\n  displayName: '',\n  providerId: '',\n  config: {\n    metadataDescriptorUrl: '',\n    authorizationUrl: '',\n    tokenUrl: '',\n    jwksUrl: '',\n    logoutUrl: '',\n    userInfoUrl: '',\n    tokenIntrospectionUrl: '',\n    issuer: '',\n    validateSignature: 'true',\n    pkceEnabled: 'false',\n    clientAuthMethod: 'client_secret_post',\n    clientId: '',\n    clientSecret: '',\n    clientAssertionSigningAlg: '',\n    useJwksUrl: 'true',\n    guiOrder: '',\n  },\n});\n"
+        children: "public async listAssignedUsers()\n"
       })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": A list of users assigned to the role."]
+      }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "types",
       children: "Types"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "identityproviderproviderid",
+      id: "clientroleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "IdentityProviderProviderId"
+        children: "ClientRoleInputData"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The provider ID for the identity provider."
+      children: "The input data type for creating or updating a client role."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export type IdentityProviderProviderId =\n  | 'saml'\n  | 'oauth2'\n  | 'oidc'\n  | 'keycloak-oidc'\n  | 'google'\n  | 'facebook'\n  | 'twitter'\n  | 'linkedin-openid-connect'\n  | 'github'\n  | 'gitlab'\n  | 'bitbucket'\n  | 'paypal'\n  | 'openshift-v4'\n  | 'microsoft'\n  | 'stackoverflow';\n"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "identityproviderinputdata",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "IdentityProviderInputData"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The input data type for creating or updating an identity provider."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "export type IdentityProviderInputData = Omit<IdentityProviderRepresentationExt, 'alias'>;\n"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "identityproviderrepresentationext",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "IdentityProviderRepresentationExt"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "An extended representation of the identity provider."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "export interface IdentityProviderRepresentationExt extends IdentityProviderRepresentation {\n  providerId?: IdentityProviderProviderId;\n}\n"
+        children: "export type ClientRoleInputData = Omit<RoleRepresentation, 'name | id'>;\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "This API provides a comprehensive interface for managing Keycloak identity providers within a specific realm."
+      children: "This API provides a comprehensive interface for managing client roles in Keycloak, including role creation, updates, deletion, and user assignments."
     })]
   });
 }

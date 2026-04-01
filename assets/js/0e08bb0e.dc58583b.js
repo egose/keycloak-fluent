@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[558],{
+(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[531],{
 
 /***/ 416:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
@@ -96,7 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 6006:
+/***/ 8161:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -108,24 +108,24 @@ __webpack_require__.d(__webpack_exports__, {
   contentTitle: () => (/* binding */ contentTitle),
   "default": () => (/* binding */ MDXContent),
   frontMatter: () => (/* binding */ frontMatter),
-  metadata: () => (/* reexport */ site_docs_api_protocol_mappers_audience_protocol_mapper_mdx_659_namespaceObject),
+  metadata: () => (/* reexport */ site_docs_api_protocol_mappers_protocol_mapper_mdx_0e0_namespaceObject),
   toc: () => (/* binding */ toc)
 });
 
-;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-protocol-mappers-audience-protocol-mapper-mdx-659.json
-const site_docs_api_protocol_mappers_audience_protocol_mapper_mdx_659_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/protocol-mappers/audience-protocol-mapper","title":"Audience Protocol Mapper API","description":"The AudienceProtocolMapperHandle class extends the ProtocolMapperHandle class and provides a specialized API for managing audience protocol mappers in Keycloak. These mappers add audience claims to tokens issued by Keycloak.","source":"@site/docs/api/protocol-mappers/audience-protocol-mapper.mdx","sourceDirName":"api/protocol-mappers","slug":"/api/protocol-mappers/audience-protocol-mapper","permalink":"/api/protocol-mappers/audience-protocol-mapper","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":3,"frontMatter":{"sidebar_label":"Audience Protocol Mapper","sidebar_position":3},"sidebar":"api","previous":{"title":"Hardcoded Claim Protocol Mapper","permalink":"/api/protocol-mappers/hardcoded-claim-protocol-mapper"}}');
+;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-protocol-mappers-protocol-mapper-mdx-0e0.json
+const site_docs_api_protocol_mappers_protocol_mapper_mdx_0e0_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/protocol-mappers/protocol-mapper","title":"Protocol Mapper API","description":"The ProtocolMapperHandle class provides a fluent API for managing protocol mappers in Keycloak. Protocol mappers are used to map claims or attributes to tokens issued by Keycloak.","source":"@site/docs/api/protocol-mappers/protocol-mapper.mdx","sourceDirName":"api/protocol-mappers","slug":"/api/protocol-mappers/protocol-mapper","permalink":"/api/protocol-mappers/protocol-mapper","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":0,"frontMatter":{"sidebar_label":"Protocol Mapper","sidebar_position":0},"sidebar":"api","previous":{"title":"Component","permalink":"/api/component"},"next":{"title":"User Attribute Protocol Mapper","permalink":"/api/protocol-mappers/user-attribute-protocol-mapper"}}');
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-;// ./docs/api/protocol-mappers/audience-protocol-mapper.mdx
+;// ./docs/api/protocol-mappers/protocol-mapper.mdx
 
 
 const frontMatter = {
-	sidebar_label: 'Audience Protocol Mapper',
-	sidebar_position: 3
+	sidebar_label: 'Protocol Mapper',
+	sidebar_position: 0
 };
-const contentTitle = 'Audience Protocol Mapper API';
+const contentTitle = 'Protocol Mapper API';
 
 const assets = {
 
@@ -134,8 +134,8 @@ const assets = {
 
 
 const toc = [{
-  "value": "Class: <code>AudienceProtocolMapperHandle</code>",
-  "id": "class-audienceprotocolmapperhandle",
+  "value": "Class: <code>ProtocolMapperHandle</code>",
+  "id": "class-protocolmapperhandle",
   "level": 2
 }, {
   "value": "Constructor",
@@ -146,24 +146,52 @@ const toc = [{
   "id": "instance-methods",
   "level": 3
 }, {
-  "value": "<code>create(data: AudienceProtocolMapperInputData)</code>",
-  "id": "createdata-audienceprotocolmapperinputdata",
+  "value": "<code>get()</code>",
+  "id": "get",
   "level": 4
 }, {
-  "value": "<code>update(data: AudienceProtocolMapperInputData)</code>",
-  "id": "updatedata-audienceprotocolmapperinputdata",
+  "value": "<code>create(data: ProtocolMapperInputData)</code>",
+  "id": "createdata-protocolmapperinputdata",
   "level": 4
 }, {
-  "value": "<code>ensure(data: AudienceProtocolMapperInputData)</code>",
-  "id": "ensuredata-audienceprotocolmapperinputdata",
+  "value": "<code>update(data: ProtocolMapperInputData)</code>",
+  "id": "updatedata-protocolmapperinputdata",
+  "level": 4
+}, {
+  "value": "<code>delete()</code>",
+  "id": "delete",
+  "level": 4
+}, {
+  "value": "<code>ensure(data: ProtocolMapperInputData)</code>",
+  "id": "ensuredata-protocolmapperinputdata",
+  "level": 4
+}, {
+  "value": "<code>discard()</code>",
+  "id": "discard",
+  "level": 4
+}, {
+  "value": "Constants",
+  "id": "constants",
+  "level": 3
+}, {
+  "value": "<code>defaultProtocolMapperData</code>",
+  "id": "defaultprotocolmapperdata",
   "level": 4
 }, {
   "value": "Types",
   "id": "types",
   "level": 3
 }, {
-  "value": "<code>AudienceProtocolMapperInputData</code>",
-  "id": "audienceprotocolmapperinputdata",
+  "value": "<code>ProtocolMapperProtocol</code>",
+  "id": "protocolmapperprotocol",
+  "level": 4
+}, {
+  "value": "<code>ProtocolMapperInputData</code>",
+  "id": "protocolmapperinputdata",
+  "level": 4
+}, {
+  "value": "<code>ProtocolMapperRepresentationExt</code>",
+  "id": "protocolmapperrepresentationext",
   "level": 4
 }];
 function _createMdxContent(props) {
@@ -186,19 +214,17 @@ function _createMdxContent(props) {
   return (0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
     children: [(0,jsx_runtime.jsx)(_components.header, {
       children: (0,jsx_runtime.jsx)(_components.h1, {
-        id: "audience-protocol-mapper-api",
-        children: "Audience Protocol Mapper API"
+        id: "protocol-mapper-api",
+        children: "Protocol Mapper API"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "AudienceProtocolMapperHandle"
-      }), " class extends the ", (0,jsx_runtime.jsx)(_components.code, {
         children: "ProtocolMapperHandle"
-      }), " class and provides a specialized API for managing audience protocol mappers in Keycloak. These mappers add audience claims to tokens issued by Keycloak."]
+      }), " class provides a fluent API for managing protocol mappers in Keycloak. Protocol mappers are used to map claims or attributes to tokens issued by Keycloak."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.h2, {
-      id: "class-audienceprotocolmapperhandle",
+      id: "class-protocolmapperhandle",
       children: ["Class: ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "AudienceProtocolMapperHandle"
+        children: "ProtocolMapperHandle"
       })]
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "constructor",
@@ -226,7 +252,7 @@ function _createMdxContent(props) {
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "mapperName"
-            }), ": The name of the audience protocol mapper to manage."]
+            }), ": The name of the protocol mapper to manage."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -234,16 +260,38 @@ function _createMdxContent(props) {
       id: "instance-methods",
       children: "Instance Methods"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "createdata-audienceprotocolmapperinputdata",
+      id: "get",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "create(data: AudienceProtocolMapperInputData)"
+        children: "get()"
       })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Creates a new audience protocol mapper."
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["Fetches the protocol mapper by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "clientProtocolMapper"
+      }), " property."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async create(data: AudienceProtocolMapperInputData)\n"
+        children: "public async get(): Promise<ProtocolMapperRepresentation | null>\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": The protocol mapper representation or ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "null"
+        }), " if the mapper does not exist."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "createdata-protocolmapperinputdata",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "create(data: ProtocolMapperInputData)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Creates a new protocol mapper."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public async create(data: ProtocolMapperInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -253,7 +301,7 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the new audience protocol mapper."]
+            }), ": The data for the new protocol mapper."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -262,16 +310,16 @@ function _createMdxContent(props) {
         }), ": An error if the protocol mapper already exists."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "updatedata-audienceprotocolmapperinputdata",
+      id: "updatedata-protocolmapperinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "update(data: AudienceProtocolMapperInputData)"
+        children: "update(data: ProtocolMapperInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Updates the audience protocol mapper's details."
+      children: "Updates the protocol mapper's details."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async update(data: AudienceProtocolMapperInputData)\n"
+        children: "public async update(data: ProtocolMapperInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -281,7 +329,7 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The updated data for the audience protocol mapper."]
+            }), ": The updated data for the protocol mapper."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -290,16 +338,34 @@ function _createMdxContent(props) {
         }), ": An error if the protocol mapper does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "ensuredata-audienceprotocolmapperinputdata",
+      id: "delete",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ensure(data: AudienceProtocolMapperInputData)"
+        children: "delete()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Ensures the audience protocol mapper exists. If it does, updates it; otherwise, creates it."
+      children: "Deletes the protocol mapper."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async ensure(data: AudienceProtocolMapperInputData)\n"
+        children: "public async delete()\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Throws"
+        }), ": An error if the protocol mapper does not exist."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "ensuredata-protocolmapperinputdata",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "ensure(data: ProtocolMapperInputData)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Ensures the protocol mapper exists. If it does, updates it; otherwise, creates it."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public async ensure(data: ProtocolMapperInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -309,27 +375,84 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the audience protocol mapper."]
+            }), ": The data for the protocol mapper."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "discard",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "discard()"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Deletes the protocol mapper if it exists."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public async discard()\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": The name of the deleted protocol mapper."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
+      id: "constants",
+      children: "Constants"
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "defaultprotocolmapperdata",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "defaultProtocolMapperData"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Default data for creating a protocol mapper."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export const defaultProtocolMapperData = Object.freeze({\n  protocol: 'openid-connect',\n  protocolMapper: '',\n  config: {},\n});\n"
+      })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "types",
       children: "Types"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "audienceprotocolmapperinputdata",
+      id: "protocolmapperprotocol",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "AudienceProtocolMapperInputData"
+        children: "ProtocolMapperProtocol"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The input data type for creating or updating an audience protocol mapper."
+      children: "The protocol type for the protocol mapper."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export interface AudienceProtocolMapperInputData extends ProtocolMapperInputData {\n  audience: string;\n}\n"
+        children: "export type ProtocolMapperProtocol = 'openid-connect' | 'saml';\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "protocolmapperinputdata",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "ProtocolMapperInputData"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "The input data type for creating or updating a protocol mapper."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export type ProtocolMapperInputData = Omit<ProtocolMapperRepresentationExt, 'name | id'>;\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "protocolmapperrepresentationext",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "ProtocolMapperRepresentationExt"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "An extended representation of the protocol mapper."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export interface ProtocolMapperRepresentationExt extends ProtocolMapperRepresentation {\n  protocol?: ProtocolMapperProtocol;\n}\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "This API provides a specialized interface for managing audience protocol mappers in Keycloak, ensuring they are configured with the appropriate defaults for adding audience claims to tokens."
+      children: "This API provides a comprehensive interface for managing protocol mappers in Keycloak, including creation, updates, deletion, and ensuring their existence."
     })]
   });
 }

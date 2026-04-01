@@ -1,6 +1,101 @@
 "use strict";
 (self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[826],{
 
+/***/ 416:
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   R: () => (/* binding */ useMDXComponents),
+/* harmony export */   x: () => (/* binding */ MDXProvider)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9471);
+/**
+ * @import {MDXComponents} from 'mdx/types.js'
+ * @import {Component, ReactElement, ReactNode} from 'react'
+ */
+
+/**
+ * @callback MergeComponents
+ *   Custom merge function.
+ * @param {Readonly<MDXComponents>} currentComponents
+ *   Current components from the context.
+ * @returns {MDXComponents}
+ *   Additional components.
+ *
+ * @typedef Props
+ *   Configuration for `MDXProvider`.
+ * @property {ReactNode | null | undefined} [children]
+ *   Children (optional).
+ * @property {Readonly<MDXComponents> | MergeComponents | null | undefined} [components]
+ *   Additional components to use or a function that creates them (optional).
+ * @property {boolean | null | undefined} [disableParentContext=false]
+ *   Turn off outer component context (default: `false`).
+ */
+
+
+
+/** @type {Readonly<MDXComponents>} */
+const emptyComponents = {}
+
+const MDXContext = react__WEBPACK_IMPORTED_MODULE_0__.createContext(emptyComponents)
+
+/**
+ * Get current components from the MDX Context.
+ *
+ * @param {Readonly<MDXComponents> | MergeComponents | null | undefined} [components]
+ *   Additional components to use or a function that creates them (optional).
+ * @returns {MDXComponents}
+ *   Current components.
+ */
+function useMDXComponents(components) {
+  const contextComponents = react__WEBPACK_IMPORTED_MODULE_0__.useContext(MDXContext)
+
+  // Memoize to avoid unnecessary top-level context changes
+  return react__WEBPACK_IMPORTED_MODULE_0__.useMemo(
+    function () {
+      // Custom merge via a function prop
+      if (typeof components === 'function') {
+        return components(contextComponents)
+      }
+
+      return {...contextComponents, ...components}
+    },
+    [contextComponents, components]
+  )
+}
+
+/**
+ * Provider for MDX context.
+ *
+ * @param {Readonly<Props>} properties
+ *   Properties.
+ * @returns {ReactElement}
+ *   Element.
+ * @satisfies {Component}
+ */
+function MDXProvider(properties) {
+  /** @type {Readonly<MDXComponents>} */
+  let allComponents
+
+  if (properties.disableParentContext) {
+    allComponents =
+      typeof properties.components === 'function'
+        ? properties.components(emptyComponents)
+        : properties.components || emptyComponents
+  } else {
+    allComponents = useMDXComponents(properties.components)
+  }
+
+  return react__WEBPACK_IMPORTED_MODULE_0__.createElement(
+    MDXContext.Provider,
+    {value: allComponents},
+    properties.children
+  )
+}
+
+
+/***/ }),
+
 /***/ 2679:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -123,8 +218,6 @@ var lib = __webpack_require__(416);
 var Tabs = __webpack_require__(4708);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/index.js + 1 modules
 var TabItem = __webpack_require__(2679);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js + 27 modules
-var CodeBlock = __webpack_require__(5145);
 ;// ./docs/about/quick-start.mdx
 
 
@@ -137,7 +230,6 @@ const contentTitle = 'Quick Start';
 const assets = {
 
 };
-
 
 
 
@@ -158,6 +250,10 @@ const toc = [{
 }, {
   "value": "Resource Handlers",
   "id": "resource-handlers",
+  "level": 3
+}, {
+  "value": "Beyond CRUD",
+  "id": "beyond-crud",
   "level": 3
 }];
 function _createMdxContent(props) {
@@ -227,6 +323,11 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.h2, {
       id: "usage",
       children: "Usage"
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-ts",
+        children: "import KeycloakAdminClientFluent from '@egose/keycloak-fluent';\n\nconst kc = new KeycloakAdminClientFluent({\n  baseUrl: 'http://localhost:8080',\n  realmName: 'master',\n});\n"
+      })
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "configure-keycloak-connection",
       children: "Configure Keycloak Connection"
@@ -239,36 +340,40 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Keycloak client creation"
+          children: "Authenticate with a username and password"
         }), ":"]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-ts",
-        children: "const kc = new KeycloakAdminClientFluent({\n  baseUrl: 'http://localhost:8080',\n  realmName: 'master',\n});\n"
+        children: "await kc.simpleAuth({\n  username: 'admin',\n  password: 'admin', // pragma: allowlist secret\n  clientId: 'admin-cli',\n});\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Connect using a user account"
+          children: "Authenticate with a service account"
         }), ":"]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-ts",
-        children: "await kc.auth({\n  username: 'admin',\n  password: 'admin', // pragma: allowlist secret\n  clientId: 'admin-cli',\n});\n"
+        children: "await kc.simpleAuth({\n  clientId: 'my-service-account',\n  clientSecret: 'my-secret', // pragma: allowlist secret\n});\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Connect using a service account"
+          children: "Authenticate with a refresh token"
         }), ":"]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-ts",
-        children: "await kc.auth({\n  clientId: 'my-service-account',\n  clientSecret: 'my-secret', // pragma: allowlist secret\n});\n"
+        children: "await kc.simpleAuth({\n  clientId: 'admin-cli',\n  refreshToken: process.env.KEYCLOAK_REFRESH_TOKEN,\n});\n"
       })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["If you need full control over the underlying Keycloak grant configuration, you can still call ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "kc.auth(...)"
+      }), " directly."]
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "resource-handlers",
       children: "Resource Handlers"
@@ -281,9 +386,13 @@ function _createMdxContent(props) {
         children: "groups"
       }), ", ", (0,jsx_runtime.jsx)(_components.strong, {
         children: "roles"
-      }), ", and ", (0,jsx_runtime.jsx)(_components.strong, {
+      }), ", ", (0,jsx_runtime.jsx)(_components.strong, {
         children: "clients"
-      }), "."]
+      }), ", ", (0,jsx_runtime.jsx)(_components.strong, {
+        children: "authentication flows"
+      }), ", ", (0,jsx_runtime.jsx)(_components.strong, {
+        children: "organizations"
+      }), ", and more."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
         children: "ensure"
@@ -291,8 +400,28 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-ts",
-        children: "const realm = await kc.realm(\"my-realm\").ensure({\n  displayName: \"My Realm\",\n});\n\nconst user = await realm.user(\"john.doe\").ensure({\n  firstName: \"John\",\n  lastName: \"Doe\",\n  email: \"john.doe@example.com\",\n});\n\nconst group = await realm.group(\"my-group\").ensure({\n  description: \"My Group\",\n});\n\nawait user.assignGroup(group);\n"
+        children: "const realm = await kc.realm('my-realm').ensure({\n  displayName: 'My Realm',\n});\n\nconst user = await realm.user('john.doe').ensure({\n  firstName: 'John',\n  lastName: 'Doe',\n  email: 'john.doe@example.com',\n});\n\nconst group = await realm.group('my-group').ensure({\n  description: 'My Group',\n});\n\nawait user.assignGroup(group);\n"
       })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
+      id: "beyond-crud",
+      children: "Beyond CRUD"
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "The fluent API also exposes realm-scoped operational helpers that are covered by the current test suite:"
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-ts",
+        children: "const flow = realm.authenticationFlow('browser-copy');\nawait flow.copy('browser-copy-v2');\n\nconst organization = await realm.organization('acme').ensure({ name: 'Acme Corp' });\nawait organization.addMember(user);\n\nawait realm.cache().clearUserCache();\nawait realm.attackDetection(user.user!.id!).clear();\n\nconst serverInfo = await kc.serverInfo().get();\nconst currentAdmin = await kc.whoAmI('master').get();\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["For the full surface area, start with the API reference pages for ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "KeycloakAdminClientFluent"
+      }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "RealmHandle"
+      }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "AuthenticationFlowHandle"
+      }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "OrganizationHandle"
+      }), ", and the realm system helpers."]
     })]
   });
 }

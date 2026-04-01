@@ -113,7 +113,7 @@ __webpack_require__.d(__webpack_exports__, {
 });
 
 ;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-realm-mdx-c51.json
-const site_docs_api_realm_mdx_c51_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/realm","title":"Realm API","description":"The RealmHandle class provides a fluent API for managing Keycloak realms. It allows you to create, update, delete, and search for realms, as well as interact with various Keycloak entities such as clients, roles, groups, and users.","source":"@site/docs/api/realm.mdx","sourceDirName":"api","slug":"/api/realm","permalink":"/api/realm","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":2,"frontMatter":{"sidebar_label":"Realm","sidebar_position":2},"sidebar":"api","next":{"title":"User","permalink":"/api/user"}}');
+const site_docs_api_realm_mdx_c51_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/realm","title":"Realm API","description":"The RealmHandle class provides a fluent API for managing Keycloak realms. It allows you to create, update, delete, and search for realms, as well as interact with various Keycloak entities such as clients, roles, groups, and users.","source":"@site/docs/api/realm.mdx","sourceDirName":"api","slug":"/api/realm","permalink":"/api/realm","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":2,"frontMatter":{"sidebar_label":"Realm","sidebar_position":2},"sidebar":"api","previous":{"title":"Client Fluent","permalink":"/api/keycloak-admin-client-fluent"},"next":{"title":"User","permalink":"/api/user"}}');
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
@@ -194,12 +194,32 @@ const toc = [{
   "id": "searchidentityproviderskeyword-string",
   "level": 4
 }, {
+  "value": "<code>searchOrganizations(keyword: string, options?: { page?: number; pageSize?: number })</code>",
+  "id": "searchorganizationskeyword-string-options--page-number-pagesize-number-",
+  "level": 4
+}, {
+  "value": "<code>searchAuthenticationFlows(keyword: string)</code>",
+  "id": "searchauthenticationflowskeyword-string",
+  "level": 4
+}, {
+  "value": "<code>searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number })</code>",
+  "id": "searchworkflowskeyword-string-options--page-number-pagesize-number-",
+  "level": 4
+}, {
   "value": "Entity-Specific Methods",
   "id": "entity-specific-methods",
   "level": 3
 }, {
   "value": "<code>client(clientId: string)</code>",
   "id": "clientclientid-string",
+  "level": 4
+}, {
+  "value": "<code>authenticationFlow(alias: string)</code>",
+  "id": "authenticationflowalias-string",
+  "level": 4
+}, {
+  "value": "<code>component(componentName: string, componentLookup?: ComponentLookupData)</code>",
+  "id": "componentcomponentname-string-componentlookup-componentlookupdata",
   "level": 4
 }, {
   "value": "<code>clientScope(scopeName: string)</code>",
@@ -220,6 +240,30 @@ const toc = [{
 }, {
   "value": "<code>identityProvider(alias: string)</code>",
   "id": "identityprovideralias-string",
+  "level": 4
+}, {
+  "value": "<code>organization(organizationAlias: string)</code>",
+  "id": "organizationorganizationalias-string",
+  "level": 4
+}, {
+  "value": "<code>userStorageProvider(providerId: string)</code>",
+  "id": "userstorageproviderproviderid-string",
+  "level": 4
+}, {
+  "value": "<code>cache()</code>",
+  "id": "cache",
+  "level": 4
+}, {
+  "value": "<code>attackDetection(userId?: string)</code>",
+  "id": "attackdetectionuserid-string",
+  "level": 4
+}, {
+  "value": "<code>clientPolicies()</code>",
+  "id": "clientpolicies",
+  "level": 4
+}, {
+  "value": "<code>workflow(workflowName: string)</code>",
+  "id": "workflowworkflowname-string",
   "level": 4
 }, {
   "value": "<code>confidentialBrowserLoginClient(clientId: string)</code>",
@@ -627,6 +671,98 @@ function _createMdxContent(props) {
           children: "Returns"
         }), ": A list of matching identity providers."]
       }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "searchorganizationskeyword-string-options--page-number-pagesize-number-",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "searchOrganizations(keyword: string, options?: { page?: number; pageSize?: number })"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Searches for organizations in the realm."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public async searchOrganizations(keyword: string, options?: { page?: number; pageSize?: number })\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "keyword"
+            }), ": The search keyword."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "options"
+            }), ": Pagination options."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": A list of matching organizations."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "searchauthenticationflowskeyword-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "searchAuthenticationFlows(keyword: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Searches authentication flows by alias."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public async searchAuthenticationFlows(keyword: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "keyword"
+            }), ": The search keyword."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": A list of matching authentication flows."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "searchworkflowskeyword-string-options--page-number-pagesize-number-",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number })"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Searches workflows by name."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public async searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number })\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "keyword"
+            }), ": The search keyword."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "options"
+            }), ": Pagination options."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": A list of matching workflows."]
+      }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "entity-specific-methods",
       children: "Entity-Specific Methods"
@@ -641,6 +777,30 @@ function _createMdxContent(props) {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
         children: "public client(clientId: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "authenticationflowalias-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "authenticationFlow(alias: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for managing a specific authentication flow."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public authenticationFlow(alias: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "componentcomponentname-string-componentlookup-componentlookupdata",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "component(componentName: string, componentLookup?: ComponentLookupData)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for managing a specific component."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public component(componentName: string, componentLookup?: ComponentLookupData)\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "clientscopescopename-string",
@@ -701,6 +861,78 @@ function _createMdxContent(props) {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
         children: "public identityProvider(alias: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "organizationorganizationalias-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "organization(organizationAlias: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for managing a specific organization."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public organization(organizationAlias: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "userstorageproviderproviderid-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "userStorageProvider(providerId: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for realm user storage provider operations."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public userStorageProvider(providerId: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "cache",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "cache()"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for realm cache maintenance operations."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public cache()\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "attackdetectionuserid-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "attackDetection(userId?: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for realm attack-detection operations."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public attackDetection(userId?: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "clientpolicies",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "clientPolicies()"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for realm client policy and client profile operations."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public clientPolicies()\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "workflowworkflowname-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "workflow(workflowName: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Returns a handle for managing a specific workflow."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "public workflow(workflowName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "confidentialbrowserloginclientclientid-string",
