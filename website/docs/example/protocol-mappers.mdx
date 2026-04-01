@@ -1,0 +1,20 @@
+---
+sidebar_label: Protocol Mappers
+sidebar_position: 4
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+# Protocol Mappers
+
+Protocol mappers are where token shape often becomes repetitive in raw Keycloak automation. This example isolates the mapper-focused part of a broader setup so you can copy only the claim wiring you need.
+
+The snippet shows a few common mapper helpers across different client types.
+
+---
+
+```mdx-code-block
+import Sample from '!!raw-loader!../../.samples/protocol-mappers.ts';
+
+<CodeBlock language="ts">{Sample}</CodeBlock>
+```

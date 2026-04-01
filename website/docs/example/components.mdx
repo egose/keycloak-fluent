@@ -1,0 +1,20 @@
+---
+sidebar_label: Components
+sidebar_position: 9
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+# Components
+
+Use `ComponentHandle` when you need to manage realm components that are identified by a combination of name and lookup metadata, not just a single stable id.
+
+This is especially useful for user-storage components and other admin objects where ambiguity is common unless you narrow by `parentId`, `providerId`, or `providerType`.
+
+---
+
+```mdx-code-block
+import Sample from '!!raw-loader!../../.samples/components.ts';
+
+<CodeBlock language="ts">{Sample}</CodeBlock>
+```

@@ -1,0 +1,20 @@
+---
+sidebar_label: Authentication Flows
+sidebar_position: 6
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+# Authentication Flows
+
+Use this pattern when you need to clone a built-in flow, inspect its executions, add new executions or subflows, and tune required actions from the same provisioning script.
+
+This keeps flow customization in code instead of relying on manual realm exports.
+
+---
+
+```mdx-code-block
+import Sample from '!!raw-loader!../../.samples/authentication-flows.ts';
+
+<CodeBlock language="ts">{Sample}</CodeBlock>
+```

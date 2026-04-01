@@ -1,17 +1,28 @@
 ---
-sidebar_label: General
+sidebar_label: Overview
 sidebar_position: 0
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 
-# General Example
+# Examples Overview
 
 This example demonstrates a full end-to-end setup using `keycloak-fluent`. It shows how to authenticate against the master realm, create and configure a custom realm, and then provision common Keycloak resources such as users, roles, groups, clients, service accounts, and protocol mappers using a fluent, chainable API.
 
 The snippet is intentionally comprehensive to illustrate how different building blocks fit together in a real-world scenario. In practice, you would typically split this logic across smaller scripts or services depending on your provisioning needs.
+
+For smaller focused walkthroughs, use the dedicated pages in this section:
+
+- [Realm bootstrap](/example/bootstrap-realm/) for creating a realm and its admin service account.
+- [Users, roles, and groups](/example/users-roles-groups/) for basic identity provisioning.
+- [Clients and service accounts](/example/clients-and-service-accounts/) for application and machine client setup.
+- [Protocol mappers](/example/protocol-mappers/) for token shaping and claim configuration.
+- [Organizations](/example/organizations/) for membership, invitations, and linked identity providers.
+- [Authentication flows](/example/authentication-flows/) for copied flows, executions, and required actions.
+- [Realm operations](/example/realm-operations/) for cache, attack detection, client policies, and workflows.
+- [System introspection](/example/system-introspection/) for `serverInfo()` and `whoAmI()` checks.
+- [Components](/example/components/) for precise component lookup and subcomponent discovery.
+- [User storage providers](/example/user-storage-providers/) for LDAP sync and cleanup operations.
 
 ---
 

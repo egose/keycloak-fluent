@@ -109,7 +109,7 @@ function Hero(): ReactNode {
                 className="inline-flex items-center rounded-lg border border-orange-400/40 bg-orange-500/12 px-5 py-3 text-sm font-semibold !text-orange-100 no-underline transition hover:bg-orange-500/20"
                 to="/example/general/"
               >
-                View End-to-End Example
+                Browse Examples
               </Link>
             </div>
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm !text-slate-300">
@@ -303,10 +303,11 @@ function Pathways({ isDarkTheme }: { isDarkTheme: boolean }): ReactNode {
             See the flow
           </div>
           <h3 className={`mt-3 text-2xl font-semibold ${isDarkTheme ? 'text-slate-50' : 'text-slate-950'}`}>
-            Full Example
+            Example Guides
           </h3>
           <p className={`mt-3 text-base leading-7 ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}>
-            Walk through a broader provisioning script that ties realms, users, groups, clients, and mappers together.
+            Start from an overview, then jump into focused walkthroughs for realm bootstrap, identity setup, clients,
+            and mappers.
           </p>
         </Link>
       </div>
