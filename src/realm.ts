@@ -493,7 +493,9 @@ export default class RealmHandle {
   }
 
   public async searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number }) {
-    const workflows = await retryTransientAdminError(() => this.core.workflows.find({ realm: this.realmName }));
+    const workflows: { name?: string }[] = await retryTransientAdminError(() =>
+      this.core.workflows.find({ realm: this.realmName }),
+    );
     const lowerkeyword = keyword.toLocaleLowerCase();
     const filtered = workflows.filter((item) => {
       if (!item.name) return false;

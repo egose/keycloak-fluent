@@ -103,7 +103,7 @@ export default class ClientScopeHandle {
 
     await retryTransientAdminError(() =>
       this.core.clientScopes.update(
-        { realm: this.realmName, id: one.id },
+        { realm: this.realmName, id: one.id! },
         { ...defaultScopeData, ...data, name: this.scopeName },
       ),
     );
@@ -117,7 +117,7 @@ export default class ClientScopeHandle {
       throw new Error(`Client Scope "${this.scopeName}" not found in realm "${this.realmName}"`);
     }
 
-    await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: one.id }));
+    await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: one.id! }));
     this.clientScope = null;
     return this.scopeName;
   }
@@ -130,7 +130,7 @@ export default class ClientScopeHandle {
     if (one?.id) {
       await retryTransientAdminError(() =>
         this.core.clientScopes.update(
-          { realm: this.realmName, id: one.id },
+          { realm: this.realmName, id: one.id! },
           { ...defaultScopeData, ...data, name: this.scopeName },
         ),
       );
@@ -152,7 +152,7 @@ export default class ClientScopeHandle {
   public async discard() {
     const one = await this.get();
     if (one?.id) {
-      await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: one.id }));
+      await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: one.id! }));
       this.clientScope = null;
     }
 

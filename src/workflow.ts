@@ -55,12 +55,12 @@ export default class WorkflowHandle {
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
     const workflows = await WorkflowHandle.list(core, realm);
-    return workflows.find((workflow) => workflow.id === id) ?? null;
+    return workflows.find((workflow: { id: string }) => workflow.id === id) ?? null;
   }
 
   static async getByName(core: KeycloakAdminClient, realm: string, workflowName: string) {
     const workflows = await WorkflowHandle.list(core, realm);
-    return workflows.find((workflow) => workflow.name === workflowName) ?? null;
+    return workflows.find((workflow: { name: string }) => workflow.name === workflowName) ?? null;
   }
 
   private async requireWorkflow(): Promise<WorkflowRepresentation & { id: string; name: string }> {
