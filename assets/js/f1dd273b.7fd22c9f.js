@@ -96,7 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 2679:
+/***/ 462:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 
@@ -124,7 +124,7 @@ var jsx_runtime = __webpack_require__(2615);
 
 /***/ }),
 
-/***/ 4708:
+/***/ 3139:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 
@@ -150,7 +150,7 @@ var historyUtils = __webpack_require__(7945);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/jsUtils.js
 var jsUtils = __webpack_require__(134);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/storageUtils.js + 1 modules
-var storageUtils = __webpack_require__(8008);
+var storageUtils = __webpack_require__(5627);
 ;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/tabsUtils.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -215,9 +215,9 @@ var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/Tabs/index.js + 2 modules
-var Tabs = __webpack_require__(4708);
+var Tabs = __webpack_require__(3139);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/index.js + 1 modules
-var TabItem = __webpack_require__(2679);
+var TabItem = __webpack_require__(462);
 ;// ./docs/about/quick-start.mdx
 
 
