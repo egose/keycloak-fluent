@@ -10,7 +10,7 @@ const config: Config = {
   title: 'Keycloak Fluent',
   tagline:
     'Keycloak Admin API that lets developers manage Keycloak resources through a readable, chainable DSL. It ensures entities exist with desired properties, supports updates and removals, and abstracts away low-level REST complexity.',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
@@ -57,12 +57,13 @@ const config: Config = {
   ],
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/logo.png',
+    image: 'img/social-card.png',
     navbar: {
       title: 'Keycloak Fluent',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.png',
+        alt: 'Keycloak Fluent logo',
+        src: 'img/keycloak-fluent-mark.svg',
+        srcDark: 'img/keycloak-fluent-mark.svg',
       },
       items: [
         {
@@ -106,6 +107,46 @@ const config: Config = {
     },
   } satisfies Preset.ThemeConfig,
   headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/img/favicon.svg',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/img/favicon-32.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/img/favicon-16.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'apple-touch-icon',
+        href: '/img/apple-touch-icon.png',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'manifest',
+        href: '/manifest.webmanifest',
+      },
+    },
     {
       tagName: 'meta',
       attributes: {
