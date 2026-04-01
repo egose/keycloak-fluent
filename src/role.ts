@@ -1,6 +1,28 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import RealmHandle from './realm';
+import ClientHandle from './clients/client';
+import type ClientRoleHandle from './client-role';
+
+function isTransientAdminError(error: unknown) {
+  return error instanceof Error && error.message.includes('unknown_error');
+}
+
+async function retryTransientAdminError<T>(operation: () => Promise<T>, attempts = 3) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!isTransientAdminError(error) || attempt === attempts - 1) {
+        throw error;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
+    }
+  }
+
+  throw new Error('Unreachable');
+}
 
 export type RoleInputData = Omit<RoleRepresentation, 'name | id'>;
 
@@ -27,6 +49,24 @@ export default class RoleHandle {
   static async getByName(core: KeycloakAdminClient, realm: string, roleName: string) {
     const one = await core.roles.findOneByName({ realm, name: roleName });
     return one ?? null;
+  }
+
+  private async requireRole(): Promise<RoleRepresentation & { id: string }> {
+    const role = this.role ?? (await this.get());
+    if (!role?.id) {
+      throw new Error(`Role "${this.roleName}" not found in realm "${this.realmName}"`);
+    }
+
+    return role as RoleRepresentation & { id: string };
+  }
+
+  private async resolveCompositeRole(roleHandle: RoleHandle | ClientRoleHandle) {
+    const role = roleHandle.role ?? (await roleHandle.get());
+    if (!role) {
+      throw new Error(`Role "${roleHandle.roleName}" not found in realm "${this.realmName}"`);
+    }
+
+    return role;
   }
 
   public async getById(id: string) {
@@ -104,5 +144,78 @@ export default class RoleHandle {
     }
 
     return this.roleName;
+  }
+
+  public async addComposite(roleHandle: RoleHandle | ClientRoleHandle) {
+    const role = await this.requireRole();
+    const compositeRole = await this.resolveCompositeRole(roleHandle);
+    const roleId = role.id;
+
+    await retryTransientAdminError(() =>
+      this.core.roles.createComposite({ realm: this.realmName, roleId }, [compositeRole]),
+    );
+
+    return this;
+  }
+
+  public async removeComposite(roleHandle: RoleHandle | ClientRoleHandle) {
+    const role = await this.requireRole();
+    const compositeRole = await this.resolveCompositeRole(roleHandle);
+    const roleId = role.id;
+
+    await retryTransientAdminError(() =>
+      this.core.roles.delCompositeRoles({ realm: this.realmName, id: roleId }, [compositeRole]),
+    );
+
+    return this;
+  }
+
+  public async listComposites(options?: { keyword?: string; page?: number; pageSize?: number }) {
+    const role = await this.requireRole();
+    const roleId = role.id;
+    const page = Math.max(1, options?.page ?? 1);
+    const pageSize = Math.max(1, options?.pageSize ?? 100);
+
+    return retryTransientAdminError(() =>
+      this.core.roles.getCompositeRoles({
+        realm: this.realmName,
+        id: roleId,
+        search: options?.keyword,
+        first: (page - 1) * pageSize,
+        max: pageSize,
+      }),
+    );
+  }
+
+  public async listRealmComposites() {
+    const role = await this.requireRole();
+    const roleId = role.id;
+
+    return retryTransientAdminError(() =>
+      this.core.roles.getCompositeRolesForRealm({
+        realm: this.realmName,
+        id: roleId,
+      }),
+    );
+  }
+
+  public async listClientComposites(clientHandle: ClientHandle) {
+    const role = await this.requireRole();
+    const roleId = role.id;
+    const client =
+      clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
+    if (!client) {
+      throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    const clientId = client.id!;
+
+    return retryTransientAdminError(() =>
+      this.core.roles.getCompositeRolesForClient({
+        realm: this.realmName,
+        id: roleId,
+        clientId,
+      }),
+    );
   }
 }

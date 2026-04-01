@@ -8,6 +8,24 @@ function removeOptionalPrefixSlash(path: string): string {
   return path.startsWith('/') ? path.slice(1) : path;
 }
 
+function normalizeGroupPath(groupPath: string) {
+  const groupPathParts = removeOptionalPrefixSlash(groupPath).split('/').filter(Boolean);
+
+  if (groupPathParts.length === 0) {
+    throw new Error(`Invalid child group path: ${groupPath}`);
+  }
+
+  return groupPathParts;
+}
+
+function isTransientGroupLookupError(error: unknown) {
+  return error instanceof Error && error.message.includes('unknown_error');
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export type GroupInputData = Omit<GroupRepresentation, 'name | id'>;
 
 export default class GroupHandle extends AbstractGroupHandle {
@@ -24,24 +42,54 @@ export default class GroupHandle extends AbstractGroupHandle {
     return one ?? null;
   }
 
-  static async getByName(core: KeycloakAdminClient, realm: string, groupName: string) {
-    const groups = await core.groups.find({ realm, search: groupName, exact: true });
-    const group = groups.find((v) => v.name === groupName);
-    return group ?? null;
+  static async getByName(core: KeycloakAdminClient, realm: string, groupName: string, attempts = 3) {
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        const groups = await core.groups.find({ realm, search: groupName, exact: true });
+        const group = groups.find((v) => v.name === groupName);
+        return group ?? null;
+      } catch (error) {
+        if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
+          throw error;
+        }
+
+        await sleep(50 * (attempt + 1));
+      }
+    }
+
+    return null;
+  }
+
+  static async listSubGroups(core: KeycloakAdminClient, realm: string, parentId: string, attempts = 3) {
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        return await core.groups.listSubGroups({
+          realm,
+          parentId,
+          briefRepresentation: false,
+          first: 0,
+          max: 1000,
+        });
+      } catch (error) {
+        if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
+          throw error;
+        }
+
+        await sleep(50 * (attempt + 1));
+      }
+    }
+
+    return [];
   }
 
   static async getByPath(core: KeycloakAdminClient, realm: string, groupPath: string) {
-    const groupPathParts = removeOptionalPrefixSlash(groupPath).split('/');
-
-    if (groupPathParts.length === 0) {
-      throw new Error(`Invalid child group path: ${groupPath}`);
-    }
+    const groupPathParts = normalizeGroupPath(groupPath);
 
     if (groupPathParts.length === 1) {
       return GroupHandle.getByName(core, realm, groupPathParts[0]);
     }
 
-    if (groupPathParts.length == 2) {
+    if (groupPathParts.length === 2) {
       return ChildGroupHandle.getByName(core, realm, groupPathParts[0], groupPathParts[1]);
     }
 
@@ -52,14 +100,14 @@ export default class GroupHandle extends AbstractGroupHandle {
     }
 
     let currentGroupId = firstChildGroup.id ?? null;
-    let foundGroup: { id?: string; name?: string } | null = null;
+    let foundGroup: GroupRepresentation | null = null;
 
-    // Iterate through the remaining path segments
     for (let i = 2; i < groupPathParts.length; i++) {
-      const subGroups = await core.groups.listSubGroups({
-        realm,
-        parentId: currentGroupId!,
-      });
+      if (!currentGroupId) {
+        return null;
+      }
+
+      const subGroups = await GroupHandle.listSubGroups(core, realm, currentGroupId);
 
       foundGroup = subGroups.find((g) => g.name === groupPathParts[i]) ?? null;
 

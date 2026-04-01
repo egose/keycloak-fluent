@@ -2,6 +2,7 @@ import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation';
 import RealmHandle from './realm';
+import IdentityProviderMapperHandle from './identity-provider-mapper';
 
 export type IdentityProviderProviderId =
   | 'saml'
@@ -75,6 +76,15 @@ export default class IdentityProviderHandle {
     this.alias = alias;
   }
 
+  private async requireIdentityProvider(): Promise<IdentityProviderRepresentation & { alias: string }> {
+    const identityProvider = this.identityProvider ?? (await this.get());
+    if (!identityProvider?.alias) {
+      throw new Error(`Identity Provider "${this.alias}" not found in realm "${this.realmName}"`);
+    }
+
+    return identityProvider as IdentityProviderRepresentation & { alias: string };
+  }
+
   public async get(): Promise<IdentityProviderRepresentation | null> {
     const one = await this.core.identityProviders.findOne({ realm: this.realmName, alias: this.alias });
     this.identityProvider = one ?? null;
@@ -105,9 +115,11 @@ export default class IdentityProviderHandle {
       throw new Error(`Identity Provider "${this.alias}" not found in realm "${this.realmName}"`);
     }
 
+    const normalizedData = getIdentityProviderDataDefaults(data);
+
     await this.core.identityProviders.update(
       { realm: this.realmName, alias: one.alias },
-      { ...data, alias: this.alias },
+      { ...normalizedData, alias: this.alias },
     );
 
     return this.get();
@@ -127,17 +139,18 @@ export default class IdentityProviderHandle {
 
   public async ensure(data: IdentityProviderInputData) {
     this.identityProviderData = data;
+    const normalizedData = getIdentityProviderDataDefaults(data);
 
     const one = await this.get();
 
     if (one?.alias) {
       await this.core.identityProviders.update(
         { realm: this.realmName, alias: one.alias },
-        { ...data, alias: this.alias },
+        { ...normalizedData, alias: this.alias },
       );
     } else {
       await this.core.identityProviders.create({
-        ...getIdentityProviderDataDefaults(data),
+        ...normalizedData,
         realm: this.realmName,
         alias: this.alias,
       });
@@ -155,5 +168,27 @@ export default class IdentityProviderHandle {
     }
 
     return this.alias;
+  }
+
+  public async listMappers() {
+    const identityProvider = await this.requireIdentityProvider();
+
+    return this.core.identityProviders.findMappers({
+      realm: this.realmName,
+      alias: identityProvider.alias,
+    });
+  }
+
+  public async listMapperTypes() {
+    const identityProvider = await this.requireIdentityProvider();
+
+    return this.core.identityProviders.findMapperTypes({
+      realm: this.realmName,
+      alias: identityProvider.alias,
+    });
+  }
+
+  public mapper(mapperName: string) {
+    return new IdentityProviderMapperHandle(this.core, this, mapperName);
   }
 }

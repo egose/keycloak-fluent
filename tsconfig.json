@@ -13,6 +13,7 @@
     "strict": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
+    "types": ["node", "lodash-es"],
     "paths": {
       "@egose/keycloak-fluent": ["./src/index"],
       "@egose/keycloak-fluent/*": ["./src/*"]

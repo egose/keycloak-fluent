@@ -1,12 +1,15 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
+import FederatedIdentityRepresentation from '@keycloak/keycloak-admin-client/lib/defs/federatedIdentityRepresentation';
 import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
 import RoleRepresentation, { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
+import { type RequiredActionAlias } from '@keycloak/keycloak-admin-client/lib/defs/requiredActionProviderRepresentation';
 import RealmHandle from './realm';
 import RoleHandle from './role';
 import ClientHandle from './clients/client';
 import ClientRoleHandle from './client-role';
+import IdentityProviderHandle from './identity-provider';
 import { AbstractGroupHandle } from './groups/abstract-group';
 
 export const defaultUserData = Object.freeze({
@@ -33,6 +36,9 @@ export const defaultUserData = Object.freeze({
 export type UserInputData = Omit<UserRepresentation, 'username | id'> & {
   password?: string;
 };
+
+export type UserRequiredAction = RequiredActionAlias | string;
+export type FederatedIdentityInputData = Omit<FederatedIdentityRepresentation, 'identityProvider'>;
 
 export default class UserHandle {
   public core: KeycloakAdminClient;
@@ -159,7 +165,52 @@ export default class UserHandle {
     });
   }
 
+  private async requireUser(): Promise<UserRepresentation & { id: string }> {
+    const user = this.user ?? (await this.get());
+    if (!user?.id) {
+      throw new Error(`User "${this.username}" not found in realm "${this.realmName}"`);
+    }
+
+    return user as UserRepresentation & { id: string };
+  }
+
+  private async updateRequiredActions(requiredActions: UserRequiredAction[]) {
+    const user = await this.requireUser();
+
+    await this.core.users.update(
+      { realm: this.realmName, id: user.id },
+      {
+        ...user,
+        username: this.username,
+        requiredActions,
+      },
+    );
+
+    await this.get();
+    return this;
+  }
+
+  private async resolveIdentityProvider(identityProviderHandle: IdentityProviderHandle) {
+    const identityProvider = identityProviderHandle.identityProvider ?? (await identityProviderHandle.get());
+    if (!identityProvider?.alias) {
+      throw new Error(`Identity Provider "${identityProviderHandle.alias}" not found in realm "${this.realmName}"`);
+    }
+
+    return identityProvider;
+  }
+
+  private async resolveClient(clientHandle: ClientHandle) {
+    const client =
+      clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
+    if (!client?.clientId) {
+      throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
+    }
+
+    return client;
+  }
+
   public async assignRole(roleHandle: RoleHandle) {
+    const user = await this.requireUser();
     let role: RoleRepresentation | null = roleHandle.role ?? null;
     if (!role) {
       role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
@@ -171,12 +222,13 @@ export default class UserHandle {
 
     await this.core.users.addRealmRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       roles: [role] as never as RoleMappingPayload[],
     });
   }
 
   public async unassignRole(roleHandle: RoleHandle) {
+    const user = await this.requireUser();
     let role: RoleRepresentation | null = roleHandle.role ?? null;
     if (!role) {
       role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
@@ -188,12 +240,13 @@ export default class UserHandle {
 
     await this.core.users.delRealmRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       roles: [role] as never as RoleMappingPayload[],
     });
   }
 
   public async assignClientRole(clientRoleHandle: ClientRoleHandle) {
+    const user = await this.requireUser();
     let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
     if (!client) {
       client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
@@ -220,13 +273,14 @@ export default class UserHandle {
 
     await this.core.users.addClientRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       clientUniqueId: client.id!,
       roles: [clientRole] as never as RoleMappingPayload[],
     });
   }
 
   public async unassignClientRole(clientRoleHandle: ClientRoleHandle) {
+    const user = await this.requireUser();
     let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
     if (!client) {
       client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
@@ -253,13 +307,14 @@ export default class UserHandle {
 
     await this.core.users.delClientRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       clientUniqueId: client.id!,
       roles: [clientRole] as never as RoleMappingPayload[],
     });
   }
 
   public async listAssignedClientRoles(clientHandle: ClientHandle) {
+    const user = await this.requireUser();
     let client: ClientRepresentation | null = clientHandle.client ?? null;
     if (!client) {
       client = (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId)) ?? null;
@@ -271,7 +326,7 @@ export default class UserHandle {
 
     const result = await this.core.users.listClientRoleMappings({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       clientUniqueId: client.id!,
     });
 
@@ -279,6 +334,7 @@ export default class UserHandle {
   }
 
   public async assignGroup(groupHandle: AbstractGroupHandle) {
+    const user = await this.requireUser();
     let group: GroupRepresentation | null = groupHandle.group ?? null;
     if (!group) {
       group = (await groupHandle.get()) ?? null;
@@ -290,12 +346,13 @@ export default class UserHandle {
 
     await this.core.users.addToGroup({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       groupId: group.id!,
     });
   }
 
   public async unassignGroup(groupHandle: AbstractGroupHandle) {
+    const user = await this.requireUser();
     let group: GroupRepresentation | null = groupHandle.group ?? null;
     if (!group) {
       group = (await groupHandle.get()) ?? null;
@@ -307,12 +364,13 @@ export default class UserHandle {
 
     await this.core.users.delFromGroup({
       realm: this.realmName,
-      id: this.user?.id!,
+      id: user.id,
       groupId: group.id!,
     });
   }
 
   public async listAssignedGroups() {
+    const user = await this.requireUser();
     const allGroups: GroupRepresentation[] = [];
     let first = 0;
     const max = 100;
@@ -320,7 +378,7 @@ export default class UserHandle {
     while (true) {
       const groups = await this.core.users.listGroups({
         realm: this.realmName,
-        id: this.user?.id!,
+        id: user.id,
         first,
         max,
         briefRepresentation: false,
@@ -335,5 +393,105 @@ export default class UserHandle {
     }
 
     return allGroups;
+  }
+
+  public async listRequiredActions() {
+    const user = await this.requireUser();
+
+    return [...(user.requiredActions ?? [])];
+  }
+
+  public async setRequiredActions(requiredActions: UserRequiredAction[]) {
+    return this.updateRequiredActions([...new Set(requiredActions)]);
+  }
+
+  public async addRequiredAction(requiredAction: UserRequiredAction) {
+    const currentRequiredActions = await this.listRequiredActions();
+    return this.updateRequiredActions([...new Set([...currentRequiredActions, requiredAction])]);
+  }
+
+  public async removeRequiredAction(requiredAction: UserRequiredAction) {
+    const currentRequiredActions = await this.listRequiredActions();
+    return this.updateRequiredActions(currentRequiredActions.filter((action) => action !== requiredAction));
+  }
+
+  public async executeActionsEmail(
+    actions: UserRequiredAction[],
+    options?: { clientId?: string; lifespan?: number; redirectUri?: string },
+  ) {
+    const user = await this.requireUser();
+
+    await this.core.users.executeActionsEmail({
+      realm: this.realmName,
+      id: user.id,
+      actions,
+      clientId: options?.clientId,
+      lifespan: options?.lifespan,
+      redirectUri: options?.redirectUri,
+    });
+  }
+
+  public async listFederatedIdentities() {
+    const user = await this.requireUser();
+
+    return this.core.users.listFederatedIdentities({
+      realm: this.realmName,
+      id: user.id,
+    });
+  }
+
+  public async linkFederatedIdentity(identityProviderHandle: IdentityProviderHandle, data: FederatedIdentityInputData) {
+    const user = await this.requireUser();
+    const identityProvider = await this.resolveIdentityProvider(identityProviderHandle);
+
+    await this.core.users.addToFederatedIdentity({
+      realm: this.realmName,
+      id: user.id,
+      federatedIdentityId: identityProvider.alias!,
+      federatedIdentity: {
+        ...data,
+        identityProvider: identityProvider.alias,
+      },
+    });
+  }
+
+  public async unlinkFederatedIdentity(identityProviderHandle: IdentityProviderHandle) {
+    const user = await this.requireUser();
+    const identityProvider = await this.resolveIdentityProvider(identityProviderHandle);
+
+    await this.core.users.delFromFederatedIdentity({
+      realm: this.realmName,
+      id: user.id,
+      federatedIdentityId: identityProvider.alias!,
+    });
+  }
+
+  public async listSessions() {
+    const user = await this.requireUser();
+
+    return this.core.users.listSessions({
+      realm: this.realmName,
+      id: user.id,
+    });
+  }
+
+  public async listOfflineSessions(clientHandle: ClientHandle) {
+    const user = await this.requireUser();
+    const client = await this.resolveClient(clientHandle);
+
+    return this.core.users.listOfflineSessions({
+      realm: this.realmName,
+      id: user.id,
+      clientId: client.clientId!,
+    });
+  }
+
+  public async logoutSessions() {
+    const user = await this.requireUser();
+
+    await this.core.users.logout({
+      realm: this.realmName,
+      id: user.id,
+    });
   }
 }

@@ -33,8 +33,8 @@ export default class RealmAdminServiceAccountHandle extends ServiceAccountHandle
   protected async addRealmManagementMappings() {
     if (!this.client) return;
 
-    let realmManagementClientId = '';
-    let realmManagementRoleName = '';
+    let realmManagementClientId;
+    let realmManagementRoleName;
 
     if (this.realmName === 'master') {
       realmManagementClientId = 'master-realm';

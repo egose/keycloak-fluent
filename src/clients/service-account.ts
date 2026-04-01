@@ -31,11 +31,12 @@ export default class ServiceAccountHandle extends ClientHandle {
   }
 
   public async getUser() {
-    if (!this.client) return null;
+    const client = this.client ?? (await this.get());
+    if (!client?.id) return null;
 
     const user = await this.core.clients.getServiceAccountUser({
       realm: this.realmName,
-      id: this.client.id!,
+      id: client.id,
     });
 
     return user ?? null;
