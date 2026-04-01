@@ -1,3 +1,8 @@
+## [0.6.0](https://github.com/egose/keycloak-fluent/compare/v0.5.2...v0.6.0) (2026-04-01)
+
+### Features
+
+* add various handles ([8ae381e](https://github.com/egose/keycloak-fluent/commit/8ae381eb542d4e13782b3c049b8d4e693d9623ed))
 ## [0.5.2](https://github.com/egose/keycloak-fluent/compare/v0.5.1...v0.5.2) (2025-12-24)
 ## [0.5.1](https://github.com/egose/keycloak-fluent/compare/v0.5.0...v0.5.1) (2025-12-24)
 ## [0.5.0](https://github.com/egose/keycloak-fluent/compare/v0.4.0...v0.5.0) (2025-12-14)
