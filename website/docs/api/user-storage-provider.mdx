@@ -1,0 +1,55 @@
+---
+sidebar_label: User Storage Provider
+sidebar_position: 11
+---
+
+# User Storage Provider API
+
+`UserStorageProviderHandle` wraps the operational endpoints for an existing user storage provider such as LDAP.
+
+## Access
+
+```ts
+const provider = realm.userStorageProvider('provider-id');
+```
+
+## Methods
+
+### `getName()`
+
+Fetches the provider id/name pair and caches the name on the handle.
+
+### `removeImportedUsers()`
+
+Removes imported users for the provider.
+
+### `sync(action?)`
+
+Triggers a provider sync.
+
+```ts
+await provider.sync('triggerFullSync');
+await provider.sync('triggerChangedUsersSync');
+```
+
+Supported actions:
+
+- `triggerFullSync`
+- `triggerChangedUsersSync`
+
+### `unlinkUsers()`
+
+Unlinks imported users from the provider.
+
+### `syncMappers(parentId, direction?)`
+
+Triggers mapper sync operations.
+
+```ts
+await provider.syncMappers('mapper-parent-id', 'fedToKeycloak');
+```
+
+Supported directions:
+
+- `fedToKeycloak`
+- `keycloakToFed`

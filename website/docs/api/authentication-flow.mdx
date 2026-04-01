@@ -1,0 +1,110 @@
+---
+sidebar_label: Authentication Flow
+sidebar_position: 8
+---
+
+# Authentication Flow API
+
+`AuthenticationFlowHandle` manages realm authentication flows and the lower-level execution and required-action helpers exposed by Keycloak.
+
+## Access
+
+```ts
+const flow = realm.authenticationFlow('browser-copy');
+```
+
+## Common Lifecycle
+
+```ts
+const flow = await realm.authenticationFlow('browser-copy').ensure({
+  description: 'Custom browser flow',
+  providerId: 'basic-flow',
+  topLevel: true,
+  builtIn: false,
+});
+
+await flow.copy('browser-copy-v2');
+```
+
+## Core Methods
+
+### `get()` and `getById(id)`
+
+Resolve a flow by alias or internal id.
+
+### `create(data)`, `update(data)`, `delete()`
+
+Standard CRUD operations for a named flow.
+
+### `ensure(data)` and `discard()`
+
+`ensure` creates or updates the flow and returns the handle. `discard` removes it only when it already exists.
+
+### `copy(newAlias)`
+
+Copies the current flow and returns the copied flow representation.
+
+## Executions
+
+The test suite exercises the execution helpers directly.
+
+```ts
+const executions = await realm.authenticationFlow('browser').listExecutions();
+await flow.addExecution('auth-cookie');
+await flow.updateExecution({ id: executions[0].id, requirement: 'REQUIRED' });
+await flow.raiseExecutionPriority(executions[0].id!);
+await flow.lowerExecutionPriority(executions[0].id!);
+await flow.deleteExecution(executions[0].id!);
+```
+
+Available helpers:
+
+- `listExecutions()`
+- `addExecution(provider)`
+- `addSubFlow({ alias, type?, provider?, description? })`
+- `updateExecution(execution, { flowAlias? })`
+- `deleteExecution(id)`
+- `raiseExecutionPriority(id)`
+- `lowerExecutionPriority(id)`
+
+## Provider Discovery
+
+These methods expose the underlying provider metadata endpoints:
+
+- `listClientAuthenticatorProviders()`
+- `listAuthenticatorProviders()`
+- `listFormActionProviders()`
+- `listFormProviders()`
+- `getConfigDescription(providerId)`
+
+## Authenticator Config Helpers
+
+```ts
+const config = await flow.createConfig({ alias: 'cookie-config', config: { foo: 'bar' } });
+await flow.updateConfig({ ...config, config: { foo: 'baz' } });
+await flow.deleteConfig(config.id!);
+```
+
+Supported methods:
+
+- `createConfig(data)`
+- `getConfig(id)`
+- `updateConfig(data)`
+- `deleteConfig(id)`
+
+## Required Action Helpers
+
+`AuthenticationFlowHandle` also wraps required-action administration:
+
+- `listRequiredActions()`
+- `getRequiredAction(alias)`
+- `updateRequiredAction(alias, data)`
+- `deleteRequiredAction(alias)`
+- `raiseRequiredActionPriority(alias)`
+- `lowerRequiredActionPriority(alias)`
+- `getRequiredActionConfigDescription(alias)`
+- `getRequiredActionConfig(alias)`
+- `updateRequiredActionConfig(alias, data)`
+- `removeRequiredActionConfig(alias)`
+
+Use these when you need to configure flows and required actions from the same provisioning script.

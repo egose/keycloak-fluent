@@ -1,0 +1,29 @@
+---
+sidebar_label: Cache
+sidebar_position: 12
+---
+
+# Cache API
+
+`CacheHandle` provides realm-scoped cache maintenance helpers.
+
+## Access
+
+```ts
+const cache = realm.cache();
+```
+
+## Methods
+
+- `clearUserCache()`
+- `clearKeysCache()`
+- `clearCrlCache()`
+- `clearRealmCache()`
+
+```ts
+await realm.cache().clearUserCache();
+await realm.cache().clearKeysCache();
+await realm.cache().clearRealmCache();
+```
+
+These methods are thin wrappers around Keycloak's admin cache endpoints and are intended for operational scripts rather than entity provisioning.

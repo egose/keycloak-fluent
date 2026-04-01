@@ -1,0 +1,44 @@
+---
+sidebar_label: Client Policies
+sidebar_position: 14
+---
+
+# Client Policies API
+
+`ClientPoliciesHandle` wraps realm-level client profiles and client policies.
+
+## Access
+
+```ts
+const clientPolicies = realm.clientPolicies();
+```
+
+## Profiles
+
+```ts
+const profiles = await clientPolicies.getProfiles(true);
+await clientPolicies.updateProfiles({
+  profiles: [{ name: 'secure-clients' }],
+});
+```
+
+Methods:
+
+- `getProfiles(includeGlobalProfiles?)`
+- `updateProfiles(data)`
+
+## Policies
+
+```ts
+const policies = await clientPolicies.getPolicies(true);
+await clientPolicies.updatePolicies({
+  policies: [{ name: 'enforce-pkce' }],
+});
+```
+
+Methods:
+
+- `getPolicies(includeGlobalPolicies?)`
+- `updatePolicies(data)`
+
+Both update methods return a fresh read after the write, which makes them fit well into provisioning scripts that want the current server state immediately after mutation.

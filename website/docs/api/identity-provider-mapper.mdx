@@ -1,0 +1,40 @@
+---
+sidebar_label: Identity Provider Mapper
+sidebar_position: 18
+---
+
+# Identity Provider Mapper API
+
+`IdentityProviderMapperHandle` manages mappers that belong to a specific identity provider.
+
+## Access
+
+```ts
+const mapper = realm.identityProvider('google').mapper('email-mapper');
+```
+
+## Common Lifecycle
+
+```ts
+await realm
+  .identityProvider('google')
+  .mapper('email-mapper')
+  .ensure({
+    identityProviderMapper: 'oidc-user-attribute-idp-mapper',
+    config: {
+      claim: 'email',
+      'user.attribute': 'email',
+    },
+  });
+```
+
+## Methods
+
+- `get()` and `getById(id)`
+- `create(data)`
+- `update(data)`
+- `delete()`
+- `ensure(data)`
+- `discard()`
+
+The handle resolves the parent identity provider lazily, so you can build it from `realm.identityProvider(alias)` without preloading that provider first.
