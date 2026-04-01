@@ -96,34 +96,6 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 462:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-
-// EXPORTS
-__webpack_require__.d(__webpack_exports__, {
-  A: () => (/* binding */ TabItem)
-});
-
-// EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/index.js
-var react = __webpack_require__(9471);
-// EXTERNAL MODULE: ./node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs
-var clsx = __webpack_require__(3526);
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/styles.module.css
-// extracted by mini-css-extract-plugin
-/* harmony default export */ const styles_module = ({"tabItem":"tabItem_PKhe"});
-// EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
-var jsx_runtime = __webpack_require__(2615);
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/index.js
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */function TabItem({children,hidden,className}){return/*#__PURE__*/(0,jsx_runtime.jsx)("div",{role:"tabpanel",className:(0,clsx/* default */.A)(styles_module.tabItem,className),hidden,children:children});}
-
-/***/ }),
-
 /***/ 2002:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
@@ -146,10 +118,10 @@ const site_docs_about_philosophy_mdx_257_namespaceObject = /*#__PURE__*/JSON.par
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/Tabs/index.js + 2 modules
-var Tabs = __webpack_require__(3139);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/index.js + 1 modules
-var TabItem = __webpack_require__(462);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/Tabs/index.js + 2 modules
+var Tabs = __webpack_require__(6334);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/index.js + 1 modules
+var TabItem = __webpack_require__(8710);
 ;// ./docs/about/philosophy.mdx
 
 
@@ -467,7 +439,7 @@ function MDXContent(props = {}) {
 
 /***/ }),
 
-/***/ 3139:
+/***/ 6334:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 
@@ -480,21 +452,21 @@ __webpack_require__.d(__webpack_exports__, {
 var react = __webpack_require__(9471);
 // EXTERNAL MODULE: ./node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs
 var clsx = __webpack_require__(3526);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/ThemeClassNames.js
-var ThemeClassNames = __webpack_require__(2179);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/scrollUtils.js
-var scrollUtils = __webpack_require__(940);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/ThemeClassNames.js
+var ThemeClassNames = __webpack_require__(570);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/scrollUtils.js
+var scrollUtils = __webpack_require__(9033);
 // EXTERNAL MODULE: ./node_modules/.pnpm/react-router@5.3.4_react@19.2.4/node_modules/react-router/esm/react-router.js
 var react_router = __webpack_require__(2264);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_326f06ac369a82a5930e5ef481a7c3e0/node_modules/@docusaurus/core/lib/client/exports/useIsomorphicLayoutEffect.js
-var useIsomorphicLayoutEffect = __webpack_require__(53);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/historyUtils.js
-var historyUtils = __webpack_require__(7945);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/jsUtils.js
-var jsUtils = __webpack_require__(134);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/storageUtils.js + 1 modules
-var storageUtils = __webpack_require__(5627);
-;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/tabsUtils.js
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_2c227569db130f406d9af9cad8490e6a/node_modules/@docusaurus/core/lib/client/exports/useIsomorphicLayoutEffect.js
+var useIsomorphicLayoutEffect = __webpack_require__(14);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/historyUtils.js
+var historyUtils = __webpack_require__(1922);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/jsUtils.js
+var jsUtils = __webpack_require__(5387);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/storageUtils.js + 1 modules
+var storageUtils = __webpack_require__(5345);
+;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/tabsUtils.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -512,14 +484,14 @@ if(!isValidValue({value:defaultValue,tabValues})){throw new Error(`Docusaurus er
 const valueToSync=(()=>{const value=queryStringValue??storageValue;if(!isValidValue({value,tabValues})){return null;}return value;})();// Sync in a layout/sync effect is important, for useScrollPositionBlocker
 // See https://github.com/facebook/docusaurus/issues/8625
 (0,useIsomorphicLayoutEffect/* default */.A)(()=>{if(valueToSync){setSelectedValue(valueToSync);}},[valueToSync]);const selectValue=(0,react.useCallback)(newValue=>{if(!isValidValue({value:newValue,tabValues})){throw new Error(`Can't select invalid tab value=${newValue}`);}setSelectedValue(newValue);setQueryString(newValue);setStorageValue(newValue);},[setQueryString,setStorageValue,tabValues]);return{selectedValue,selectValue,tabValues};}
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_326f06ac369a82a5930e5ef481a7c3e0/node_modules/@docusaurus/core/lib/client/exports/useIsBrowser.js
-var useIsBrowser = __webpack_require__(231);
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/Tabs/styles.module.css
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_2c227569db130f406d9af9cad8490e6a/node_modules/@docusaurus/core/lib/client/exports/useIsBrowser.js
+var useIsBrowser = __webpack_require__(7750);
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/Tabs/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const styles_module = ({"tabList":"tabList_cheh","tabItem":"tabItem_ELpf"});
+/* harmony default export */ const styles_module = ({"tabList":"tabList_ieju","tabItem":"tabItem_Z9vF"});
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/Tabs/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/Tabs/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -532,6 +504,34 @@ return null;}return/*#__PURE__*/(0,react.cloneElement)(selectedTabItem,{classNam
 'tabs-container',styles_module.tabList),children:[/*#__PURE__*/(0,jsx_runtime.jsx)(TabList,{...tabs,...props}),/*#__PURE__*/(0,jsx_runtime.jsx)(TabContent,{...tabs,...props})]});}function Tabs(props){const isBrowser=(0,useIsBrowser/* default */.A)();return/*#__PURE__*/(0,jsx_runtime.jsx)(TabsComponent// Remount tabs after hydration
 // Temporary fix for https://github.com/facebook/docusaurus/issues/5653
 ,{...props,children:sanitizeTabsChildren(props.children)},String(isBrowser));}
+
+/***/ }),
+
+/***/ 8710:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  A: () => (/* binding */ TabItem)
+});
+
+// EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/index.js
+var react = __webpack_require__(9471);
+// EXTERNAL MODULE: ./node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs
+var clsx = __webpack_require__(3526);
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/styles.module.css
+// extracted by mini-css-extract-plugin
+/* harmony default export */ const styles_module = ({"tabItem":"tabItem_ywJO"});
+// EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
+var jsx_runtime = __webpack_require__(2615);
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/TabItem/index.js
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */function TabItem({children,hidden,className}){return/*#__PURE__*/(0,jsx_runtime.jsx)("div",{role:"tabpanel",className:(0,clsx/* default */.A)(styles_module.tabItem,className),hidden,children:children});}
 
 /***/ })
 

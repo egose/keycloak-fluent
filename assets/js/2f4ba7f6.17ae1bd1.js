@@ -23,8 +23,8 @@ const site_docs_example_user_storage_providers_mdx_2f4_namespaceObject = /*#__PU
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js + 27 modules
-var CodeBlock = __webpack_require__(6375);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js + 27 modules
+var CodeBlock = __webpack_require__(804);
 ;// ./node_modules/.pnpm/raw-loader@4.0.2_webpack@5.99.9/node_modules/raw-loader/dist/cjs.js!./.samples/user-storage-providers.ts
 /* harmony default export */ const user_storage_providers = ("import KeycloakAdminClientFluent from '@egose/keycloak-fluent';\n\nconst realmName = 'my-custom-realm';\nconst realmAdminClientId = 'my-custom-realm-admin-sa';\nconst realmAdminClientSecret = 'my-custom-realm-admin-sa-password'; // pragma: allowlist secret\nconst providerId = 'federation-provider-id';\nconst mapperParentId = 'ldap-mapper-parent-id';\n\nconst kc = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName });\nawait kc.simpleAuth({\n  clientId: realmAdminClientId,\n  clientSecret: realmAdminClientSecret,\n});\n\nconst provider = kc.realm(realmName).userStorageProvider(providerId);\n\nconst providerMetadata = await provider.getName();\nconst fullSyncResult = await provider.sync('triggerFullSync');\nconst changedUsersSyncResult = await provider.sync('triggerChangedUsersSync');\nconst mapperSyncResult = await provider.syncMappers(mapperParentId, 'fedToKeycloak');\n\nawait provider.unlinkUsers();\nawait provider.removeImportedUsers();\n");
 ;// ./docs/example/user-storage-providers.mdx

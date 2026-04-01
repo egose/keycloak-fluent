@@ -9,9 +9,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (/* binding */ Home)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9471);
-/* harmony import */ var _docusaurus_Link__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2334);
-/* harmony import */ var _docusaurus_useDocusaurusContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3026);
-/* harmony import */ var _theme_Layout__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4941);
+/* harmony import */ var _docusaurus_Link__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3375);
+/* harmony import */ var _docusaurus_useDocusaurusContext__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7591);
+/* harmony import */ var _theme_Layout__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6525);
 /* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(2615);
 const highlights=[{title:'Provision With Handles, Not Request Plumbing',description:'Start from a realm and move through users, groups, roles, clients, identity providers, organizations, workflows, and authentication flows with resource-scoped handles.'},{title:'Idempotent Scripts By Default',description:'Use ensure and discard to write repeatable setup code for local environments, CI jobs, migrations, and tenant provisioning.'},{title:'Operational Helpers Included',description:'The fluent layer also covers cache maintenance, attack detection, user storage provider sync, client policies, server info, and who-am-i lookups.'}];const resourceGroups=[{label:'Core resources',items:['realms','users','groups','roles','clients','client scopes']},{label:'Identity and login',items:['identity providers','identity provider mappers','protocol mappers','service accounts']},{label:'Realm operations',items:['authentication flows','organizations','workflows','components','events','sessions']},{label:'System helpers',items:['cache','attack detection','client policies','server info','who am i']}];const proofPoints=['Built on top of the official Keycloak admin client','Docs now reflect the current src and tests surface area','Readable enough for one-off scripts, structured enough for production automation'];const codeSample=`import KeycloakAdminClientFluent from '@egose/keycloak-fluent';
 

@@ -1,4 +1,4 @@
-(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[6450],{
+(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[4805],{
 
 /***/ 416:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
@@ -96,50 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 4809:
-/***/ ((module, exports) => {
-
-/**
- * @param {string} string    The string to parse
- * @returns {Array<number>}  Returns an energetic array.
- */
-function parsePart(string) {
-  let res = [];
-  let m;
-
-  for (let str of string.split(",").map((str) => str.trim())) {
-    // just a number
-    if (/^-?\d+$/.test(str)) {
-      res.push(parseInt(str, 10));
-    } else if (
-      (m = str.match(/^(-?\d+)(-|\.\.\.?|\u2025|\u2026|\u22EF)(-?\d+)$/))
-    ) {
-      // 1-5 or 1..5 (equivalent) or 1...5 (doesn't include 5)
-      let [_, lhs, sep, rhs] = m;
-
-      if (lhs && rhs) {
-        lhs = parseInt(lhs);
-        rhs = parseInt(rhs);
-        const incr = lhs < rhs ? 1 : -1;
-
-        // Make it inclusive by moving the right 'stop-point' away by one.
-        if (sep === "-" || sep === ".." || sep === "\u2025") rhs += incr;
-
-        for (let i = lhs; i !== rhs; i += incr) res.push(i);
-      }
-    }
-  }
-
-  return res;
-}
-
-exports["default"] = parsePart;
-module.exports = parsePart;
-
-
-/***/ }),
-
-/***/ 6375:
+/***/ 804:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -151,15 +108,15 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/index.js
 var react = __webpack_require__(9471);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_326f06ac369a82a5930e5ef481a7c3e0/node_modules/@docusaurus/core/lib/client/exports/useIsBrowser.js
-var useIsBrowser = __webpack_require__(231);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_2c227569db130f406d9af9cad8490e6a/node_modules/@docusaurus/core/lib/client/exports/useIsBrowser.js
+var useIsBrowser = __webpack_require__(7750);
 // EXTERNAL MODULE: ./node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs
 var clsx = __webpack_require__(3526);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/contexts/colorMode.js
-var contexts_colorMode = __webpack_require__(7209);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/useThemeConfig.js
-var useThemeConfig = __webpack_require__(7530);
-;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/hooks/usePrismTheme.js
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/contexts/colorMode.js
+var contexts_colorMode = __webpack_require__(1106);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/useThemeConfig.js
+var useThemeConfig = __webpack_require__(5353);
+;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/hooks/usePrismTheme.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -169,16 +126,16 @@ var useThemeConfig = __webpack_require__(7530);
  * Returns a color-mode-dependent Prism theme: whatever the user specified in
  * the config. Falls back to `palenight`.
  */function usePrismTheme(){const{prism}=(0,useThemeConfig/* useThemeConfig */.p)();const{colorMode}=(0,contexts_colorMode/* useColorMode */.G)();const lightModeTheme=prism.theme;const darkModeTheme=prism.darkTheme||lightModeTheme;const prismTheme=colorMode==='dark'?darkModeTheme:lightModeTheme;return prismTheme;}
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/ThemeClassNames.js
-var ThemeClassNames = __webpack_require__(2179);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/ThemeClassNames.js
+var ThemeClassNames = __webpack_require__(570);
 // EXTERNAL MODULE: ./node_modules/.pnpm/parse-numeric-range@1.3.0/node_modules/parse-numeric-range/index.js
 var parse_numeric_range = __webpack_require__(4809);
 var parse_numeric_range_default = /*#__PURE__*/__webpack_require__.n(parse_numeric_range);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/reactUtils.js
-var reactUtils = __webpack_require__(9576);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/reactUtils.js
+var reactUtils = __webpack_require__(4595);
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
-;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/codeBlockUtils.js
+;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/codeBlockUtils.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -229,10 +186,10 @@ function normalizeLanguage(language){return language?.toLowerCase();}function ge
  */function ensureLanguageClassName({className,language}){return (0,clsx/* default */.A)(className,language&&!className?.includes(`language-${language}`)&&`language-${language}`);}function createCodeBlockMetadata(params){const language=getLanguage({language:params.language,defaultLanguage:params.defaultLanguage,className:params.className});const{lineClassNames,code}=parseLines(params.code,{metastring:params.metastring,magicComments:params.magicComments,language});const className=ensureLanguageClassName({className:params.className,language});const title=parseCodeBlockTitle(params.metastring)||params.title;const lineNumbersStart=getLineNumbersStart({showLineNumbers:params.showLineNumbers,metastring:params.metastring});return{codeInput:params.code,code,className,language,title,lineNumbersStart,lineClassNames};}function getPrismCssVariables(prismTheme){const mapping={color:'--prism-color',backgroundColor:'--prism-background-color'};const properties={};Object.entries(prismTheme.plain).forEach(([key,value])=>{const varName=mapping[key];if(varName&&typeof value==='string'){properties[varName]=value;}});return properties;}const CodeBlockContext=/*#__PURE__*/(0,react.createContext)(null);function CodeBlockContextProvider({metadata,wordWrap,children}){// Should we optimize this in 2 contexts?
 // Unlike metadata, wordWrap is stateful and likely to trigger re-renders
 const value=(0,react.useMemo)(()=>{return{metadata,wordWrap};},[metadata,wordWrap]);return/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockContext.Provider,{value:value,children:children});}function useCodeBlockContext(){const value=(0,react.useContext)(CodeBlockContext);if(value===null){throw new reactUtils/* ReactContextError */.dV('CodeBlockContextProvider');}return value;}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Container/styles.module.css
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Container/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const styles_module = ({"codeBlockContainer":"codeBlockContainer_s6Jz"});
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Container/index.js
+/* harmony default export */ const styles_module = ({"codeBlockContainer":"codeBlockContainer_Ldhp"});
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Container/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -240,10 +197,10 @@ const value=(0,react.useMemo)(()=>{return{metadata,wordWrap};},[metadata,wordWra
  * LICENSE file in the root directory of this source tree.
  */function CodeBlockContainer({as:As,...props}){const prismTheme=usePrismTheme();const prismCssVariables=getPrismCssVariables(prismTheme);return/*#__PURE__*/(0,jsx_runtime.jsx)(As// Polymorphic components are hard to type, without `oneOf` generics
 ,{...props,style:prismCssVariables,className:(0,clsx/* default */.A)(props.className,styles_module.codeBlockContainer,ThemeClassNames/* ThemeClassNames */.G.common.codeBlock)});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/styles.module.css
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const Content_styles_module = ({"codeBlock":"codeBlock_TnKU","codeBlockStandalone":"codeBlockStandalone_euc2","codeBlockLines":"codeBlockLines_kmBz","codeBlockLinesWithNumbering":"codeBlockLinesWithNumbering_iaUs"});
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/Element.js
+/* harmony default export */ const Content_styles_module = ({"codeBlock":"codeBlock_dUbo","codeBlockStandalone":"codeBlockStandalone_g3cD","codeBlockLines":"codeBlockLines_2kmW","codeBlockLinesWithNumbering":"codeBlockLinesWithNumbering_Qati"});
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/Element.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -255,7 +212,7 @@ const value=(0,react.useMemo)(()=>{return{metadata,wordWrap};},[metadata,wordWra
 // When children is not a simple string, we just return a styled block without
 // actually highlighting.
 function CodeBlockJSX({children,className}){return/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockContainer,{as:"pre",tabIndex:0,className:(0,clsx/* default */.A)(Content_styles_module.codeBlockStandalone,'thin-scrollbar',className),children:/*#__PURE__*/(0,jsx_runtime.jsx)("code",{className:Content_styles_module.codeBlockLines,children:children})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/hooks/useMutationObserver.js
+;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/hooks/useMutationObserver.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -265,7 +222,7 @@ function CodeBlockJSX({children,className}){return/*#__PURE__*/(0,jsx_runtime.js
 // so this should be to memo options in 99%
 // TODO handle options.attributeFilter array
 const stableOptions=(0,reactUtils/* useShallowMemoObject */.Be)(options);(0,react.useEffect)(()=>{const observer=new MutationObserver(stableCallback);if(target){observer.observe(target,stableOptions);}return()=>observer.disconnect();},[target,stableCallback,stableOptions]);}
-;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/hooks/useCodeWordWrap.js
+;// ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/hooks/useCodeWordWrap.js
 // Callback fires when the "hidden" attribute of a tabpanel changes
 // See https://github.com/facebook/docusaurus/pull/7485
 function useTabBecameVisibleCallback(codeBlockRef,callback){const[hiddenTabElement,setHiddenTabElement]=(0,react.useState)();const updateHiddenTabElement=(0,react.useCallback)(()=>{// No need to observe non-hidden tabs
@@ -273,7 +230,7 @@ function useTabBecameVisibleCallback(codeBlockRef,callback){const[hiddenTabEleme
 setHiddenTabElement(codeBlockRef.current?.closest('[role=tabpanel][hidden]'));},[codeBlockRef,setHiddenTabElement]);(0,react.useEffect)(()=>{updateHiddenTabElement();},[updateHiddenTabElement]);useMutationObserver(hiddenTabElement,mutations=>{mutations.forEach(mutation=>{if(mutation.type==='attributes'&&mutation.attributeName==='hidden'){callback();updateHiddenTabElement();}});},{attributes:true,characterData:false,childList:false,subtree:false});}function useCodeWordWrap(){const[isEnabled,setIsEnabled]=(0,react.useState)(false);const[isCodeScrollable,setIsCodeScrollable]=(0,react.useState)(false);const codeBlockRef=(0,react.useRef)(null);const toggle=(0,react.useCallback)(()=>{const codeElement=codeBlockRef.current.querySelector('code');if(isEnabled){codeElement.removeAttribute('style');}else{codeElement.style.whiteSpace='pre-wrap';// When code wrap is enabled, we want to avoid a scrollbar in any case
 // Ensure that very very long words/strings/tokens still wrap
 codeElement.style.overflowWrap='anywhere';}setIsEnabled(value=>!value);},[codeBlockRef,isEnabled]);const updateCodeIsScrollable=(0,react.useCallback)(()=>{const{scrollWidth,clientWidth}=codeBlockRef.current;const isScrollable=scrollWidth>clientWidth||codeBlockRef.current.querySelector('code').hasAttribute('style');setIsCodeScrollable(isScrollable);},[codeBlockRef]);useTabBecameVisibleCallback(codeBlockRef,updateCodeIsScrollable);(0,react.useEffect)(()=>{updateCodeIsScrollable();},[isEnabled,updateCodeIsScrollable]);(0,react.useEffect)(()=>{window.addEventListener('resize',updateCodeIsScrollable,{passive:true});return()=>{window.removeEventListener('resize',updateCodeIsScrollable);};},[updateCodeIsScrollable]);return{codeBlockRef,isEnabled,isCodeScrollable,toggle};}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Title/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Title/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -283,7 +240,7 @@ codeElement.style.overflowWrap='anywhere';}setIsEnabled(value=>!value);},[codeBl
 function CodeBlockTitle({children}){return children;}
 // EXTERNAL MODULE: ./node_modules/.pnpm/prism-react-renderer@2.4.1_react@19.2.4/node_modules/prism-react-renderer/dist/index.mjs
 var dist = __webpack_require__(4185);
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Line/Token/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Line/Token/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -291,10 +248,10 @@ var dist = __webpack_require__(4185);
  * LICENSE file in the root directory of this source tree.
  */// Pass-through components that users can swizzle and customize
 function CodeBlockLineToken({line,token,...props}){return/*#__PURE__*/(0,jsx_runtime.jsx)("span",{...props});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Line/styles.module.css
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Line/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const Line_styles_module = ({"codeLine":"codeLine_b2Dd","codeLineNumber":"codeLineNumber_Td_f","codeLineContent":"codeLineContent_LRVN"});
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Line/index.js
+/* harmony default export */ const Line_styles_module = ({"codeLine":"codeLine_opsi","codeLineNumber":"codeLineNumber_CvzE","codeLineContent":"codeLineContent_C4YU"});
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Line/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -303,7 +260,7 @@ function CodeBlockLineToken({line,token,...props}){return/*#__PURE__*/(0,jsx_run
  */// Replaces '\n' by ''
 // Historical code, not sure why we even need this :/
 function fixLineBreak(line){const singleLineBreakToken=line.length===1&&line[0].content==='\n'?line[0]:undefined;if(singleLineBreakToken){return[{...singleLineBreakToken,content:''}];}return line;}function CodeBlockLine({line:lineProp,classNames,showLineNumbers,getLineProps,getTokenProps}){const line=fixLineBreak(lineProp);const lineProps=getLineProps({line,className:(0,clsx/* default */.A)(classNames,showLineNumbers&&Line_styles_module.codeLine)});const lineTokens=line.map((token,key)=>{const tokenProps=getTokenProps({token});return/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockLineToken,{...tokenProps,line:line,token:token,children:tokenProps.children},key);});return/*#__PURE__*/(0,jsx_runtime.jsxs)("span",{...lineProps,children:[showLineNumbers?/*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment,{children:[/*#__PURE__*/(0,jsx_runtime.jsx)("span",{className:Line_styles_module.codeLineNumber}),/*#__PURE__*/(0,jsx_runtime.jsx)("span",{className:Line_styles_module.codeLineContent,children:lineTokens})]}):lineTokens,/*#__PURE__*/(0,jsx_runtime.jsx)("br",{})]});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -311,7 +268,7 @@ function fixLineBreak(line){const singleLineBreakToken=line.length===1&&line[0].
  * LICENSE file in the root directory of this source tree.
  */// TODO Docusaurus v4: remove useless forwardRef
 const Pre=/*#__PURE__*/react.forwardRef((props,ref)=>{return/*#__PURE__*/(0,jsx_runtime.jsx)("pre",{ref:ref/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */,tabIndex:0,...props,className:(0,clsx/* default */.A)(props.className,Content_styles_module.codeBlock,'thin-scrollbar')});});function Code(props){const{metadata}=useCodeBlockContext();return/*#__PURE__*/(0,jsx_runtime.jsx)("code",{...props,className:(0,clsx/* default */.A)(props.className,Content_styles_module.codeBlockLines,metadata.lineNumbersStart!==undefined&&Content_styles_module.codeBlockLinesWithNumbering),style:{...props.style,counterReset:metadata.lineNumbersStart===undefined?undefined:`line-count ${metadata.lineNumbersStart-1}`}});}function CodeBlockContent({className:classNameProp}){const{metadata,wordWrap}=useCodeBlockContext();const prismTheme=usePrismTheme();const{code,language,lineNumbersStart,lineClassNames}=metadata;return/*#__PURE__*/(0,jsx_runtime.jsx)(dist/* Highlight */.f4,{theme:prismTheme,code:code,language:language,children:({className,style,tokens:lines,getLineProps,getTokenProps})=>/*#__PURE__*/(0,jsx_runtime.jsx)(Pre,{ref:wordWrap.codeBlockRef,className:(0,clsx/* default */.A)(classNameProp,className),style:style,children:/*#__PURE__*/(0,jsx_runtime.jsx)(Code,{children:lines.map((line,i)=>/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockLine,{line:line,getLineProps:getLineProps,getTokenProps:getTokenProps,classNames:lineClassNames[i],showLineNumbers:lineNumbersStart!==undefined},i))})})});}
-;// ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_326f06ac369a82a5930e5ef481a7c3e0/node_modules/@docusaurus/core/lib/client/exports/BrowserOnly.js
+;// ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_2c227569db130f406d9af9cad8490e6a/node_modules/@docusaurus/core/lib/client/exports/BrowserOnly.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -321,60 +278,60 @@ const Pre=/*#__PURE__*/react.forwardRef((props,ref)=>{return/*#__PURE__*/(0,jsx_
 // https://www.joshwcomeau.com/react/the-perils-of-rehydration/#abstractions
 function BrowserOnly({children,fallback}){const isBrowser=(0,useIsBrowser/* default */.A)();if(isBrowser){if(typeof children!=='function'&&"production"==='development')// removed by dead control flow
 {}return/*#__PURE__*/(0,jsx_runtime.jsx)(jsx_runtime.Fragment,{children:children?.()});}return fallback??null;}
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_326f06ac369a82a5930e5ef481a7c3e0/node_modules/@docusaurus/core/lib/client/exports/Translate.js + 1 modules
-var Translate = __webpack_require__(7232);
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/Button/index.js
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+core@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4__acorn@8.1_2c227569db130f406d9af9cad8490e6a/node_modules/@docusaurus/core/lib/client/exports/Translate.js + 1 modules
+var Translate = __webpack_require__(297);
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/Button/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */function CodeBlockButton({className,...props}){return/*#__PURE__*/(0,jsx_runtime.jsx)("button",{type:"button",...props,className:(0,clsx/* default */.A)('clean-btn',className)});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/Icon/Copy/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/Icon/Copy/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */function IconCopy(props){return/*#__PURE__*/(0,jsx_runtime.jsx)("svg",{viewBox:"0 0 24 24",...props,children:/*#__PURE__*/(0,jsx_runtime.jsx)("path",{fill:"currentColor",d:"M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/Icon/Success/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/Icon/Success/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */function IconSuccess(props){return/*#__PURE__*/(0,jsx_runtime.jsx)("svg",{viewBox:"0 0 24 24",...props,children:/*#__PURE__*/(0,jsx_runtime.jsx)("path",{fill:"currentColor",d:"M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/CopyButton/styles.module.css
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/CopyButton/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const CopyButton_styles_module = ({"copyButtonCopied":"copyButtonCopied_bIH1","copyButtonIcons":"copyButtonIcons_gVFf","copyButtonIcon":"copyButtonIcon_eo8z","copyButtonSuccessIcon":"copyButtonSuccessIcon_aKQ6"});
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/CopyButton/index.js
+/* harmony default export */ const CopyButton_styles_module = ({"copyButtonCopied":"copyButtonCopied_LAnG","copyButtonIcons":"copyButtonIcons_HiuJ","copyButtonIcon":"copyButtonIcon_Qei_","copyButtonSuccessIcon":"copyButtonSuccessIcon_CtoP"});
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/CopyButton/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */function title(){return (0,Translate/* translate */.T)({id:'theme.CodeBlock.copy',message:'Copy',description:'The copy button label on code blocks'});}function ariaLabel(isCopied){return isCopied?(0,Translate/* translate */.T)({id:'theme.CodeBlock.copied',message:'Copied',description:'The copied button label on code blocks'}):(0,Translate/* translate */.T)({id:'theme.CodeBlock.copyButtonAriaLabel',message:'Copy code to clipboard',description:'The ARIA label for copy code blocks button'});}function useCopyButton(){const{metadata:{code}}=useCodeBlockContext();const[isCopied,setIsCopied]=(0,react.useState)(false);const copyTimeout=(0,react.useRef)(undefined);const copyCode=(0,react.useCallback)(()=>{navigator.clipboard.writeText(code).then(()=>{setIsCopied(true);copyTimeout.current=window.setTimeout(()=>{setIsCopied(false);},1000);});},[code]);(0,react.useEffect)(()=>()=>window.clearTimeout(copyTimeout.current),[]);return{copyCode,isCopied};}function CopyButton({className}){const{copyCode,isCopied}=useCopyButton();return/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockButton,{"aria-label":ariaLabel(isCopied),title:title(),className:(0,clsx/* default */.A)(className,CopyButton_styles_module.copyButton,isCopied&&CopyButton_styles_module.copyButtonCopied),onClick:copyCode,children:/*#__PURE__*/(0,jsx_runtime.jsxs)("span",{className:CopyButton_styles_module.copyButtonIcons,"aria-hidden":"true",children:[/*#__PURE__*/(0,jsx_runtime.jsx)(IconCopy,{className:CopyButton_styles_module.copyButtonIcon}),/*#__PURE__*/(0,jsx_runtime.jsx)(IconSuccess,{className:CopyButton_styles_module.copyButtonSuccessIcon})]})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/Icon/WordWrap/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/Icon/WordWrap/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */function IconWordWrap(props){return/*#__PURE__*/(0,jsx_runtime.jsx)("svg",{viewBox:"0 0 24 24",...props,children:/*#__PURE__*/(0,jsx_runtime.jsx)("path",{fill:"currentColor",d:"M4 19h6v-2H4v2zM20 5H4v2h16V5zm-3 6H4v2h13.25c1.1 0 2 .9 2 2s-.9 2-2 2H15v-2l-3 3l3 3v-2h2c2.21 0 4-1.79 4-4s-1.79-4-4-4z"})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/WordWrapButton/styles.module.css
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/WordWrapButton/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const WordWrapButton_styles_module = ({"wordWrapButtonIcon":"wordWrapButtonIcon_s6ol","wordWrapButtonEnabled":"wordWrapButtonEnabled_dlmh"});
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/WordWrapButton/index.js
+/* harmony default export */ const WordWrapButton_styles_module = ({"wordWrapButtonIcon":"wordWrapButtonIcon_DFNK","wordWrapButtonEnabled":"wordWrapButtonEnabled_DEpg"});
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/WordWrapButton/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */function WordWrapButton({className}){const{wordWrap}=useCodeBlockContext();const canShowButton=wordWrap.isEnabled||wordWrap.isCodeScrollable;if(!canShowButton){return false;}const title=(0,Translate/* translate */.T)({id:'theme.CodeBlock.wordWrapToggle',message:'Toggle word wrap',description:'The title attribute for toggle word wrapping button of code block lines'});return/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockButton,{onClick:()=>wordWrap.toggle(),className:(0,clsx/* default */.A)(className,wordWrap.isEnabled&&WordWrapButton_styles_module.wordWrapButtonEnabled),"aria-label":title,title:title,children:/*#__PURE__*/(0,jsx_runtime.jsx)(IconWordWrap,{className:WordWrapButton_styles_module.wordWrapButtonIcon,"aria-hidden":"true"})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/styles.module.css
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const Buttons_styles_module = ({"buttonGroup":"buttonGroup_KyBm"});
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/index.js
+/* harmony default export */ const Buttons_styles_module = ({"buttonGroup":"buttonGroup_dSa8"});
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Buttons/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -384,17 +341,17 @@ var Translate = __webpack_require__(7232);
 // Adding them to the initial HTML is useless and expensive (due to JSX SVG)
 // They are hidden by default and require React  to become interactive
 function CodeBlockButtons({className}){return/*#__PURE__*/(0,jsx_runtime.jsx)(BrowserOnly,{children:()=>/*#__PURE__*/(0,jsx_runtime.jsxs)("div",{className:(0,clsx/* default */.A)(className,Buttons_styles_module.buttonGroup),children:[/*#__PURE__*/(0,jsx_runtime.jsx)(WordWrapButton,{}),/*#__PURE__*/(0,jsx_runtime.jsx)(CopyButton,{})]})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Layout/styles.module.css
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Layout/styles.module.css
 // extracted by mini-css-extract-plugin
-/* harmony default export */ const Layout_styles_module = ({"codeBlockContent":"codeBlockContent_WUju","codeBlockTitle":"codeBlockTitle__YeG","codeBlock":"codeBlock__nZK"});
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Layout/index.js
+/* harmony default export */ const Layout_styles_module = ({"codeBlockContent":"codeBlockContent_upVD","codeBlockTitle":"codeBlockTitle_Ap2P","codeBlock":"codeBlock_TB84"});
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Layout/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */function CodeBlockLayout({className}){const{metadata}=useCodeBlockContext();return/*#__PURE__*/(0,jsx_runtime.jsxs)(CodeBlockContainer,{as:"div",className:(0,clsx/* default */.A)(className,metadata.className),children:[metadata.title&&/*#__PURE__*/(0,jsx_runtime.jsx)("div",{className:Layout_styles_module.codeBlockTitle,children:/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockTitle,{children:metadata.title})}),/*#__PURE__*/(0,jsx_runtime.jsxs)("div",{className:Layout_styles_module.codeBlockContent,children:[/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockContent,{}),/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockButtons,{})]})]});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/String.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/Content/String.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -402,7 +359,7 @@ function CodeBlockButtons({className}){return/*#__PURE__*/(0,jsx_runtime.jsx)(Br
  * LICENSE file in the root directory of this source tree.
  */function useCodeBlockMetadata(props){const{prism}=(0,useThemeConfig/* useThemeConfig */.p)();return createCodeBlockMetadata({code:props.children,className:props.className,metastring:props.metastring,magicComments:prism.magicComments,defaultLanguage:prism.defaultLanguage,language:props.language,title:props.title,showLineNumbers:props.showLineNumbers});}// TODO Docusaurus v4: move this component at the root?
 function CodeBlockString(props){const metadata=useCodeBlockMetadata(props);const wordWrap=useCodeWordWrap();return/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockContextProvider,{metadata:metadata,wordWrap:wordWrap,children:/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockLayout,{})});}
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -419,6 +376,49 @@ return Array.isArray(children)?children.join(''):children;}function CodeBlock({c
 // from SSR. Hence force a re-render after mounting to apply the current
 // relevant styles.
 const isBrowser=(0,useIsBrowser/* default */.A)();const children=maybeStringifyChildren(rawChildren);const CodeBlockComp=typeof children==='string'?CodeBlockString:CodeBlockJSX;return/*#__PURE__*/(0,jsx_runtime.jsx)(CodeBlockComp,{...props,children:children},String(isBrowser));}
+
+/***/ }),
+
+/***/ 4809:
+/***/ ((module, exports) => {
+
+/**
+ * @param {string} string    The string to parse
+ * @returns {Array<number>}  Returns an energetic array.
+ */
+function parsePart(string) {
+  let res = [];
+  let m;
+
+  for (let str of string.split(",").map((str) => str.trim())) {
+    // just a number
+    if (/^-?\d+$/.test(str)) {
+      res.push(parseInt(str, 10));
+    } else if (
+      (m = str.match(/^(-?\d+)(-|\.\.\.?|\u2025|\u2026|\u22EF)(-?\d+)$/))
+    ) {
+      // 1-5 or 1..5 (equivalent) or 1...5 (doesn't include 5)
+      let [_, lhs, sep, rhs] = m;
+
+      if (lhs && rhs) {
+        lhs = parseInt(lhs);
+        rhs = parseInt(rhs);
+        const incr = lhs < rhs ? 1 : -1;
+
+        // Make it inclusive by moving the right 'stop-point' away by one.
+        if (sep === "-" || sep === ".." || sep === "\u2025") rhs += incr;
+
+        for (let i = lhs; i !== rhs; i += incr) res.push(i);
+      }
+    }
+  }
+
+  return res;
+}
+
+exports["default"] = parsePart;
+module.exports = parsePart;
+
 
 /***/ })
 

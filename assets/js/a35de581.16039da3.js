@@ -23,8 +23,8 @@ const site_docs_example_components_mdx_a35_namespaceObject = /*#__PURE__*/JSON.p
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js + 27 modules
-var CodeBlock = __webpack_require__(6375);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js + 27 modules
+var CodeBlock = __webpack_require__(804);
 ;// ./node_modules/.pnpm/raw-loader@4.0.2_webpack@5.99.9/node_modules/raw-loader/dist/cjs.js!./.samples/components.ts
 /* harmony default export */ const components = ("import KeycloakAdminClientFluent from '@egose/keycloak-fluent';\n\nconst realmName = 'my-custom-realm';\nconst realmAdminClientId = 'my-custom-realm-admin-sa';\nconst realmAdminClientSecret = 'my-custom-realm-admin-sa-password'; // pragma: allowlist secret\n\nconst kc = new KeycloakAdminClientFluent({ baseUrl: 'http://localhost:8080', realmName });\nawait kc.simpleAuth({\n  clientId: realmAdminClientId,\n  clientSecret: realmAdminClientSecret,\n});\n\nconst realm = kc.realm(realmName);\n\nconst ldapComponent = await realm\n  .component('ldap-users', {\n    parentId: realmName,\n    providerId: 'ldap',\n    providerType: 'org.keycloak.storage.UserStorageProvider',\n  })\n  .ensure({\n    parentId: realmName,\n    providerId: 'ldap',\n    providerType: 'org.keycloak.storage.UserStorageProvider',\n    config: {\n      enabled: ['true'],\n      priority: ['0'],\n    },\n  });\n\nconst ldapMappers = await ldapComponent.listSubComponents('org.keycloak.storage.ldap.mappers.LDAPStorageMapper');\n");
 ;// ./docs/example/components.mdx

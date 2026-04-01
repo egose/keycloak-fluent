@@ -23,8 +23,8 @@ const site_docs_example_system_introspection_mdx_055_namespaceObject = /*#__PURE
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js + 27 modules
-var CodeBlock = __webpack_require__(6375);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/CodeBlock/index.js + 27 modules
+var CodeBlock = __webpack_require__(804);
 ;// ./node_modules/.pnpm/raw-loader@4.0.2_webpack@5.99.9/node_modules/raw-loader/dist/cjs.js!./.samples/system-introspection.ts
 /* harmony default export */ const system_introspection = ("import KeycloakAdminClientFluent from '@egose/keycloak-fluent';\n\nconst kc = new KeycloakAdminClientFluent({\n  baseUrl: 'http://localhost:8080',\n  realmName: 'master',\n});\n\nawait kc.simpleAuth({\n  username: 'admin',\n  password: 'password', // pragma: allowlist secret\n});\n\nconst info = await kc.serverInfo().get();\nconst loginMessages = await kc.serverInfo().getEffectiveMessageBundles({\n  realm: 'master',\n  themeType: 'login',\n  locale: 'en',\n});\n\nconst currentAdmin = await kc.whoAmI('master').get();\nconst currentAdminInRealm = await kc.whoAmI('master', 'my-custom-realm').get();\n");
 ;// ./docs/example/system-introspection.mdx

@@ -1,7 +1,7 @@
 "use strict";
 (self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[7098],{
 
-/***/ 4995:
+/***/ 4818:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -14,9 +14,9 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/index.js
 var react = __webpack_require__(9471);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._d9273902278facc4051e1afe7b96be0c/node_modules/@docusaurus/theme-common/lib/utils/metadataUtils.js
-var metadataUtils = __webpack_require__(8200);
-;// ./node_modules/.pnpm/@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19_d22f974c611e51663cbc9417df0b4e47/node_modules/@docusaurus/plugin-content-docs/lib/client/docsSearch.js
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-common@3.9.2_@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1._bbfc1d260ee552bb39a60e7d88c192cb/node_modules/@docusaurus/theme-common/lib/utils/metadataUtils.js
+var metadataUtils = __webpack_require__(2933);
+;// ./node_modules/.pnpm/@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19_c0626f818ec3976e4cb29cbd64e5f223/node_modules/@docusaurus/plugin-content-docs/lib/client/docsSearch.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -34,15 +34,15 @@ var metadataUtils = __webpack_require__(8200);
  */function useDocsContextualSearchTags(){const allDocsData=useAllDocsData();const activePluginAndVersion=useActivePluginAndVersion();const docsPreferredVersionByPluginId=useDocsPreferredVersionByPluginId();// This can't use more specialized hooks because we are mapping over all
 // plugin instances.
 function getDocPluginTags(pluginId){const activeVersion=activePluginAndVersion?.activePlugin.pluginId===pluginId?activePluginAndVersion.activeVersion:undefined;const preferredVersion=docsPreferredVersionByPluginId[pluginId];const latestVersion=allDocsData[pluginId].versions.find(v=>v.isLast);const version=activeVersion??preferredVersion??latestVersion;return getDocsVersionSearchTag(pluginId,version.name);}return[...Object.keys(allDocsData).map(getDocPluginTags)];}
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19_d22f974c611e51663cbc9417df0b4e47/node_modules/@docusaurus/plugin-content-docs/lib/client/docsVersion.js
-var docsVersion = __webpack_require__(9170);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+plugin-content-docs@3.9.2_@mdx-js+react@3.1.1_@types+react@19.2.14_react@19_c0626f818ec3976e4cb29cbd64e5f223/node_modules/@docusaurus/plugin-content-docs/lib/client/docsVersion.js
+var docsVersion = __webpack_require__(9541);
 // EXTERNAL MODULE: ./node_modules/.pnpm/react-router-config@5.1.1_react-router@5.3.4_react@19.2.4__react@19.2.4/node_modules/react-router-config/esm/react-router-config.js
 var react_router_config = __webpack_require__(7377);
-// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/SearchMetadata/index.js
-var SearchMetadata = __webpack_require__(1184);
+// EXTERNAL MODULE: ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/SearchMetadata/index.js
+var SearchMetadata = __webpack_require__(8420);
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
-;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_88691989171a90613835c76f5914d8d5/node_modules/@docusaurus/theme-classic/lib/theme/DocVersionRoot/index.js
+;// ./node_modules/.pnpm/@docusaurus+theme-classic@3.9.2_@types+react@19.2.14_acorn@8.15.0_react-dom@19.2.4_reac_c605bc6be7265f0399fba11c0699f091/node_modules/@docusaurus/theme-classic/lib/theme/DocVersionRoot/index.js
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
