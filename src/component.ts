@@ -134,13 +134,14 @@ export default class ComponentHandle {
 
   public async update(data: ComponentInputData) {
     const component = await this.requireComponent();
+    const componentId = component.id;
 
     await retryTransientAdminError(() =>
       this.core.components.update(
-        { realm: this.realmName, id: component.id },
+        { realm: this.realmName, id: componentId },
         {
           ...data,
-          id: component.id,
+          id: componentId,
           name: this.componentName,
         },
       ),
@@ -151,8 +152,9 @@ export default class ComponentHandle {
 
   public async delete() {
     const component = await this.requireComponent();
+    const componentId = component.id;
 
-    await retryTransientAdminError(() => this.core.components.del({ realm: this.realmName, id: component.id }));
+    await retryTransientAdminError(() => this.core.components.del({ realm: this.realmName, id: componentId }));
 
     this.component = null;
     return this.componentName;
@@ -205,11 +207,12 @@ export default class ComponentHandle {
 
   public async listSubComponents(type: string): Promise<ComponentTypeRepresentation[]> {
     const component = await this.requireComponent();
+    const componentId = component.id;
 
     return retryTransientAdminError(() =>
       this.core.components.listSubComponents({
         realm: this.realmName,
-        id: component.id,
+        id: componentId,
         type,
       }),
     );

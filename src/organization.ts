@@ -145,12 +145,13 @@ export default class OrganizationHandle {
 
   public async update(data: OrganizationInputData) {
     const organization = await this.requireOrganization();
+    const organizationId = organization.id;
 
     await retryTransientAdminError(() =>
       this.core.organizations.updateById(
         {
           realm: this.realmName,
-          id: organization.id,
+          id: organizationId,
         },
         {
           ...data,
@@ -159,16 +160,17 @@ export default class OrganizationHandle {
       ),
     );
 
-    return this.getById(organization.id);
+    return this.getById(organizationId);
   }
 
   public async delete() {
     const organization = await this.requireOrganization();
+    const organizationId = organization.id;
 
     await retryTransientAdminError(() =>
       this.core.organizations.delById({
         realm: this.realmName,
-        id: organization.id,
+        id: organizationId,
       }),
     );
 

@@ -49,18 +49,18 @@ export default class WorkflowHandle {
     this.workflowName = workflowName;
   }
 
-  static async list(core: KeycloakAdminClient, realm: string) {
-    return retryTransientAdminError(() => core.workflows.find({ realm }));
+  static async list(core: KeycloakAdminClient, realm: string): Promise<WorkflowRepresentation[]> {
+    return retryTransientAdminError(() => core.workflows.find({ realm }) as Promise<WorkflowRepresentation[]>);
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
     const workflows = await WorkflowHandle.list(core, realm);
-    return workflows.find((workflow: { id: string }) => workflow.id === id) ?? null;
+    return workflows.find((workflow) => workflow.id === id) ?? null;
   }
 
   static async getByName(core: KeycloakAdminClient, realm: string, workflowName: string) {
     const workflows = await WorkflowHandle.list(core, realm);
-    return workflows.find((workflow: { name: string }) => workflow.name === workflowName) ?? null;
+    return workflows.find((workflow) => workflow.name === workflowName) ?? null;
   }
 
   private async requireWorkflow(): Promise<WorkflowRepresentation & { id: string; name: string }> {
@@ -128,11 +128,12 @@ export default class WorkflowHandle {
 
   public async delete() {
     const workflow = await this.requireWorkflow();
+    const workflowId = workflow.id;
 
     await retryTransientAdminError(() =>
       this.core.workflows.delById({
         realm: this.realmName,
-        id: workflow.id,
+        id: workflowId,
       }),
     );
 

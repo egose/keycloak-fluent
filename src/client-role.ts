@@ -197,9 +197,10 @@ export default class ClientRoleHandle {
   public async addComposite(roleHandle: RoleHandle | ClientRoleHandle) {
     const role = await this.requireRole();
     const compositeRole = await this.resolveCompositeRole(roleHandle);
+    const roleId = role.id;
 
     await retryTransientAdminError(() =>
-      this.core.roles.createComposite({ realm: this.realmName, roleId: role.id }, [compositeRole]),
+      this.core.roles.createComposite({ realm: this.realmName, roleId }, [compositeRole]),
     );
 
     return this;
@@ -208,9 +209,10 @@ export default class ClientRoleHandle {
   public async removeComposite(roleHandle: RoleHandle | ClientRoleHandle) {
     const role = await this.requireRole();
     const compositeRole = await this.resolveCompositeRole(roleHandle);
+    const roleId = role.id;
 
     await retryTransientAdminError(() =>
-      this.core.roles.delCompositeRoles({ realm: this.realmName, id: role.id }, [compositeRole]),
+      this.core.roles.delCompositeRoles({ realm: this.realmName, id: roleId }, [compositeRole]),
     );
 
     return this;
@@ -218,13 +220,14 @@ export default class ClientRoleHandle {
 
   public async listComposites(options?: { keyword?: string; page?: number; pageSize?: number }) {
     const role = await this.requireRole();
+    const roleId = role.id;
     const page = Math.max(1, options?.page ?? 1);
     const pageSize = Math.max(1, options?.pageSize ?? 100);
 
     return retryTransientAdminError(() =>
       this.core.roles.getCompositeRoles({
         realm: this.realmName,
-        id: role.id,
+        id: roleId,
         search: options?.keyword,
         first: (page - 1) * pageSize,
         max: pageSize,
@@ -234,28 +237,32 @@ export default class ClientRoleHandle {
 
   public async listRealmComposites() {
     const role = await this.requireRole();
+    const roleId = role.id;
 
     return retryTransientAdminError(() =>
       this.core.roles.getCompositeRolesForRealm({
         realm: this.realmName,
-        id: role.id,
+        id: roleId,
       }),
     );
   }
 
   public async listClientComposites(clientHandle: ClientHandle) {
     const role = await this.requireRole();
+    const roleId = role.id;
     const client =
       clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
     if (!client) {
       throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
     }
 
+    const clientId = client.id!;
+
     return retryTransientAdminError(() =>
       this.core.roles.getCompositeRolesForClient({
         realm: this.realmName,
-        id: role.id,
-        clientId: client.id!,
+        id: roleId,
+        clientId,
       }),
     );
   }

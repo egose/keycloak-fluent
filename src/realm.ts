@@ -7,6 +7,7 @@ import type EventType from '@keycloak/keycloak-admin-client/lib/defs/eventTypes'
 import type KeysMetadataRepresentation from '@keycloak/keycloak-admin-client/lib/defs/keyMetadataRepresentation';
 import type { ManagementPermissionReference } from '@keycloak/keycloak-admin-client/lib/defs/managementPermissionReference';
 import type { RealmEventsConfigRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/realmEventsConfigRepresentation';
+import type WorkflowRepresentation from '@keycloak/keycloak-admin-client/lib/defs/workflowRepresentation';
 import RealmRepresentation, {
   type PartialImportRealmRepresentation,
   type PartialImportResponse,
@@ -493,8 +494,8 @@ export default class RealmHandle {
   }
 
   public async searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number }) {
-    const workflows: { name?: string }[] = await retryTransientAdminError(() =>
-      this.core.workflows.find({ realm: this.realmName }),
+    const workflows = await retryTransientAdminError(
+      () => this.core.workflows.find({ realm: this.realmName }) as Promise<WorkflowRepresentation[]>,
     );
     const lowerkeyword = keyword.toLocaleLowerCase();
     const filtered = workflows.filter((item) => {

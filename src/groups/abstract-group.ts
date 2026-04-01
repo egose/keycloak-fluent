@@ -111,11 +111,12 @@ export abstract class AbstractGroupHandle {
   public async assignRole(roleHandle: RoleHandle) {
     const group = await this.requireGroup();
     const role = await this.resolveRealmRole(roleHandle);
+    const groupId = group.id;
 
     await retryTransientAdminError(() =>
       this.core.groups.addRealmRoleMappings({
         realm: this.realmName,
-        id: group.id,
+        id: groupId,
         roles: [role] as never as RoleMappingPayload[],
       }),
     );
@@ -124,11 +125,12 @@ export abstract class AbstractGroupHandle {
   public async unassignRole(roleHandle: RoleHandle) {
     const group = await this.requireGroup();
     const role = await this.resolveRealmRole(roleHandle);
+    const groupId = group.id;
 
     await retryTransientAdminError(() =>
       this.core.groups.delRealmRoleMappings({
         realm: this.realmName,
-        id: group.id,
+        id: groupId,
         roles: [role] as never as RoleMappingPayload[],
       }),
     );
@@ -136,11 +138,12 @@ export abstract class AbstractGroupHandle {
 
   public async listAssignedRoles() {
     const group = await this.requireGroup();
+    const groupId = group.id;
 
     return retryTransientAdminError(() =>
       this.core.groups.listRealmRoleMappings({
         realm: this.realmName,
-        id: group.id,
+        id: groupId,
       }),
     );
   }
@@ -148,12 +151,14 @@ export abstract class AbstractGroupHandle {
   public async assignClientRole(clientRoleHandle: ClientRoleHandle) {
     const group = await this.requireGroup();
     const { client, role } = await this.resolveClientRole(clientRoleHandle);
+    const groupId = group.id;
+    const clientUniqueId = client.id!;
 
     await retryTransientAdminError(() =>
       this.core.groups.addClientRoleMappings({
         realm: this.realmName,
-        id: group.id,
-        clientUniqueId: client.id!,
+        id: groupId,
+        clientUniqueId,
         roles: [role] as never as RoleMappingPayload[],
       }),
     );
@@ -162,12 +167,14 @@ export abstract class AbstractGroupHandle {
   public async unassignClientRole(clientRoleHandle: ClientRoleHandle) {
     const group = await this.requireGroup();
     const { client, role } = await this.resolveClientRole(clientRoleHandle);
+    const groupId = group.id;
+    const clientUniqueId = client.id!;
 
     await retryTransientAdminError(() =>
       this.core.groups.delClientRoleMappings({
         realm: this.realmName,
-        id: group.id,
-        clientUniqueId: client.id!,
+        id: groupId,
+        clientUniqueId,
         roles: [role] as never as RoleMappingPayload[],
       }),
     );
@@ -175,17 +182,20 @@ export abstract class AbstractGroupHandle {
 
   public async listAssignedClientRoles(clientHandle: ClientHandle): Promise<RoleRepresentation[]> {
     const group = await this.requireGroup();
+    const groupId = group.id;
     const client =
       clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
     if (!client) {
       throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
     }
 
+    const clientUniqueId = client.id!;
+
     return retryTransientAdminError(() =>
       this.core.groups.listClientRoleMappings({
         realm: this.realmName,
-        id: group.id,
-        clientUniqueId: client.id!,
+        id: groupId,
+        clientUniqueId,
       }),
     );
   }

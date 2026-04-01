@@ -120,14 +120,15 @@ export default class AuthenticationFlowHandle {
 
   public async update(data: AuthenticationFlowInputData) {
     const flow = await this.requireFlow();
+    const flowId = flow.id;
 
     await retryTransientAdminError(() =>
       this.core.authenticationManagement.updateFlow(
-        { realm: this.realmName, flowId: flow.id },
+        { realm: this.realmName, flowId },
         {
           ...defaultAuthenticationFlowData,
           ...data,
-          id: flow.id,
+          id: flowId,
           alias: this.alias,
         },
       ),
@@ -138,11 +139,12 @@ export default class AuthenticationFlowHandle {
 
   public async delete() {
     const flow = await this.requireFlow();
+    const flowId = flow.id;
 
     await retryTransientAdminError(() =>
       this.core.authenticationManagement.deleteFlow({
         realm: this.realmName,
-        flowId: flow.id,
+        flowId,
       }),
     );
 
@@ -202,11 +204,12 @@ export default class AuthenticationFlowHandle {
 
   public async copy(newAlias: string) {
     const flow = await this.requireFlow();
+    const flowAlias = flow.alias;
 
     await retryTransientAdminError(() =>
       this.core.authenticationManagement.copyFlow({
         realm: this.realmName,
-        flow: flow.alias,
+        flow: flowAlias,
         newName: newAlias,
       }),
     );
@@ -216,22 +219,24 @@ export default class AuthenticationFlowHandle {
 
   public async listExecutions(): Promise<AuthenticationExecutionInfoRepresentation[]> {
     const flow = await this.requireFlow();
+    const flowAlias = flow.alias;
 
     return retryTransientAdminError(() =>
       this.core.authenticationManagement.getExecutions({
         realm: this.realmName,
-        flow: flow.alias,
+        flow: flowAlias,
       }),
     );
   }
 
   public async addExecution(provider: string) {
     const flow = await this.requireFlow();
+    const flowAlias = flow.alias;
 
     return retryTransientAdminError(() =>
       this.core.authenticationManagement.addExecutionToFlow({
         realm: this.realmName,
-        flow: flow.alias,
+        flow: flowAlias,
         provider,
       }),
     );
@@ -239,11 +244,12 @@ export default class AuthenticationFlowHandle {
 
   public async addSubFlow(data: AuthenticationSubFlowInputData) {
     const flow = await this.requireFlow();
+    const flowAlias = flow.alias;
 
     return retryTransientAdminError(() =>
       this.core.authenticationManagement.addFlowToFlow({
         realm: this.realmName,
-        flow: flow.alias,
+        flow: flowAlias,
         alias: data.alias,
         type: data.type ?? 'basic-flow',
         provider: data.provider ?? 'basic-flow',
