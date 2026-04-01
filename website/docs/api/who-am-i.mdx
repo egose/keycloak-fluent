@@ -1,0 +1,36 @@
+---
+sidebar_label: Who Am I
+sidebar_position: 17
+---
+
+# Who Am I API
+
+`WhoAmIHandle` exposes Keycloak's admin `who-am-i` endpoint.
+
+## Access
+
+```ts
+const whoAmI = kc.whoAmI('master');
+```
+
+## Usage
+
+```ts
+const me = await kc.whoAmI('master').get();
+const meInDemoRealm = await kc.whoAmI('master', 'demo').get();
+```
+
+## Constructor Semantics
+
+```ts
+kc.whoAmI(currentRealm, realmName?)
+```
+
+- `currentRealm`: the realm the admin API request is executed against
+- `realmName`: optional target realm for the lookup
+
+## Methods
+
+### `get()`
+
+Returns the `WhoAmIRepresentation` produced by Keycloak.

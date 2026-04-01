@@ -188,6 +188,50 @@ public async searchIdentityProviders(keyword: string)
 
 ---
 
+#### `searchOrganizations(keyword: string, options?: { page?: number; pageSize?: number })`
+
+Searches for organizations in the realm.
+
+```typescript
+public async searchOrganizations(keyword: string, options?: { page?: number; pageSize?: number })
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+  - `options`: Pagination options.
+- **Returns**: A list of matching organizations.
+
+---
+
+#### `searchAuthenticationFlows(keyword: string)`
+
+Searches authentication flows by alias.
+
+```typescript
+public async searchAuthenticationFlows(keyword: string)
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+- **Returns**: A list of matching authentication flows.
+
+---
+
+#### `searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number })`
+
+Searches workflows by name.
+
+```typescript
+public async searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number })
+```
+
+- **Parameters**:
+  - `keyword`: The search keyword.
+  - `options`: Pagination options.
+- **Returns**: A list of matching workflows.
+
+---
+
 ### Entity-Specific Methods
 
 #### `client(clientId: string)`
@@ -196,6 +240,22 @@ Returns a handle for managing a specific client.
 
 ```typescript
 public client(clientId: string)
+```
+
+#### `authenticationFlow(alias: string)`
+
+Returns a handle for managing a specific authentication flow.
+
+```typescript
+public authenticationFlow(alias: string)
+```
+
+#### `component(componentName: string, componentLookup?: ComponentLookupData)`
+
+Returns a handle for managing a specific component.
+
+```typescript
+public component(componentName: string, componentLookup?: ComponentLookupData)
 ```
 
 #### `clientScope(scopeName: string)`
@@ -236,6 +296,54 @@ Returns a handle for managing a specific identity provider.
 
 ```typescript
 public identityProvider(alias: string)
+```
+
+#### `organization(organizationAlias: string)`
+
+Returns a handle for managing a specific organization.
+
+```typescript
+public organization(organizationAlias: string)
+```
+
+#### `userStorageProvider(providerId: string)`
+
+Returns a handle for realm user storage provider operations.
+
+```typescript
+public userStorageProvider(providerId: string)
+```
+
+#### `cache()`
+
+Returns a handle for realm cache maintenance operations.
+
+```typescript
+public cache()
+```
+
+#### `attackDetection(userId?: string)`
+
+Returns a handle for realm attack-detection operations.
+
+```typescript
+public attackDetection(userId?: string)
+```
+
+#### `clientPolicies()`
+
+Returns a handle for realm client policy and client profile operations.
+
+```typescript
+public clientPolicies()
+```
+
+#### `workflow(workflowName: string)`
+
+Returns a handle for managing a specific workflow.
+
+```typescript
+public workflow(workflowName: string)
 ```
 
 #### `confidentialBrowserLoginClient(clientId: string)`

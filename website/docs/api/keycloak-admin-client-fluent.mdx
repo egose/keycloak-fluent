@@ -1,0 +1,109 @@
+---
+sidebar_label: Client Fluent
+sidebar_position: 0
+---
+
+# KeycloakAdminClientFluent API
+
+`KeycloakAdminClientFluent` is the root entry point for the library. It wraps a `@keycloak/keycloak-admin-client` instance and gives you fluent access to realm-scoped handles, root-scoped system helpers, and convenience authentication helpers.
+
+## Constructor
+
+```ts
+new KeycloakAdminClientFluent(connectionConfig?)
+```
+
+`connectionConfig` is passed straight to the underlying `KeycloakAdminClient` constructor.
+
+## Common Usage
+
+```ts
+import KeycloakAdminClientFluent from '@egose/keycloak-fluent';
+
+const kc = new KeycloakAdminClientFluent({
+  baseUrl: 'http://localhost:8080',
+  realmName: 'master',
+});
+
+await kc.simpleAuth({
+  username: 'admin',
+  password: 'admin', // pragma: allowlist secret
+});
+
+const realm = await kc.realm('demo').ensure({ displayName: 'Demo Realm' });
+```
+
+## Methods
+
+### `auth(credentials)`
+
+Calls the underlying Keycloak admin client's `auth` method directly.
+
+```ts
+await kc.auth({
+  grantType: 'password',
+  clientId: 'admin-cli',
+  username: 'admin',
+  password: 'admin', // pragma: allowlist secret
+});
+```
+
+Use this when you want full control over the exact grant configuration.
+
+### `simpleAuth({ username?, password?, refreshToken?, clientId?, clientSecret? })`
+
+Chooses the grant type for you:
+
+- `password` grant when `password` is provided
+- `refresh_token` grant when `refreshToken` is provided
+- `client_credentials` grant otherwise
+
+```ts
+await kc.simpleAuth({ username: 'admin', password: 'admin' }); // pragma: allowlist secret
+await kc.simpleAuth({ refreshToken, clientId: 'admin-cli' });
+await kc.simpleAuth({ clientId: 'svc-admin', clientSecret: 'secret' }); // pragma: allowlist secret
+```
+
+By default, `clientId` is `admin-cli`.
+
+### `realm(name)`
+
+Returns a `RealmHandle` for a specific realm.
+
+```ts
+const realm = kc.realm('demo');
+await realm.user('alice').ensure({ email: 'alice@example.com' });
+```
+
+### `serverInfo()`
+
+Returns a `ServerInfoHandle` for root-scoped server metadata and effective message bundle lookups.
+
+```ts
+const serverInfo = await kc.serverInfo().get();
+```
+
+### `whoAmI(currentRealm, realmName?)`
+
+Returns a `WhoAmIHandle` for inspecting the currently authenticated admin user.
+
+```ts
+const me = await kc.whoAmI('master').get();
+const inDemoRealm = await kc.whoAmI('master', 'demo').get();
+```
+
+The first argument is always the current realm used for the admin request. The optional second argument asks Keycloak to resolve the user within another realm.
+
+### `searchRealms(keyword)`
+
+Lists realms through the admin client and filters them locally by name.
+
+```ts
+const matches = await kc.searchRealms('demo');
+```
+
+## Related Pages
+
+- `RealmHandle`: realm-scoped resource entry point
+- `ServerInfoHandle`: server metadata helpers
+- `WhoAmIHandle`: current admin identity lookup

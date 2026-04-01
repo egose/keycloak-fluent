@@ -1,0 +1,85 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="72" y1="54" x2="1136" y2="594" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#020617" />
+      <stop offset="0.56" stop-color="#0F172A" />
+      <stop offset="1" stop-color="#172554" />
+    </linearGradient>
+    <radialGradient id="glowA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(238 112) rotate(31.2) scale(430 279)">
+      <stop stop-color="#2563EB" stop-opacity="0.34" />
+      <stop offset="1" stop-color="#2563EB" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(992 96) rotate(145) scale(370 250)">
+      <stop stop-color="#FB923C" stop-opacity="0.3" />
+      <stop offset="1" stop-color="#FB923C" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="kf-rim-social" x1="40" y1="36" x2="214" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FB923C" />
+      <stop offset="0.5" stop-color="#F8FAFC" />
+      <stop offset="1" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="kf-orbit-social" x1="72" y1="64" x2="184" y2="188" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDBA74" />
+      <stop offset="0.4" stop-color="#60A5FA" />
+      <stop offset="1" stop-color="#38BDF8" />
+    </linearGradient>
+    <radialGradient id="kf-core-social" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(104 82) rotate(52.6) scale(176.451)">
+      <stop stop-color="#0F172A" />
+      <stop offset="1" stop-color="#020617" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" rx="36" fill="url(#bg)" />
+  <rect width="1200" height="630" rx="36" fill="url(#glowA)" />
+  <rect width="1200" height="630" rx="36" fill="url(#glowB)" />
+  <rect x="56" y="52" width="1088" height="526" rx="30" fill="rgba(2,6,23,0.32)" stroke="rgba(148,163,184,0.18)" />
+  <g transform="translate(88 96)">
+    <circle cx="68" cy="68" r="54" fill="url(#kf-rim-social)" />
+    <circle cx="68" cy="68" r="47" fill="url(#kf-core-social)" />
+    <path d="M46 59C53.5938 44.9375 68.7812 38.1875 83.4062 42.4062C98.0312 46.625 106.75 60.125 105.062 74.4688C103.375 88.8125 91.5625 100.562 76.0938 103.344C60.625 106.125 46 99.375 38.9688 86.1562C31.9375 72.9375 33.9062 59.5625 46 59Z" stroke="url(#kf-orbit-social)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="47" cy="59" r="6.5" fill="#FB923C" stroke="#0F172A" stroke-width="3" />
+    <circle cx="98" cy="54.5" r="6.5" fill="#60A5FA" stroke="#0F172A" stroke-width="3" />
+    <circle cx="76.5" cy="103.5" r="6.5" fill="#38BDF8" stroke="#0F172A" stroke-width="3" />
+    <path d="M68 51.5C62.0049 51.5 57.125 56.3799 57.125 62.375C57.125 66.6186 59.5609 70.3011 63.1063 72.101V85.7969C63.1063 87.3749 64.3876 88.6562 65.9656 88.6562H70.0344C71.6124 88.6562 72.8937 87.3749 72.8937 85.7969V72.101C76.4391 70.3011 78.875 66.6186 78.875 62.375C78.875 56.3799 73.9951 51.5 68 51.5Z" fill="#F8FAFC" />
+    <path d="M68 59.2188C65.9483 59.2188 64.2812 60.8858 64.2812 62.9375C64.2812 64.9892 65.9483 66.6562 68 66.6562C70.0517 66.6562 71.7188 64.9892 71.7188 62.9375C71.7188 60.8858 70.0517 59.2188 68 59.2188Z" fill="#0F172A" />
+  </g>
+  <text x="258" y="166" fill="#F8FAFC" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="66" font-weight="800" letter-spacing="-0.04em">
+    Keycloak Fluent
+  </text>
+  <text x="96" y="272" fill="#E2E8F0" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="28" font-weight="650">
+    Fluent Keycloak admin automation
+  </text>
+  <text x="96" y="330" fill="#CBD5E1" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="500">
+    Readable automation for realms, users, clients,
+  </text>
+  <text x="96" y="364" fill="#94A3B8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" font-weight="500">
+    flows, organizations, who-am-i, cache, and more.
+  </text>
+  <g transform="translate(862 172)">
+    <rect width="184" height="216" rx="22" fill="#020817" stroke="#1E293B" />
+    <rect x="0" y="0" width="184" height="34" rx="22" fill="#0B1220" />
+    <circle cx="24" cy="18" r="5.5" fill="#FB7185" />
+    <circle cx="42" cy="18" r="5.5" fill="#FBBF24" />
+    <circle cx="60" cy="18" r="5.5" fill="#34D399" />
+    <text x="16" y="66" fill="#E2E8F0" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="10.5">
+      const realm = await
+    </text>
+    <text x="16" y="84" fill="#E2E8F0" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="10.5">
+      kc.realm('demo')
+    </text>
+    <text x="16" y="102" fill="#93C5FD" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="10.5">
+      .ensure({ ... })
+    </text>
+    <text x="16" y="134" fill="#E2E8F0" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="10.5">
+      await realm.org('acme')
+    </text>
+    <text x="16" y="152" fill="#FCD34D" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="10.5">
+      .ensure({ ... })
+    </text>
+    <text x="16" y="184" fill="#E2E8F0" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="10.5">
+      await realm.flow('browser')
+    </text>
+    <text x="16" y="202" fill="#67E8F9" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace" font-size="10.5">
+      .copy('browser-copy-v2')
+    </text>
+  </g>
+</svg>

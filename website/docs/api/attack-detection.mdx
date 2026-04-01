@@ -1,0 +1,41 @@
+---
+sidebar_label: Attack Detection
+sidebar_position: 13
+---
+
+# Attack Detection API
+
+`AttackDetectionHandle` wraps the realm-scoped brute-force and attack-detection endpoints.
+
+## Access
+
+```ts
+const attackDetection = realm.attackDetection();
+const userAttackDetection = realm.attackDetection('user-id');
+```
+
+## Methods
+
+### `forUser(userId)`
+
+Returns a new handle bound to a specific user id.
+
+```ts
+const userAttackDetection = realm.attackDetection().forUser('user-id');
+```
+
+### `get(userId?)`
+
+Fetches attack-detection data for a user.
+
+### `clear(userId?)`
+
+Clears attack-detection data for a user.
+
+### `clearAll()`
+
+Clears attack-detection data for the entire realm.
+
+## Notes
+
+`get` and `clear` require a user id either when constructing the handle, through `forUser(...)`, or as a direct method argument. If no user id is available, the handle throws an explicit error instead of issuing a bad request.

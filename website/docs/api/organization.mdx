@@ -1,0 +1,92 @@
+---
+sidebar_label: Organization
+sidebar_position: 9
+---
+
+# Organization API
+
+`OrganizationHandle` manages Keycloak organizations, their members, invitations, and linked identity providers.
+
+## Access
+
+```ts
+const organization = realm.organization('acme');
+```
+
+## Common Lifecycle
+
+```ts
+const organization = await realm.organization('acme').ensure({
+  name: 'Acme Corp',
+});
+
+await organization.addMember(realm.user('alice'));
+```
+
+## Core Methods
+
+- `get()` and `getById(id)`
+- `create(data)`
+- `update(data)`
+- `delete()`
+- `ensure(data)`
+- `discard()`
+
+Like the other fluent handles, `ensure` creates or updates and returns the handle.
+
+## Alias Resolution
+
+Organizations are looked up by alias. If multiple exact alias matches are returned by Keycloak, the handle throws an explicit ambiguity error instead of guessing.
+
+This matters when older test or seed data has already created duplicate aliases.
+
+## Membership
+
+```ts
+const members = await organization.listMembers({
+  page: 2,
+  pageSize: 25,
+  membershipType: 'managed',
+});
+
+await organization.addMember(realm.user('alice'));
+await organization.removeMember(realm.user('alice'));
+```
+
+Supported methods:
+
+- `listMembers({ page?, pageSize?, membershipType? })`
+- `addMember(userHandle)`
+- `removeMember(userHandle)`
+
+## Invitations
+
+The organization endpoints expect `FormData` payloads, so the fluent handle forwards them directly.
+
+```ts
+const invite = new FormData();
+invite.set('email', 'alice@example.com');
+
+await organization.invite(invite);
+```
+
+Supported methods:
+
+- `invite(formData)`
+- `inviteExistingUser(formData)`
+
+## Linked Identity Providers
+
+```ts
+const google = realm.identityProvider('google');
+
+await organization.linkIdentityProvider(google);
+await organization.listIdentityProviders();
+await organization.unlinkIdentityProvider(google);
+```
+
+Supported methods:
+
+- `listIdentityProviders()`
+- `linkIdentityProvider(identityProviderHandle)`
+- `unlinkIdentityProvider(identityProviderHandle)`

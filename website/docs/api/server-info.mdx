@@ -1,0 +1,38 @@
+---
+sidebar_label: Server Info
+sidebar_position: 16
+---
+
+# Server Info API
+
+`ServerInfoHandle` exposes root-scoped Keycloak server metadata.
+
+## Access
+
+```ts
+const serverInfo = kc.serverInfo();
+```
+
+## Methods
+
+### `get()`
+
+Fetches the current `ServerInfoRepresentation`.
+
+```ts
+const info = await kc.serverInfo().get();
+```
+
+### `getEffectiveMessageBundles(query)`
+
+Fetches the effective message bundles for a specific realm/theme combination.
+
+```ts
+const bundles = await kc.serverInfo().getEffectiveMessageBundles({
+  realm: 'master',
+  themeType: 'login',
+  locale: 'en',
+});
+```
+
+The query supports `realm`, `theme`, `themeType`, `locale`, and `source`.

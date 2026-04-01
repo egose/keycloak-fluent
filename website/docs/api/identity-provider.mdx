@@ -101,6 +101,36 @@ public async discard()
 
 ---
 
+#### `listMappers()`
+
+Lists mappers configured on the identity provider.
+
+```typescript
+public async listMappers()
+```
+
+---
+
+#### `listMapperTypes()`
+
+Lists the mapper types available for the identity provider.
+
+```typescript
+public async listMapperTypes()
+```
+
+---
+
+#### `mapper(mapperName: string)`
+
+Returns an `IdentityProviderMapperHandle` scoped to the current identity provider.
+
+```typescript
+public mapper(mapperName: string)
+```
+
+---
+
 ### Constants
 
 #### `defaultIdentityProviderData`

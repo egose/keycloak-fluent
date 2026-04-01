@@ -1,0 +1,39 @@
+---
+sidebar_label: Workflow
+sidebar_position: 15
+---
+
+# Workflow API
+
+`WorkflowHandle` manages realm workflows.
+
+## Access
+
+```ts
+const workflow = realm.workflow('approval');
+```
+
+## Core Methods
+
+- `get()` and `getById(id)`
+- `create(data)`
+- `delete()`
+- `ensure(data)`
+- `discard()`
+- `list({ page?, pageSize? })`
+
+## Example
+
+```ts
+const workflow = await realm.workflow('approval').ensure({
+  enabled: true,
+});
+
+const pageTwo = await workflow.list({ page: 2, pageSize: 10 });
+```
+
+## Important Behavior
+
+Unlike most other handles in this library, `WorkflowHandle.ensure(...)` only guarantees that the workflow exists. If the workflow is already present, it does not currently issue an update.
+
+That behavior matches the implementation and tests, so it is worth keeping in mind when using workflows declaratively.

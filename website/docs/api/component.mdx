@@ -1,0 +1,60 @@
+---
+sidebar_label: Component
+sidebar_position: 10
+---
+
+# Component API
+
+`ComponentHandle` manages realm components such as user storage providers and their subcomponents.
+
+## Access
+
+```ts
+const component = realm.component('ldap-users', {
+  parentId: 'demo',
+  providerId: 'ldap',
+  providerType: 'org.keycloak.storage.UserStorageProvider',
+});
+```
+
+The optional lookup object is important because Keycloak can return multiple components with the same `name`.
+
+## Lookup Rules
+
+The handle can narrow a lookup with these fields:
+
+- `parentId`
+- `providerId`
+- `providerType`
+- `subType`
+
+If the lookup still matches more than one component, the handle throws a clear ambiguity error instead of mutating an arbitrary component.
+
+## Core Methods
+
+- `get()` and `getById(id)`
+- `create(data)`
+- `update(data)`
+- `delete()`
+- `ensure(data)`
+- `discard()`
+
+```ts
+await realm
+  .component('ldap-users', {
+    providerType: 'org.keycloak.storage.UserStorageProvider',
+  })
+  .ensure({
+    providerType: 'org.keycloak.storage.UserStorageProvider',
+  });
+```
+
+## Subcomponents
+
+`listSubComponents(type)` resolves the parent component first and then calls the matching Keycloak endpoint.
+
+```ts
+const subcomponents = await component.listSubComponents('org.keycloak.storage.ldap.mappers.LDAPStorageMapper');
+```
+
+This is useful for provisioning LDAP mapper definitions or other nested component metadata.
