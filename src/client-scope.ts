@@ -5,26 +5,7 @@ import ClientScopeProtocolMapperHandle from './protocol-mappers/client-scope-pro
 import ClientScopeUserAttributeProtocolMapperHandle from './protocol-mappers/client-scope-user-attribute-protocol-mapper';
 import ClientScopeHardcodedClaimProtocolMapperHandle from './protocol-mappers/client-scope-hardcoded-claim-protocol-mapper';
 import ClientScopeAudienceProtocolMapperHandle from './protocol-mappers/client-scope-audience-protocol-mapper';
-
-function isTransientAdminError(error: unknown) {
-  return error instanceof Error && error.message.includes('unknown_error');
-}
-
-async function retryTransientAdminError<T>(operation: () => Promise<T>, attempts = 3) {
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      if (!isTransientAdminError(error) || attempt === attempts - 1) {
-        throw error;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
-    }
-  }
-
-  throw new Error('Unreachable');
-}
+import { retryTransientAdminError } from './utils/retry';
 
 export type ClientScopeType = 'none' | 'default' | 'optional';
 export type ClientScopeProtocol = 'openid-connect' | 'saml';

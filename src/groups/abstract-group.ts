@@ -5,26 +5,7 @@ import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRep
 import type RoleHandle from '../role';
 import ClientHandle from '../clients/client';
 import type ClientRoleHandle from '../client-role';
-
-function isTransientAdminError(error: unknown) {
-  return error instanceof Error && error.message.includes('unknown_error');
-}
-
-async function retryTransientAdminError<T>(operation: () => Promise<T>, attempts = 3) {
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      if (!isTransientAdminError(error) || attempt === attempts - 1) {
-        throw error;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
-    }
-  }
-
-  throw new Error('Unreachable');
-}
+import { retryTransientAdminError } from '../utils/retry';
 
 export abstract class AbstractGroupHandle {
   public core: KeycloakAdminClient;
