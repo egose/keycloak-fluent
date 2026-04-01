@@ -1,0 +1,20 @@
+---
+sidebar_label: Realm Bootstrap
+sidebar_position: 1
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+# Realm Bootstrap
+
+Use this flow when you need to create a realm from the `master` realm and immediately provision a dedicated realm-admin service account for follow-up automation.
+
+This is a common first step when your infrastructure code needs to hand off from cluster-wide admin access to realm-scoped credentials.
+
+---
+
+```mdx-code-block
+import Sample from '!!raw-loader!../../.samples/realm-bootstrap.ts';
+
+<CodeBlock language="ts">{Sample}</CodeBlock>
+```

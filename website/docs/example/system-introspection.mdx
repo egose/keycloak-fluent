@@ -1,0 +1,20 @@
+---
+sidebar_label: System Introspection
+sidebar_position: 8
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+# System Introspection
+
+These root-scoped helpers are useful in health checks, admin diagnostics, and setup verification steps.
+
+The sample shows how to inspect server metadata, load effective theme bundles, and confirm which admin identity the current credentials resolve to.
+
+---
+
+```mdx-code-block
+import Sample from '!!raw-loader!../../.samples/system-introspection.ts';
+
+<CodeBlock language="ts">{Sample}</CodeBlock>
+```

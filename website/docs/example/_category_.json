@@ -1,0 +1,9 @@
+{
+  "label": "Examples",
+  "link": {
+    "type": "generated-index",
+    "title": "Examples",
+    "description": "Focused walkthroughs for common Keycloak automation flows with keycloak-fluent.",
+    "slug": "/example"
+  }
+}

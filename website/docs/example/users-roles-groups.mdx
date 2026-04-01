@@ -1,0 +1,20 @@
+---
+sidebar_label: Users, Roles, Groups
+sidebar_position: 2
+---
+
+import CodeBlock from '@theme/CodeBlock';
+
+# Users, Roles, and Groups
+
+This example focuses on realm-level identity provisioning: creating a user, creating a realm role, creating nested groups, and assigning those relationships fluently.
+
+Use this pattern when you are seeding test tenants, bootstrapping internal users, or codifying access-control setup during environment creation.
+
+---
+
+```mdx-code-block
+import Sample from '!!raw-loader!../../.samples/users-roles-groups.ts';
+
+<CodeBlock language="ts">{Sample}</CodeBlock>
+```
