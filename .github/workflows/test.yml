@@ -25,4 +25,5 @@ jobs:
       uses: ./.github/actions/setup-sandbox
       with:
         script: |
-          pnpm test
+          pnpm test:unit
+          pnpm test:integration

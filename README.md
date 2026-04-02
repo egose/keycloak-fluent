@@ -336,6 +336,21 @@ npm run build
 npm test
 ```
 
+### Test Layers
+
+The repo intentionally has two different kinds of tests:
+
+- `npm run test:unit`
+  Runs the mocked implementation/contract tests in `tests/implementation-*.spec.ts`.
+  These verify the fluent wrapper behavior itself: lazy resolution, correct admin-client method selection, payload shaping, pagination wiring, and resource-handle contracts.
+- `npm run test:integration`
+  Runs the live Keycloak integration tests in the rest of `tests/*.spec.ts`.
+  These create real realms and resources against a running Keycloak instance through `tests/test-utils.ts`.
+- `npm test`
+  Runs the full suite.
+
+The mocked tests are not meant to replace the live integration suite. They exist because some wrapper guarantees are easier and safer to assert at the admin-client call boundary than through a live server alone.
+
 ## License
 
 Apache-2.0
