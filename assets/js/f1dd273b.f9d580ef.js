@@ -298,9 +298,9 @@ function _createMdxContent(props) {
         children: "organizations"
       }), ", and more."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "ensure"
-      }), " method will create the resource if it does not exist, or patch the existing resource, and then return the resource handler."]
+      children: ["For resource-style handles, ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "ensure(...)"
+      }), " will create the resource if it does not exist, or update the existing resource by merging the supplied fields into the current representation. It then returns the resource handle."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-ts",

@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[5447],{
+(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[4231],{
 
 /***/ 416:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
@@ -96,7 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 964:
+/***/ 1699:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -108,24 +108,24 @@ __webpack_require__.d(__webpack_exports__, {
   contentTitle: () => (/* binding */ contentTitle),
   "default": () => (/* binding */ MDXContent),
   frontMatter: () => (/* binding */ frontMatter),
-  metadata: () => (/* reexport */ site_docs_api_groups_group_mdx_87e_namespaceObject),
+  metadata: () => (/* reexport */ site_docs_api_client_scope_mdx_7b2_namespaceObject),
   toc: () => (/* binding */ toc)
 });
 
-;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-groups-group-mdx-87e.json
-const site_docs_api_groups_group_mdx_87e_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/groups/group","title":"Group API","description":"The GroupHandle class provides a fluent API for managing Keycloak groups. It allows you to create, update, delete, and retrieve groups within a specific realm, as well as manage child groups.","source":"@site/docs/api/groups/group.mdx","sourceDirName":"api/groups","slug":"/api/groups/group","permalink":"/api/groups/group","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":0,"frontMatter":{"sidebar_label":"Group","sidebar_position":0},"sidebar":"api","previous":{"title":"Role","permalink":"/api/role"},"next":{"title":"Child Group","permalink":"/api/groups/child-group"}}');
+;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-client-scope-mdx-7b2.json
+const site_docs_api_client_scope_mdx_7b2_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/client-scope","title":"Client Scope API","description":"The ClientScopeHandle class provides a fluent API for managing Keycloak client scopes. It allows you to create, update, delete, and retrieve client scopes within a specific realm.","source":"@site/docs/api/client-scope.mdx","sourceDirName":"api","slug":"/api/client-scope","permalink":"/api/client-scope","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":6,"frontMatter":{"sidebar_label":"Client Scope","sidebar_position":6},"sidebar":"api","previous":{"title":"Nested Child Group","permalink":"/api/groups/nested-child-group"},"next":{"title":"Identity Provider","permalink":"/api/identity-provider"}}');
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-;// ./docs/api/groups/group.mdx
+;// ./docs/api/client-scope.mdx
 
 
 const frontMatter = {
-	sidebar_label: 'Group',
-	sidebar_position: 0
+	sidebar_label: 'Client Scope',
+	sidebar_position: 6
 };
-const contentTitle = 'Group API';
+const contentTitle = 'Client Scope API';
 
 const assets = {
 
@@ -134,29 +134,13 @@ const assets = {
 
 
 const toc = [{
-  "value": "Class: <code>GroupHandle</code>",
-  "id": "class-grouphandle",
+  "value": "Class: <code>ClientScopeHandle</code>",
+  "id": "class-clientscopehandle",
   "level": 2
 }, {
   "value": "Constructor",
   "id": "constructor",
   "level": 3
-}, {
-  "value": "Static Methods",
-  "id": "static-methods",
-  "level": 3
-}, {
-  "value": "<code>getById(core: KeycloakAdminClient, realm: string, id: string)</code>",
-  "id": "getbyidcore-keycloakadminclient-realm-string-id-string",
-  "level": 4
-}, {
-  "value": "<code>getByName(core: KeycloakAdminClient, realm: string, groupName: string)</code>",
-  "id": "getbynamecore-keycloakadminclient-realm-string-groupname-string",
-  "level": 4
-}, {
-  "value": "<code>getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)</code>",
-  "id": "getbypathcore-keycloakadminclient-realm-string-grouppath-string",
-  "level": 4
 }, {
   "value": "Instance Methods",
   "id": "instance-methods",
@@ -166,36 +150,52 @@ const toc = [{
   "id": "get",
   "level": 4
 }, {
-  "value": "<code>create(data: GroupInputData)</code>",
-  "id": "createdata-groupinputdata",
+  "value": "<code>create(data: ClientScopeInputData)</code>",
+  "id": "createdata-clientscopeinputdata",
   "level": 4
 }, {
-  "value": "<code>update(data: GroupInputData)</code>",
-  "id": "updatedata-groupinputdata",
+  "value": "<code>update(data: ClientScopeInputData)</code>",
+  "id": "updatedata-clientscopeinputdata",
   "level": 4
 }, {
   "value": "<code>delete()</code>",
   "id": "delete",
   "level": 4
 }, {
-  "value": "<code>ensure(data: GroupInputData)</code>",
-  "id": "ensuredata-groupinputdata",
+  "value": "<code>ensure(data: ClientScopeInputData)</code>",
+  "id": "ensuredata-clientscopeinputdata",
   "level": 4
 }, {
   "value": "<code>discard()</code>",
   "id": "discard",
   "level": 4
 }, {
-  "value": "<code>childGroup(childGroupName: string)</code>",
-  "id": "childgroupchildgroupname-string",
+  "value": "Constants",
+  "id": "constants",
+  "level": 3
+}, {
+  "value": "<code>defaultScopeData</code>",
+  "id": "defaultscopedata",
   "level": 4
 }, {
   "value": "Types",
   "id": "types",
   "level": 3
 }, {
-  "value": "<code>GroupInputData</code>",
-  "id": "groupinputdata",
+  "value": "<code>ClientScopeType</code>",
+  "id": "clientscopetype",
+  "level": 4
+}, {
+  "value": "<code>ClientScopeProtocol</code>",
+  "id": "clientscopeprotocol",
+  "level": 4
+}, {
+  "value": "<code>ClientScopeInputData</code>",
+  "id": "clientscopeinputdata",
+  "level": 4
+}, {
+  "value": "<code>ClientScopeRepresentationExt</code>",
+  "id": "clientscoperepresentationext",
   "level": 4
 }];
 function _createMdxContent(props) {
@@ -218,17 +218,17 @@ function _createMdxContent(props) {
   return (0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
     children: [(0,jsx_runtime.jsx)(_components.header, {
       children: (0,jsx_runtime.jsx)(_components.h1, {
-        id: "group-api",
-        children: "Group API"
+        id: "client-scope-api",
+        children: "Client Scope API"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "GroupHandle"
-      }), " class provides a fluent API for managing Keycloak groups. It allows you to create, update, delete, and retrieve groups within a specific realm, as well as manage child groups."]
+        children: "ClientScopeHandle"
+      }), " class provides a fluent API for managing Keycloak client scopes. It allows you to create, update, delete, and retrieve client scopes within a specific realm."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.h2, {
-      id: "class-grouphandle",
+      id: "class-clientscopehandle",
       children: ["Class: ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "GroupHandle"
+        children: "ClientScopeHandle"
       })]
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "constructor",
@@ -236,7 +236,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, groupName: string)\n"
+        children: "constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, scopeName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -252,138 +252,13 @@ function _createMdxContent(props) {
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "realmHandle"
-            }), ": A handle to the realm where the group resides."]
+            }), ": A handle to the realm where the client scope resides."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "groupName"
-            }), ": The name of the group to manage."]
+              children: "scopeName"
+            }), ": The name of the client scope to manage."]
           }), "\n"]
         }), "\n"]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
-      id: "static-methods",
-      children: "Static Methods"
-    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "getbyidcore-keycloakadminclient-realm-string-id-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "getById(core: KeycloakAdminClient, realm: string, id: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Fetches a group by its ID."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "static async getById(core: KeycloakAdminClient, realm: string, id: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "core"
-            }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-              children: "KeycloakAdminClient"
-            }), "."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "realm"
-            }), ": The name of the realm."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "id"
-            }), ": The ID of the group."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "null"
-        }), " if the group does not exist."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "getbynamecore-keycloakadminclient-realm-string-groupname-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "getByName(core: KeycloakAdminClient, realm: string, groupName: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Fetches a group by its name."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "static async getByName(core: KeycloakAdminClient, realm: string, groupName: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "core"
-            }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-              children: "KeycloakAdminClient"
-            }), "."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "realm"
-            }), ": The name of the realm."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "groupName"
-            }), ": The name of the group."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "null"
-        }), " if the group does not exist."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "getbypathcore-keycloakadminclient-realm-string-grouppath-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Fetches a group by its path."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "static async getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "core"
-            }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-              children: "KeycloakAdminClient"
-            }), "."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "realm"
-            }), ": The name of the realm."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "groupPath"
-            }), ": The path of the group (e.g., ", (0,jsx_runtime.jsx)(_components.code, {
-              children: "/parent/child"
-            }), ")."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "null"
-        }), " if the group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "instance-methods",
@@ -394,33 +269,33 @@ function _createMdxContent(props) {
         children: "get()"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["Fetches the group by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "group"
+      children: ["Fetches the client scope by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "clientScope"
       }), " property."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async get(): Promise<GroupRepresentation | null>\n"
+        children: "public async get(): Promise<ClientScopeRepresentation | null>\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The client scope representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
-        }), " if the group does not exist."]
+        }), " if the client scope does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "createdata-groupinputdata",
+      id: "createdata-clientscopeinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "create(data: GroupInputData)"
+        children: "create(data: ClientScopeInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Creates a new group."
+      children: "Creates a new client scope."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async create(data: GroupInputData)\n"
+        children: "public async create(data: ClientScopeInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -430,25 +305,25 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the new group."]
+            }), ": The data for the new client scope."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the group already exists."]
+        }), ": An error if the client scope already exists."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "updatedata-groupinputdata",
+      id: "updatedata-clientscopeinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "update(data: GroupInputData)"
+        children: "update(data: ClientScopeInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Updates the group's details."
+      children: "Updates the client scope's details."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async update(data: GroupInputData)\n"
+        children: "public async update(data: ClientScopeInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -458,13 +333,13 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The updated data for the group."]
+            }), ": The updated data for the client scope."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the group does not exist."]
+        }), ": An error if the client scope does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "delete",
@@ -472,7 +347,7 @@ function _createMdxContent(props) {
         children: "delete()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the group."
+      children: "Deletes the client scope."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -482,19 +357,19 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the group does not exist."]
+        }), ": An error if the client scope does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "ensuredata-groupinputdata",
+      id: "ensuredata-clientscopeinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ensure(data: GroupInputData)"
+        children: "ensure(data: ClientScopeInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Ensures the group exists. If it does, updates it; otherwise, creates it."
+      children: "Ensures the client scope exists. If it does, updates it; otherwise, creates it."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async ensure(data: GroupInputData)\n"
+        children: "public async ensure(data: ClientScopeInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -504,7 +379,7 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the group."]
+            }), ": The data for the client scope."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -514,7 +389,7 @@ function _createMdxContent(props) {
         children: "discard()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the group if it exists."
+      children: "Deletes the client scope if it exists."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -524,55 +399,76 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The name of the deleted group."]
+        }), ": The name of the deleted client scope."]
       }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "childgroupchildgroupname-string",
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
+      id: "constants",
+      children: "Constants"
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "defaultscopedata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "childGroup(childGroupName: string)"
+        children: "defaultScopeData"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Returns a handle for managing a child group."
+      children: "Default data for creating a client scope."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public childGroup(childGroupName: string)\n"
+        children: "export const defaultScopeData = Object.freeze({\n  description: '',\n  type: 'none',\n  protocol: 'openid-connect',\n  attributes: {\n    'display.on.consent.screen': 'true',\n    'include.in.token.scope': 'false',\n    'consent.screen.text': '',\n    'gui.order': '',\n  },\n});\n"
       })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "childGroupName"
-            }), ": The name of the child group."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "ChildGroupHandle"
-        }), "."]
-      }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "types",
       children: "Types"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "groupinputdata",
+      id: "clientscopetype",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "GroupInputData"
+        children: "ClientScopeType"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The input data type for creating or updating a group."
+      children: "The type of the client scope."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export type GroupInputData = Omit<GroupRepresentation, 'name | id'>;\n"
+        children: "export type ClientScopeType = 'none' | 'default' | 'optional';\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "clientscopeprotocol",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "ClientScopeProtocol"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "The protocol of the client scope."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export type ClientScopeProtocol = 'openid-connect' | 'saml';\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "clientscopeinputdata",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "ClientScopeInputData"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "The input data type for creating or updating a client scope."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export type ClientScopeInputData = Omit<ClientScopeRepresentationExt, 'name' | 'id'>;\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "clientscoperepresentationext",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "ClientScopeRepresentationExt"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "An extended representation of the client scope."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export interface ClientScopeRepresentationExt extends ClientScopeRepresentation {\n  type?: ClientScopeType;\n  protocol?: ClientScopeProtocol;\n}\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "This API provides a comprehensive interface for managing Keycloak groups and their child groups within a specific realm."
+      children: "This API provides a comprehensive interface for managing Keycloak client scopes within a specific realm."
     })]
   });
 }

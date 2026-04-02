@@ -23458,6 +23458,23 @@ __webpack_require__.r(__webpack_exports__);
   "organizationName": "keycloak-fluent",
   "projectName": "keycloak-fluent",
   "onBrokenLinks": "throw",
+  "markdown": {
+    "hooks": {
+      "onBrokenMarkdownLinks": "warn",
+      "onBrokenMarkdownImages": "throw"
+    },
+    "format": "mdx",
+    "mermaid": false,
+    "emoji": true,
+    "mdx1Compat": {
+      "comments": true,
+      "admonitions": true,
+      "headingIds": true
+    },
+    "anchors": {
+      "maintainCase": false
+    }
+  },
   "i18n": {
     "defaultLocale": "en",
     "locales": [
@@ -23820,24 +23837,7 @@ __webpack_require__.r(__webpack_exports__);
   "stylesheets": [],
   "clientModules": [],
   "titleDelimiter": "|",
-  "noIndex": false,
-  "markdown": {
-    "format": "mdx",
-    "mermaid": false,
-    "emoji": true,
-    "mdx1Compat": {
-      "comments": true,
-      "admonitions": true,
-      "headingIds": true
-    },
-    "anchors": {
-      "maintainCase": false
-    },
-    "hooks": {
-      "onBrokenMarkdownLinks": "warn",
-      "onBrokenMarkdownImages": "throw"
-    }
-  }
+  "noIndex": false
 });
 
 
@@ -26918,7 +26918,7 @@ var Heading = __webpack_require__(5984);
 title,description}=props;(0,useKeyboardNavigation/* useKeyboardNavigation */.J)();return/*#__PURE__*/(0,jsx_runtime.jsxs)(LayoutProvider,{children:[/*#__PURE__*/(0,jsx_runtime.jsx)(metadataUtils/* PageMetadata */.be,{title:title,description:description}),/*#__PURE__*/(0,jsx_runtime.jsx)(SkipToContent,{}),/*#__PURE__*/(0,jsx_runtime.jsx)(AnnouncementBar,{}),/*#__PURE__*/(0,jsx_runtime.jsx)(Navbar,{}),/*#__PURE__*/(0,jsx_runtime.jsx)("div",{id:SkipToContentFallbackId,className:(0,clsx/* default */.A)(ThemeClassNames/* ThemeClassNames */.G.layout.main.container,ThemeClassNames/* ThemeClassNames */.G.wrapper.main,theme_Layout_styles_module.mainWrapper,wrapperClassName),children:/*#__PURE__*/(0,jsx_runtime.jsx)(ErrorBoundary/* default */.A,{fallback:params=>/*#__PURE__*/(0,jsx_runtime.jsx)(ErrorPageContent,{...params}),children:children})}),!noFooter&&/*#__PURE__*/(0,jsx_runtime.jsx)(theme_Footer,{})]});}
 ;// ./src/theme/Layout/index.tsx
 function useOnRouteChange(callback){const location=(0,react_router/* useLocation */.zy)();(0,react.useEffect)(()=>{callback();// Runs every time the route changes
-},[location.pathname]);}function Layout_Layout(props){useOnRouteChange(()=>{console.log('Page changed to:',window.location.pathname);const adElement=document.querySelector('ins.adsbygoogle');if(adElement&&adElement.getAttribute('data-ad-status')!=='filled'){try{// @ts-expect-error: adsbygoogle is not defined on the window object in standard types
+},[location.pathname]);}function Layout_Layout(props){useOnRouteChange(()=>{const adElement=document.querySelector('ins.adsbygoogle');if(adElement&&adElement.getAttribute('data-ad-status')!=='filled'){try{// @ts-expect-error: adsbygoogle is not defined on the window object in standard types
 (window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){console.error('AdSense push error:',e);}}});return/*#__PURE__*/(0,jsx_runtime.jsx)(Layout,{...props});}
 
 /***/ }),

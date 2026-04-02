@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[3031],{
+(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[5447],{
 
 /***/ 416:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
@@ -96,7 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 6615:
+/***/ 964:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -108,24 +108,24 @@ __webpack_require__.d(__webpack_exports__, {
   contentTitle: () => (/* binding */ contentTitle),
   "default": () => (/* binding */ MDXContent),
   frontMatter: () => (/* binding */ frontMatter),
-  metadata: () => (/* reexport */ site_docs_api_groups_nested_child_group_mdx_ed0_namespaceObject),
+  metadata: () => (/* reexport */ site_docs_api_groups_group_mdx_87e_namespaceObject),
   toc: () => (/* binding */ toc)
 });
 
-;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-groups-nested-child-group-mdx-ed0.json
-const site_docs_api_groups_nested_child_group_mdx_ed0_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/groups/nested-child-group","title":"Nested Child Group API","description":"The NestedChildGroupHandle class provides a fluent API for managing nested child groups in Keycloak. It allows you to create, update, delete, and retrieve nested child groups within a specific parent group path.","source":"@site/docs/api/groups/nested-child-group.mdx","sourceDirName":"api/groups","slug":"/api/groups/nested-child-group","permalink":"/api/groups/nested-child-group","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":2,"frontMatter":{"sidebar_label":"Nested Child Group","sidebar_position":2},"sidebar":"api","previous":{"title":"Child Group","permalink":"/api/groups/child-group"},"next":{"title":"Client Scope","permalink":"/api/client-scope"}}');
+;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-groups-group-mdx-87e.json
+const site_docs_api_groups_group_mdx_87e_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/groups/group","title":"Group API","description":"The GroupHandle class provides a fluent API for managing Keycloak groups. It allows you to create, update, delete, and retrieve groups within a specific realm, as well as manage child groups.","source":"@site/docs/api/groups/group.mdx","sourceDirName":"api/groups","slug":"/api/groups/group","permalink":"/api/groups/group","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":0,"frontMatter":{"sidebar_label":"Group","sidebar_position":0},"sidebar":"api","previous":{"title":"Role","permalink":"/api/role"},"next":{"title":"Child Group","permalink":"/api/groups/child-group"}}');
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-;// ./docs/api/groups/nested-child-group.mdx
+;// ./docs/api/groups/group.mdx
 
 
 const frontMatter = {
-	sidebar_label: 'Nested Child Group',
-	sidebar_position: 2
+	sidebar_label: 'Group',
+	sidebar_position: 0
 };
-const contentTitle = 'Nested Child Group API';
+const contentTitle = 'Group API';
 
 const assets = {
 
@@ -134,8 +134,8 @@ const assets = {
 
 
 const toc = [{
-  "value": "Class: <code>NestedChildGroupHandle</code>",
-  "id": "class-nestedchildgrouphandle",
+  "value": "Class: <code>GroupHandle</code>",
+  "id": "class-grouphandle",
   "level": 2
 }, {
   "value": "Constructor",
@@ -146,8 +146,16 @@ const toc = [{
   "id": "static-methods",
   "level": 3
 }, {
-  "value": "<code>getByName(core: KeycloakAdminClient, realm: string, parentGroupPath: string, groupName: string)</code>",
-  "id": "getbynamecore-keycloakadminclient-realm-string-parentgrouppath-string-groupname-string",
+  "value": "<code>getById(core: KeycloakAdminClient, realm: string, id: string)</code>",
+  "id": "getbyidcore-keycloakadminclient-realm-string-id-string",
+  "level": 4
+}, {
+  "value": "<code>getByName(core: KeycloakAdminClient, realm: string, groupName: string)</code>",
+  "id": "getbynamecore-keycloakadminclient-realm-string-groupname-string",
+  "level": 4
+}, {
+  "value": "<code>getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)</code>",
+  "id": "getbypathcore-keycloakadminclient-realm-string-grouppath-string",
   "level": 4
 }, {
   "value": "Instance Methods",
@@ -158,36 +166,36 @@ const toc = [{
   "id": "get",
   "level": 4
 }, {
-  "value": "<code>create(data: NestedChildGroupInputData)</code>",
-  "id": "createdata-nestedchildgroupinputdata",
+  "value": "<code>create(data: GroupInputData)</code>",
+  "id": "createdata-groupinputdata",
   "level": 4
 }, {
-  "value": "<code>update(data: NestedChildGroupInputData)</code>",
-  "id": "updatedata-nestedchildgroupinputdata",
+  "value": "<code>update(data: GroupInputData)</code>",
+  "id": "updatedata-groupinputdata",
   "level": 4
 }, {
   "value": "<code>delete()</code>",
   "id": "delete",
   "level": 4
 }, {
-  "value": "<code>ensure(data: NestedChildGroupInputData)</code>",
-  "id": "ensuredata-nestedchildgroupinputdata",
+  "value": "<code>ensure(data: GroupInputData)</code>",
+  "id": "ensuredata-groupinputdata",
   "level": 4
 }, {
   "value": "<code>discard()</code>",
   "id": "discard",
   "level": 4
 }, {
-  "value": "<code>childGroup(groupName: string)</code>",
-  "id": "childgroupgroupname-string",
+  "value": "<code>childGroup(childGroupName: string)</code>",
+  "id": "childgroupchildgroupname-string",
   "level": 4
 }, {
   "value": "Types",
   "id": "types",
   "level": 3
 }, {
-  "value": "<code>NestedChildGroupInputData</code>",
-  "id": "nestedchildgroupinputdata",
+  "value": "<code>GroupInputData</code>",
+  "id": "groupinputdata",
   "level": 4
 }];
 function _createMdxContent(props) {
@@ -210,17 +218,17 @@ function _createMdxContent(props) {
   return (0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
     children: [(0,jsx_runtime.jsx)(_components.header, {
       children: (0,jsx_runtime.jsx)(_components.h1, {
-        id: "nested-child-group-api",
-        children: "Nested Child Group API"
+        id: "group-api",
+        children: "Group API"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "NestedChildGroupHandle"
-      }), " class provides a fluent API for managing nested child groups in Keycloak. It allows you to create, update, delete, and retrieve nested child groups within a specific parent group path."]
+        children: "GroupHandle"
+      }), " class provides a fluent API for managing Keycloak groups. It allows you to create, update, delete, and retrieve groups within a specific realm, as well as manage child groups."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.h2, {
-      id: "class-nestedchildgrouphandle",
+      id: "class-grouphandle",
       children: ["Class: ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "NestedChildGroupHandle"
+        children: "GroupHandle"
       })]
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "constructor",
@@ -228,7 +236,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "constructor(core: KeycloakAdminClient, realmName: string, parentGroupPath: string, groupName: string)\n"
+        children: "constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, groupName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -243,16 +251,12 @@ function _createMdxContent(props) {
             }), "."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "realmName"
-            }), ": The name of the realm where the group resides."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "parentGroupPath"
-            }), ": The path of the parent group."]
+              children: "realmHandle"
+            }), ": A handle to the realm where the group resides."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "groupName"
-            }), ": The name of the nested child group to manage."]
+            }), ": The name of the group to manage."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -260,16 +264,16 @@ function _createMdxContent(props) {
       id: "static-methods",
       children: "Static Methods"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "getbynamecore-keycloakadminclient-realm-string-parentgrouppath-string-groupname-string",
+      id: "getbyidcore-keycloakadminclient-realm-string-id-string",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "getByName(core: KeycloakAdminClient, realm: string, parentGroupPath: string, groupName: string)"
+        children: "getById(core: KeycloakAdminClient, realm: string, id: string)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Fetches a nested child group by its name under a specific parent group path."
+      children: "Fetches a group by its ID."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "static async getByName(core: KeycloakAdminClient, realm: string, parentGroupPath: string, groupName: string)\n"
+        children: "static async getById(core: KeycloakAdminClient, realm: string, id: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -288,18 +292,96 @@ function _createMdxContent(props) {
             }), ": The name of the realm."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "parentGroupPath"
-            }), ": The path of the parent group."]
-          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "groupName"
-            }), ": The name of the nested child group."]
+              children: "id"
+            }), ": The ID of the group."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The nested child group representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "null"
+        }), " if the group does not exist."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "getbynamecore-keycloakadminclient-realm-string-groupname-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "getByName(core: KeycloakAdminClient, realm: string, groupName: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Fetches a group by its name."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "static async getByName(core: KeycloakAdminClient, realm: string, groupName: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "core"
+            }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
+              children: "KeycloakAdminClient"
+            }), "."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "realm"
+            }), ": The name of the realm."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "groupName"
+            }), ": The name of the group."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "null"
+        }), " if the group does not exist."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "getbypathcore-keycloakadminclient-realm-string-grouppath-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Fetches a group by its path."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "static async getByPath(core: KeycloakAdminClient, realm: string, groupPath: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "core"
+            }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
+              children: "KeycloakAdminClient"
+            }), "."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "realm"
+            }), ": The name of the realm."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "groupPath"
+            }), ": The path of the group (e.g., ", (0,jsx_runtime.jsx)(_components.code, {
+              children: "/parent/child"
+            }), ")."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
         }), " if the group does not exist."]
       }), "\n"]
@@ -312,7 +394,7 @@ function _createMdxContent(props) {
         children: "get()"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["Fetches the nested child group by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
+      children: ["Fetches the group by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
         children: "group"
       }), " property."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
@@ -324,21 +406,21 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The nested child group representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The group representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
         }), " if the group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "createdata-nestedchildgroupinputdata",
+      id: "createdata-groupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "create(data: NestedChildGroupInputData)"
+        children: "create(data: GroupInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Creates a new nested child group under the specified parent group path."
+      children: "Creates a new group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async create(data: NestedChildGroupInputData)\n"
+        children: "public async create(data: GroupInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -348,25 +430,25 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the new nested child group."]
+            }), ": The data for the new group."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the nested child group already exists or the parent group does not exist."]
+        }), ": An error if the group already exists."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "updatedata-nestedchildgroupinputdata",
+      id: "updatedata-groupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "update(data: NestedChildGroupInputData)"
+        children: "update(data: GroupInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Updates the nested child group's details."
+      children: "Updates the group's details."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async update(data: NestedChildGroupInputData)\n"
+        children: "public async update(data: GroupInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -376,13 +458,13 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The updated data for the nested child group."]
+            }), ": The updated data for the group."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the nested child group or parent group does not exist."]
+        }), ": An error if the group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "delete",
@@ -390,7 +472,7 @@ function _createMdxContent(props) {
         children: "delete()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the nested child group."
+      children: "Deletes the group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -400,19 +482,19 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the nested child group does not exist."]
+        }), ": An error if the group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "ensuredata-nestedchildgroupinputdata",
+      id: "ensuredata-groupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ensure(data: NestedChildGroupInputData)"
+        children: "ensure(data: GroupInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Ensures the nested child group exists. If it does, updates it; otherwise, creates it."
+      children: "Ensures the group exists. If it does, updates it; otherwise, creates it."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async ensure(data: NestedChildGroupInputData)\n"
+        children: "public async ensure(data: GroupInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -422,7 +504,7 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the nested child group."]
+            }), ": The data for the group."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -432,7 +514,7 @@ function _createMdxContent(props) {
         children: "discard()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the nested child group if it exists."
+      children: "Deletes the group if it exists."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -442,19 +524,19 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The name of the deleted nested child group."]
+        }), ": The name of the deleted group."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "childgroupgroupname-string",
+      id: "childgroupchildgroupname-string",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "childGroup(groupName: string)"
+        children: "childGroup(childGroupName: string)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Returns a handle for managing a further nested child group."
+      children: "Returns a handle for managing a child group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public childGroup(groupName: string)\n"
+        children: "public childGroup(childGroupName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -463,34 +545,34 @@ function _createMdxContent(props) {
         }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "groupName"
-            }), ": The name of the further nested child group."]
+              children: "childGroupName"
+            }), ": The name of the child group."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
         }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "NestedChildGroupHandle"
+          children: "ChildGroupHandle"
         }), "."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "types",
       children: "Types"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "nestedchildgroupinputdata",
+      id: "groupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "NestedChildGroupInputData"
+        children: "GroupInputData"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The input data type for creating or updating a nested child group."
+      children: "The input data type for creating or updating a group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export type NestedChildGroupInputData = Omit<GroupRepresentation, 'name | id'>;\n"
+        children: "export type GroupInputData = Omit<GroupRepresentation, 'name' | 'id'>;\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "This API provides a comprehensive interface for managing nested child groups within a specific parent group path in Keycloak."
+      children: "This API provides a comprehensive interface for managing Keycloak groups and their child groups within a specific realm."
     })]
   });
 }

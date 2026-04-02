@@ -197,6 +197,10 @@ function _createMdxContent(props) {
         })
       }), "\n", (0,jsx_runtime.jsx)(_components.li, {
         children: (0,jsx_runtime.jsx)(_components.code, {
+          children: "update(data)"
+        })
+      }), "\n", (0,jsx_runtime.jsx)(_components.li, {
+        children: (0,jsx_runtime.jsx)(_components.code, {
           children: "delete()"
         })
       }), "\n", (0,jsx_runtime.jsx)(_components.li, {
@@ -218,17 +222,27 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-ts",
-        children: "const workflow = await realm.workflow('approval').ensure({\n  enabled: true,\n});\n\nconst pageTwo = await workflow.list({ page: 2, pageSize: 10 });\n"
+        children: "const workflow = await realm.workflow('approval').ensure({\n  enabled: true,\n});\n\nawait workflow.update({\n  enabled: false,\n});\n\nconst pageTwo = await workflow.list({ page: 2, pageSize: 10 });\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.h2, {
       id: "important-behavior",
       children: "Important Behavior"
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["Unlike most other handles in this library, ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "WorkflowHandle.ensure(...)"
-      }), " only guarantees that the workflow exists. If the workflow is already present, it does not currently issue an update."]
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "That behavior matches the implementation and tests, so it is worth keeping in mind when using workflows declaratively."
+      children: [(0,jsx_runtime.jsx)(_components.code, {
+        children: "WorkflowHandle"
+      }), " now follows the same lifecycle contract as the other mutable resource handles in this library."]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.code, {
+          children: "update(...)"
+        }), " updates an existing workflow."]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.code, {
+          children: "ensure(...)"
+        }), " creates the workflow if it does not exist, or updates it if it already exists."]
+      }), "\n", (0,jsx_runtime.jsx)(_components.li, {
+        children: "The update path preserves unspecified fields by merging your partial input into the current workflow representation before sending the admin update call."
+      }), "\n"]
     })]
   });
 }

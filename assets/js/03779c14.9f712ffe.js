@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[8531],{
+(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[9553],{
 
 /***/ 416:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
@@ -96,7 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 8161:
+/***/ 5194:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -108,24 +108,24 @@ __webpack_require__.d(__webpack_exports__, {
   contentTitle: () => (/* binding */ contentTitle),
   "default": () => (/* binding */ MDXContent),
   frontMatter: () => (/* binding */ frontMatter),
-  metadata: () => (/* reexport */ site_docs_api_protocol_mappers_protocol_mapper_mdx_0e0_namespaceObject),
+  metadata: () => (/* reexport */ site_docs_api_groups_child_group_mdx_037_namespaceObject),
   toc: () => (/* binding */ toc)
 });
 
-;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-protocol-mappers-protocol-mapper-mdx-0e0.json
-const site_docs_api_protocol_mappers_protocol_mapper_mdx_0e0_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/protocol-mappers/protocol-mapper","title":"Protocol Mapper API","description":"The ProtocolMapperHandle class provides a fluent API for managing protocol mappers in Keycloak. Protocol mappers are used to map claims or attributes to tokens issued by Keycloak.","source":"@site/docs/api/protocol-mappers/protocol-mapper.mdx","sourceDirName":"api/protocol-mappers","slug":"/api/protocol-mappers/protocol-mapper","permalink":"/api/protocol-mappers/protocol-mapper","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":0,"frontMatter":{"sidebar_label":"Protocol Mapper","sidebar_position":0},"sidebar":"api","previous":{"title":"Component","permalink":"/api/component"},"next":{"title":"User Attribute Protocol Mapper","permalink":"/api/protocol-mappers/user-attribute-protocol-mapper"}}');
+;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-groups-child-group-mdx-037.json
+const site_docs_api_groups_child_group_mdx_037_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/groups/child-group","title":"Child Group API","description":"The ChildGroupHandle class provides a fluent API for managing child groups in Keycloak. It allows you to create, update, delete, and retrieve child groups within a specific parent group.","source":"@site/docs/api/groups/child-group.mdx","sourceDirName":"api/groups","slug":"/api/groups/child-group","permalink":"/api/groups/child-group","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":1,"frontMatter":{"sidebar_label":"Child Group","sidebar_position":1},"sidebar":"api","previous":{"title":"Group","permalink":"/api/groups/group"},"next":{"title":"Nested Child Group","permalink":"/api/groups/nested-child-group"}}');
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-;// ./docs/api/protocol-mappers/protocol-mapper.mdx
+;// ./docs/api/groups/child-group.mdx
 
 
 const frontMatter = {
-	sidebar_label: 'Protocol Mapper',
-	sidebar_position: 0
+	sidebar_label: 'Child Group',
+	sidebar_position: 1
 };
-const contentTitle = 'Protocol Mapper API';
+const contentTitle = 'Child Group API';
 
 const assets = {
 
@@ -134,13 +134,21 @@ const assets = {
 
 
 const toc = [{
-  "value": "Class: <code>ProtocolMapperHandle</code>",
-  "id": "class-protocolmapperhandle",
+  "value": "Class: <code>ChildGroupHandle</code>",
+  "id": "class-childgrouphandle",
   "level": 2
 }, {
   "value": "Constructor",
   "id": "constructor",
   "level": 3
+}, {
+  "value": "Static Methods",
+  "id": "static-methods",
+  "level": 3
+}, {
+  "value": "<code>getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string)</code>",
+  "id": "getbynamecore-keycloakadminclient-realm-string-parentgroupname-string-groupname-string",
+  "level": 4
 }, {
   "value": "Instance Methods",
   "id": "instance-methods",
@@ -150,48 +158,36 @@ const toc = [{
   "id": "get",
   "level": 4
 }, {
-  "value": "<code>create(data: ProtocolMapperInputData)</code>",
-  "id": "createdata-protocolmapperinputdata",
+  "value": "<code>create(data: ChildGroupInputData)</code>",
+  "id": "createdata-childgroupinputdata",
   "level": 4
 }, {
-  "value": "<code>update(data: ProtocolMapperInputData)</code>",
-  "id": "updatedata-protocolmapperinputdata",
+  "value": "<code>update(data: ChildGroupInputData)</code>",
+  "id": "updatedata-childgroupinputdata",
   "level": 4
 }, {
   "value": "<code>delete()</code>",
   "id": "delete",
   "level": 4
 }, {
-  "value": "<code>ensure(data: ProtocolMapperInputData)</code>",
-  "id": "ensuredata-protocolmapperinputdata",
+  "value": "<code>ensure(data: ChildGroupInputData)</code>",
+  "id": "ensuredata-childgroupinputdata",
   "level": 4
 }, {
   "value": "<code>discard()</code>",
   "id": "discard",
   "level": 4
 }, {
-  "value": "Constants",
-  "id": "constants",
-  "level": 3
-}, {
-  "value": "<code>defaultProtocolMapperData</code>",
-  "id": "defaultprotocolmapperdata",
+  "value": "<code>childGroup(groupName: string)</code>",
+  "id": "childgroupgroupname-string",
   "level": 4
 }, {
   "value": "Types",
   "id": "types",
   "level": 3
 }, {
-  "value": "<code>ProtocolMapperProtocol</code>",
-  "id": "protocolmapperprotocol",
-  "level": 4
-}, {
-  "value": "<code>ProtocolMapperInputData</code>",
-  "id": "protocolmapperinputdata",
-  "level": 4
-}, {
-  "value": "<code>ProtocolMapperRepresentationExt</code>",
-  "id": "protocolmapperrepresentationext",
+  "value": "<code>ChildGroupInputData</code>",
+  "id": "childgroupinputdata",
   "level": 4
 }];
 function _createMdxContent(props) {
@@ -214,17 +210,17 @@ function _createMdxContent(props) {
   return (0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
     children: [(0,jsx_runtime.jsx)(_components.header, {
       children: (0,jsx_runtime.jsx)(_components.h1, {
-        id: "protocol-mapper-api",
-        children: "Protocol Mapper API"
+        id: "child-group-api",
+        children: "Child Group API"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "ProtocolMapperHandle"
-      }), " class provides a fluent API for managing protocol mappers in Keycloak. Protocol mappers are used to map claims or attributes to tokens issued by Keycloak."]
+        children: "ChildGroupHandle"
+      }), " class provides a fluent API for managing child groups in Keycloak. It allows you to create, update, delete, and retrieve child groups within a specific parent group."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.h2, {
-      id: "class-protocolmapperhandle",
+      id: "class-childgrouphandle",
       children: ["Class: ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "ProtocolMapperHandle"
+        children: "ChildGroupHandle"
       })]
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "constructor",
@@ -232,7 +228,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, mapperName: string)\n"
+        children: "constructor(core: KeycloakAdminClient, parentGroupHandle: GroupHandle, groupName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -247,14 +243,61 @@ function _createMdxContent(props) {
             }), "."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "clientHandle"
-            }), ": A handle to the client where the protocol mapper resides."]
+              children: "parentGroupHandle"
+            }), ": A handle to the parent group where the child group resides."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "mapperName"
-            }), ": The name of the protocol mapper to manage."]
+              children: "groupName"
+            }), ": The name of the child group to manage."]
           }), "\n"]
         }), "\n"]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
+      id: "static-methods",
+      children: "Static Methods"
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "getbynamecore-keycloakadminclient-realm-string-parentgroupname-string-groupname-string",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string)"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Fetches a child group by its name under a specific parent group."
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "static async getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string)\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "core"
+            }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
+              children: "KeycloakAdminClient"
+            }), "."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "realm"
+            }), ": The name of the realm."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "parentGroupName"
+            }), ": The name of the parent group."]
+          }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "groupName"
+            }), ": The name of the child group."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": The child group representation or ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "null"
+        }), " if the child group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "instance-methods",
@@ -265,33 +308,33 @@ function _createMdxContent(props) {
         children: "get()"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["Fetches the protocol mapper by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "clientProtocolMapper"
+      children: ["Fetches the child group by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "group"
       }), " property."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async get(): Promise<ProtocolMapperRepresentation | null>\n"
+        children: "public async get(): Promise<GroupRepresentation | null>\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The protocol mapper representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The child group representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
-        }), " if the mapper does not exist."]
+        }), " if the child group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "createdata-protocolmapperinputdata",
+      id: "createdata-childgroupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "create(data: ProtocolMapperInputData)"
+        children: "create(data: ChildGroupInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Creates a new protocol mapper."
+      children: "Creates a new child group under the parent group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async create(data: ProtocolMapperInputData)\n"
+        children: "public async create(data: ChildGroupInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -301,25 +344,25 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the new protocol mapper."]
+            }), ": The data for the new child group."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the protocol mapper already exists."]
+        }), ": An error if the child group already exists or the parent group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "updatedata-protocolmapperinputdata",
+      id: "updatedata-childgroupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "update(data: ProtocolMapperInputData)"
+        children: "update(data: ChildGroupInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Updates the protocol mapper's details."
+      children: "Updates the child group's details."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async update(data: ProtocolMapperInputData)\n"
+        children: "public async update(data: ChildGroupInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -329,13 +372,13 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The updated data for the protocol mapper."]
+            }), ": The updated data for the child group."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the protocol mapper does not exist."]
+        }), ": An error if the child group or parent group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "delete",
@@ -343,7 +386,7 @@ function _createMdxContent(props) {
         children: "delete()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the protocol mapper."
+      children: "Deletes the child group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -353,19 +396,19 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the protocol mapper does not exist."]
+        }), ": An error if the child group does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "ensuredata-protocolmapperinputdata",
+      id: "ensuredata-childgroupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ensure(data: ProtocolMapperInputData)"
+        children: "ensure(data: ChildGroupInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Ensures the protocol mapper exists. If it does, updates it; otherwise, creates it."
+      children: "Ensures the child group exists. If it does, updates it; otherwise, creates it."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async ensure(data: ProtocolMapperInputData)\n"
+        children: "public async ensure(data: ChildGroupInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -375,7 +418,7 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the protocol mapper."]
+            }), ": The data for the child group."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -385,7 +428,7 @@ function _createMdxContent(props) {
         children: "discard()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the protocol mapper if it exists."
+      children: "Deletes the child group if it exists."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -395,64 +438,55 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The name of the deleted protocol mapper."]
+        }), ": The name of the deleted child group."]
       }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
-      id: "constants",
-      children: "Constants"
-    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "defaultprotocolmapperdata",
+    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "childgroupgroupname-string",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "defaultProtocolMapperData"
+        children: "childGroup(groupName: string)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Default data for creating a protocol mapper."
+      children: "Returns a handle for managing a nested child group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export const defaultProtocolMapperData = Object.freeze({\n  protocol: 'openid-connect',\n  protocolMapper: '',\n  config: {},\n});\n"
+        children: "public childGroup(groupName: string)\n"
       })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Parameters"
+        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+            children: [(0,jsx_runtime.jsx)(_components.code, {
+              children: "groupName"
+            }), ": The name of the nested child group."]
+          }), "\n"]
+        }), "\n"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: [(0,jsx_runtime.jsx)(_components.strong, {
+          children: "Returns"
+        }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "NestedChildGroupHandle"
+        }), "."]
+      }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "types",
       children: "Types"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "protocolmapperprotocol",
+      id: "childgroupinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ProtocolMapperProtocol"
+        children: "ChildGroupInputData"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The protocol type for the protocol mapper."
+      children: "The input data type for creating or updating a child group."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export type ProtocolMapperProtocol = 'openid-connect' | 'saml';\n"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "protocolmapperinputdata",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ProtocolMapperInputData"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The input data type for creating or updating a protocol mapper."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "export type ProtocolMapperInputData = Omit<ProtocolMapperRepresentationExt, 'name | id'>;\n"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "protocolmapperrepresentationext",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ProtocolMapperRepresentationExt"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "An extended representation of the protocol mapper."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "export interface ProtocolMapperRepresentationExt extends ProtocolMapperRepresentation {\n  protocol?: ProtocolMapperProtocol;\n}\n"
+        children: "export type ChildGroupInputData = Omit<GroupRepresentation, 'name' | 'id'>;\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "This API provides a comprehensive interface for managing protocol mappers in Keycloak, including creation, updates, deletion, and ensuring their existence."
+      children: "This API provides a comprehensive interface for managing child groups within a specific parent group in Keycloak."
     })]
   });
 }

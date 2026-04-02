@@ -9,8 +9,8 @@
 <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="robots" content="index, follow"><link rel="stylesheet" href="/assets/css/styles.86008276.css">
-<script src="/assets/js/runtime~main.cf30b245.js" defer="defer"></script>
-<script src="/assets/js/main.78832286.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.aef06ba3.js" defer="defer"></script>
+<script src="/assets/js/main.25fffac7.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -89,6 +89,7 @@
 <li class=""><code>data</code>: The updated data for the client.</li>
 </ul>
 </li>
+<li class=""><strong>Behavior</strong>: Partial updates preserve unspecified existing fields by merging the supplied data into the current client representation before calling the admin update endpoint.</li>
 <li class=""><strong>Throws</strong>: An error if the client does not exist.</li>
 </ul>
 <hr>
@@ -108,6 +109,7 @@
 <li class=""><code>data</code>: The data for the client.</li>
 </ul>
 </li>
+<li class=""><strong>Behavior</strong>: On the update path, the supplied data is merged into the current client representation so existing nested settings remain intact unless you explicitly override them.</li>
 </ul>
 <hr>
 <h4 class="anchor anchorTargetStickyNavbar_z3HS" id="discard"><code>discard()</code><a href="#discard" class="hash-link" aria-label="Direct link to discard" title="Direct link to discard" translate="no">​</a></h4>
@@ -150,7 +152,7 @@
 <li class=""><code>mapperName</code>: The name of the protocol mapper.</li>
 </ul>
 </li>
-<li class=""><strong>Returns</strong>: An instance of <code>UserAttributeProtocolMapperHandle</code>.</li>
+<li class=""><strong>Returns</strong>: An instance of <code>ProtocolMapperHandle</code>.</li>
 </ul>
 <hr>
 <h4 class="anchor anchorTargetStickyNavbar_z3HS" id="userattributeprotocolmappermappername-string"><code>userAttributeProtocolMapper(mapperName: string)</code><a href="#userattributeprotocolmappermappername-string" class="hash-link" aria-label="Direct link to userattributeprotocolmappermappername-string" title="Direct link to userattributeprotocolmappermappername-string" translate="no">​</a></h4>
@@ -192,7 +194,7 @@
 <h3 class="anchor anchorTargetStickyNavbar_z3HS" id="types">Types<a href="#types" class="hash-link" aria-label="Direct link to Types" title="Direct link to Types" translate="no">​</a></h3>
 <h4 class="anchor anchorTargetStickyNavbar_z3HS" id="clientinputdata"><code>ClientInputData</code><a href="#clientinputdata" class="hash-link" aria-label="Direct link to clientinputdata" title="Direct link to clientinputdata" translate="no">​</a></h4>
 <p>The input data type for creating or updating a client.</p>
-<div class="language-typescript codeBlockContainer_Ldhp theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_upVD"><pre tabindex="0" class="prism-code language-typescript codeBlock_dUbo thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_2kmW"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">export</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">type</span><span class="token plain"> </span><span class="token class-name">ClientInputData</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> Omit</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">ClientRepresentation</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;realm | clientId | id&#x27;</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">;</span><br></span></code></pre></div></div>
+<div class="language-typescript codeBlockContainer_Ldhp theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_upVD"><pre tabindex="0" class="prism-code language-typescript codeBlock_dUbo thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_2kmW"><span class="token-line" style="color:#393A34"><span class="token keyword" style="color:#00009f">export</span><span class="token plain"> </span><span class="token keyword" style="color:#00009f">type</span><span class="token plain"> </span><span class="token class-name">ClientInputData</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">=</span><span class="token plain"> Omit</span><span class="token operator" style="color:#393A34">&lt;</span><span class="token plain">ClientRepresentation</span><span class="token punctuation" style="color:#393A34">,</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;realm&#x27;</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">|</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;clientId&#x27;</span><span class="token plain"> </span><span class="token operator" style="color:#393A34">|</span><span class="token plain"> </span><span class="token string" style="color:#e3116c">&#x27;id&#x27;</span><span class="token operator" style="color:#393A34">&gt;</span><span class="token punctuation" style="color:#393A34">;</span><br></span></code></pre></div></div>
 <hr>
 <p>This API provides a comprehensive interface for managing Keycloak clients, their roles, and protocol mappers within a specific realm.</p></div></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/api/authentication-flow/"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Authentication Flow</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/api/clients/confidential-browser-login-client/"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Confidential Browser Login Client</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_zkmu thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#class-clienthandle" class="table-of-contents__link toc-highlight">Class: <code>ClientHandle</code></a><ul><li><a href="#constructor" class="table-of-contents__link toc-highlight">Constructor</a></li><li><a href="#static-methods" class="table-of-contents__link toc-highlight">Static Methods</a></li><li><a href="#instance-methods" class="table-of-contents__link toc-highlight">Instance Methods</a></li><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 Egose. Built with Docusaurus.</div></div></div></footer></div>
 </body>

@@ -661,7 +661,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export type UserInputData = Omit<UserRepresentation, 'username | id'> & {\n  password?: string;\n};\n"
+        children: "export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {\n  password?: string;\n};\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
       children: "This API provides a comprehensive interface for managing Keycloak users and their associated roles, groups, and attributes."

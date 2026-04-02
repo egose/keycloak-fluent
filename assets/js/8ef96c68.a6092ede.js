@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[6000],{
+(self["webpackChunkwebsite"] = self["webpackChunkwebsite"] || []).push([[934],{
 
 /***/ 416:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
@@ -96,7 +96,7 @@ function MDXProvider(properties) {
 
 /***/ }),
 
-/***/ 8799:
+/***/ 6341:
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 // ESM COMPAT FLAG
@@ -108,24 +108,24 @@ __webpack_require__.d(__webpack_exports__, {
   contentTitle: () => (/* binding */ contentTitle),
   "default": () => (/* binding */ MDXContent),
   frontMatter: () => (/* binding */ frontMatter),
-  metadata: () => (/* reexport */ site_docs_api_clients_client_mdx_d3d_namespaceObject),
+  metadata: () => (/* reexport */ site_docs_api_role_mdx_8ef_namespaceObject),
   toc: () => (/* binding */ toc)
 });
 
-;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-clients-client-mdx-d3d.json
-const site_docs_api_clients_client_mdx_d3d_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/clients/client","title":"Client API","description":"The ClientHandle class provides a fluent API for managing Keycloak clients. It allows you to create, update, delete, and retrieve clients within a specific realm, as well as manage client roles and protocol mappers.","source":"@site/docs/api/clients/client.mdx","sourceDirName":"api/clients","slug":"/api/clients/client","permalink":"/api/clients/client","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":0,"frontMatter":{"sidebar_label":"Client","sidebar_position":0},"sidebar":"api","previous":{"title":"Authentication Flow","permalink":"/api/authentication-flow"},"next":{"title":"Confidential Browser Login Client","permalink":"/api/clients/confidential-browser-login-client"}}');
+;// ./.docusaurus/docusaurus-plugin-content-docs/default/site-docs-api-role-mdx-8ef.json
+const site_docs_api_role_mdx_8ef_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"api/role","title":"Role API","description":"The RoleHandle class provides a fluent API for managing Keycloak roles. It allows you to create, update, delete, and retrieve roles within a specific realm.","source":"@site/docs/api/role.mdx","sourceDirName":"api","slug":"/api/role","permalink":"/api/role","draft":false,"unlisted":false,"tags":[],"version":"current","sidebarPosition":4,"frontMatter":{"sidebar_label":"Role","sidebar_position":4},"sidebar":"api","previous":{"title":"User","permalink":"/api/user"},"next":{"title":"Group","permalink":"/api/groups/group"}}');
 // EXTERNAL MODULE: ./node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(2615);
 // EXTERNAL MODULE: ./node_modules/.pnpm/@mdx-js+react@3.1.1_@types+react@19.2.14_react@19.2.4/node_modules/@mdx-js/react/lib/index.js
 var lib = __webpack_require__(416);
-;// ./docs/api/clients/client.mdx
+;// ./docs/api/role.mdx
 
 
 const frontMatter = {
-	sidebar_label: 'Client',
-	sidebar_position: 0
+	sidebar_label: 'Role',
+	sidebar_position: 4
 };
-const contentTitle = 'Client API';
+const contentTitle = 'Role API';
 
 const assets = {
 
@@ -134,8 +134,8 @@ const assets = {
 
 
 const toc = [{
-  "value": "Class: <code>ClientHandle</code>",
-  "id": "class-clienthandle",
+  "value": "Class: <code>RoleHandle</code>",
+  "id": "class-rolehandle",
   "level": 2
 }, {
   "value": "Constructor",
@@ -150,8 +150,8 @@ const toc = [{
   "id": "getbyidcore-keycloakadminclient-realm-string-id-string",
   "level": 4
 }, {
-  "value": "<code>getByClientId(core: KeycloakAdminClient, realm: string, clientId: string)</code>",
-  "id": "getbyclientidcore-keycloakadminclient-realm-string-clientid-string",
+  "value": "<code>getByName(core: KeycloakAdminClient, realm: string, roleName: string)</code>",
+  "id": "getbynamecore-keycloakadminclient-realm-string-rolename-string",
   "level": 4
 }, {
   "value": "Instance Methods",
@@ -162,56 +162,32 @@ const toc = [{
   "id": "get",
   "level": 4
 }, {
-  "value": "<code>create(data: ClientInputData)</code>",
-  "id": "createdata-clientinputdata",
+  "value": "<code>create(data: RoleInputData)</code>",
+  "id": "createdata-roleinputdata",
   "level": 4
 }, {
-  "value": "<code>update(data: ClientInputData)</code>",
-  "id": "updatedata-clientinputdata",
+  "value": "<code>update(data: RoleInputData)</code>",
+  "id": "updatedata-roleinputdata",
   "level": 4
 }, {
   "value": "<code>delete()</code>",
   "id": "delete",
   "level": 4
 }, {
-  "value": "<code>ensure(data: ClientInputData)</code>",
-  "id": "ensuredata-clientinputdata",
+  "value": "<code>ensure(data: RoleInputData)</code>",
+  "id": "ensuredata-roleinputdata",
   "level": 4
 }, {
   "value": "<code>discard()</code>",
   "id": "discard",
   "level": 4
 }, {
-  "value": "<code>searchRoles(keyword: string)</code>",
-  "id": "searchroleskeyword-string",
-  "level": 4
-}, {
-  "value": "<code>role(roleName: string)</code>",
-  "id": "rolerolename-string",
-  "level": 4
-}, {
-  "value": "<code>protocolMapper(mapperName: string)</code>",
-  "id": "protocolmappermappername-string",
-  "level": 4
-}, {
-  "value": "<code>userAttributeProtocolMapper(mapperName: string)</code>",
-  "id": "userattributeprotocolmappermappername-string",
-  "level": 4
-}, {
-  "value": "<code>hardcodedClaimProtocolMapper(mapperName: string)</code>",
-  "id": "hardcodedclaimprotocolmappermappername-string",
-  "level": 4
-}, {
-  "value": "<code>audienceProtocolMapper(mapperName: string)</code>",
-  "id": "audienceprotocolmappermappername-string",
-  "level": 4
-}, {
   "value": "Types",
   "id": "types",
   "level": 3
 }, {
-  "value": "<code>ClientInputData</code>",
-  "id": "clientinputdata",
+  "value": "<code>RoleInputData</code>",
+  "id": "roleinputdata",
   "level": 4
 }];
 function _createMdxContent(props) {
@@ -234,17 +210,17 @@ function _createMdxContent(props) {
   return (0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
     children: [(0,jsx_runtime.jsx)(_components.header, {
       children: (0,jsx_runtime.jsx)(_components.h1, {
-        id: "client-api",
-        children: "Client API"
+        id: "role-api",
+        children: "Role API"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "ClientHandle"
-      }), " class provides a fluent API for managing Keycloak clients. It allows you to create, update, delete, and retrieve clients within a specific realm, as well as manage client roles and protocol mappers."]
+        children: "RoleHandle"
+      }), " class provides a fluent API for managing Keycloak roles. It allows you to create, update, delete, and retrieve roles within a specific realm."]
     }), "\n", (0,jsx_runtime.jsxs)(_components.h2, {
-      id: "class-clienthandle",
+      id: "class-rolehandle",
       children: ["Class: ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "ClientHandle"
+        children: "RoleHandle"
       })]
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "constructor",
@@ -252,7 +228,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, clientId: string)\n"
+        children: "constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, roleName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -268,11 +244,11 @@ function _createMdxContent(props) {
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "realmHandle"
-            }), ": A handle to the realm where the client resides."]
+            }), ": A handle to the realm where the role resides."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "clientId"
-            }), ": The ID of the client to manage."]
+              children: "roleName"
+            }), ": The name of the role to manage."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -285,7 +261,7 @@ function _createMdxContent(props) {
         children: "getById(core: KeycloakAdminClient, realm: string, id: string)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Fetches a client by its ID."
+      children: "Fetches a role by its ID."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -309,27 +285,27 @@ function _createMdxContent(props) {
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "id"
-            }), ": The ID of the client."]
+            }), ": The ID of the role."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The client representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The role representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
-        }), " if the client does not exist."]
+        }), " if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "getbyclientidcore-keycloakadminclient-realm-string-clientid-string",
+      id: "getbynamecore-keycloakadminclient-realm-string-rolename-string",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "getByClientId(core: KeycloakAdminClient, realm: string, clientId: string)"
+        children: "getByName(core: KeycloakAdminClient, realm: string, roleName: string)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Fetches a client by its client ID."
+      children: "Fetches a role by its name."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "static async getByClientId(core: KeycloakAdminClient, realm: string, clientId: string)\n"
+        children: "static async getByName(core: KeycloakAdminClient, realm: string, roleName: string)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -348,16 +324,16 @@ function _createMdxContent(props) {
             }), ": The name of the realm."]
           }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "clientId"
-            }), ": The client ID of the client."]
+              children: "roleName"
+            }), ": The name of the role."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The client representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The role representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
-        }), " if the client does not exist."]
+        }), " if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "instance-methods",
@@ -368,33 +344,33 @@ function _createMdxContent(props) {
         children: "get()"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["Fetches the client by its client ID and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "client"
+      children: ["Fetches the role by its name and updates the instance's ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "role"
       }), " property."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async get(): Promise<ClientRepresentation | null>\n"
+        children: "public async get(): Promise<RoleRepresentation | null>\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The client representation or ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ": The role representation or ", (0,jsx_runtime.jsx)(_components.code, {
           children: "null"
-        }), " if the client does not exist."]
+        }), " if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "createdata-clientinputdata",
+      id: "createdata-roleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "create(data: ClientInputData)"
+        children: "create(data: RoleInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Creates a new client."
+      children: "Creates a new role."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async create(data: ClientInputData)\n"
+        children: "public async create(data: RoleInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -404,25 +380,25 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the new client."]
+            }), ": The data for the new role."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the client already exists."]
+        }), ": An error if the role already exists."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "updatedata-clientinputdata",
+      id: "updatedata-roleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "update(data: ClientInputData)"
+        children: "update(data: RoleInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Updates the client's details."
+      children: "Updates the role's details."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async update(data: ClientInputData)\n"
+        children: "public async update(data: RoleInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -432,13 +408,13 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The updated data for the client."]
+            }), ": The updated data for the role."]
           }), "\n"]
         }), "\n"]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the client does not exist."]
+        }), ": An error if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "delete",
@@ -446,7 +422,7 @@ function _createMdxContent(props) {
         children: "delete()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the client."
+      children: "Deletes the role."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -456,19 +432,19 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Throws"
-        }), ": An error if the client does not exist."]
+        }), ": An error if the role does not exist."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "ensuredata-clientinputdata",
+      id: "ensuredata-roleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ensure(data: ClientInputData)"
+        children: "ensure(data: RoleInputData)"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Ensures the client exists. If it does, updates it; otherwise, creates it."
+      children: "Ensures the role exists. If it does, updates it; otherwise, creates it."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "public async ensure(data: ClientInputData)\n"
+        children: "public async ensure(data: RoleInputData)\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
@@ -478,7 +454,7 @@ function _createMdxContent(props) {
           children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
             children: [(0,jsx_runtime.jsx)(_components.code, {
               children: "data"
-            }), ": The data for the client."]
+            }), ": The data for the role."]
           }), "\n"]
         }), "\n"]
       }), "\n"]
@@ -488,7 +464,7 @@ function _createMdxContent(props) {
         children: "discard()"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Deletes the client if it exists."
+      children: "Deletes the role if it exists."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
@@ -498,203 +474,25 @@ function _createMdxContent(props) {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: [(0,jsx_runtime.jsx)(_components.strong, {
           children: "Returns"
-        }), ": The client ID of the deleted client."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "searchroleskeyword-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "searchRoles(keyword: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Searches for roles associated with the client."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "public async searchRoles(keyword: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "keyword"
-            }), ": The search keyword."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": A list of roles matching the keyword."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "rolerolename-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "role(roleName: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Returns a handle for managing a specific client role."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "public role(roleName: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "roleName"
-            }), ": The name of the role."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "ClientRoleHandle"
-        }), "."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "protocolmappermappername-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "protocolMapper(mapperName: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Returns a handle for managing a base protocol mapper."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "public protocolMapper(mapperName: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "mapperName"
-            }), ": The name of the protocol mapper."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "UserAttributeProtocolMapperHandle"
-        }), "."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "userattributeprotocolmappermappername-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "userAttributeProtocolMapper(mapperName: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Returns a handle for managing a user attribute protocol mapper."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "public userAttributeProtocolMapper(mapperName: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "mapperName"
-            }), ": The name of the protocol mapper."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "UserAttributeProtocolMapperHandle"
-        }), "."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "hardcodedclaimprotocolmappermappername-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "hardcodedClaimProtocolMapper(mapperName: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Returns a handle for managing a hardcoded claim protocol mapper."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "public hardcodedClaimProtocolMapper(mapperName: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "mapperName"
-            }), ": The name of the protocol mapper."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "HardcodedClaimProtocolMapperHandle"
-        }), "."]
-      }), "\n"]
-    }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "audienceprotocolmappermappername-string",
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "audienceProtocolMapper(mapperName: string)"
-      })
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Returns a handle for managing an audience protocol mapper."
-    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
-      children: (0,jsx_runtime.jsx)(_components.code, {
-        className: "language-typescript",
-        children: "public audienceProtocolMapper(mapperName: string)\n"
-      })
-    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Parameters"
-        }), ":", "\n", (0,jsx_runtime.jsxs)(_components.ul, {
-          children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
-            children: [(0,jsx_runtime.jsx)(_components.code, {
-              children: "mapperName"
-            }), ": The name of the protocol mapper."]
-          }), "\n"]
-        }), "\n"]
-      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
-        children: [(0,jsx_runtime.jsx)(_components.strong, {
-          children: "Returns"
-        }), ": An instance of ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "AudienceProtocolMapperHandle"
-        }), "."]
+        }), ": The name of the deleted role."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "types",
       children: "Types"
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
-      id: "clientinputdata",
+      id: "roleinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
-        children: "ClientInputData"
+        children: "RoleInputData"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "The input data type for creating or updating a client."
+      children: "The input data type for creating or updating a role."
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export type ClientInputData = Omit<ClientRepresentation, 'realm | clientId | id'>;\n"
+        children: "export type RoleInputData = Omit<RoleRepresentation, 'name' | 'id'>;\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "This API provides a comprehensive interface for managing Keycloak clients, their roles, and protocol mappers within a specific realm."
+      children: "This API provides a comprehensive interface for managing Keycloak roles within a specific realm."
     })]
   });
 }
