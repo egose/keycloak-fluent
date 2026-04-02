@@ -50,16 +50,28 @@ export interface IdentityProviderRepresentationExt extends IdentityProviderRepre
 
 export type IdentityProviderInputData = Omit<IdentityProviderRepresentationExt, 'alias'>;
 
-const getIdentityProviderDataDefaults = (data: Partial<IdentityProviderInputData>) => {
-  const merged: IdentityProviderInputData = _merge({}, defaultIdentityProviderData, data);
+const normalizeIdentityProviderData = (
+  data: Partial<IdentityProviderRepresentationExt>,
+): IdentityProviderRepresentationExt => {
+  const merged: IdentityProviderRepresentationExt = _merge({}, data);
   if (!merged.config) merged.config = {};
 
   if (merged.config.jwksUrl !== '') {
     merged.config.useJwksUrl = 'true';
+  } else if (merged.config.jwksUrl === '') {
+    merged.config.useJwksUrl = 'false';
   }
 
   return merged;
 };
+
+const getIdentityProviderCreateData = (data: IdentityProviderInputData) =>
+  normalizeIdentityProviderData(_merge({}, defaultIdentityProviderData, data));
+
+const getIdentityProviderUpdateData = (
+  identityProvider: IdentityProviderRepresentation,
+  data: IdentityProviderInputData,
+) => normalizeIdentityProviderData(_merge({}, identityProvider, data));
 
 export default class IdentityProviderHandle {
   public core: KeycloakAdminClient;
@@ -102,7 +114,7 @@ export default class IdentityProviderHandle {
     }
 
     await this.core.identityProviders.create({
-      ...getIdentityProviderDataDefaults(data),
+      ...getIdentityProviderCreateData(data),
       realm: this.realmName,
       alias: this.alias,
     });
@@ -115,7 +127,7 @@ export default class IdentityProviderHandle {
       throw new Error(`Identity Provider "${this.alias}" not found in realm "${this.realmName}"`);
     }
 
-    const normalizedData = getIdentityProviderDataDefaults(data);
+    const normalizedData = getIdentityProviderUpdateData(one, data);
 
     await this.core.identityProviders.update(
       { realm: this.realmName, alias: one.alias },
@@ -139,16 +151,19 @@ export default class IdentityProviderHandle {
 
   public async ensure(data: IdentityProviderInputData) {
     this.identityProviderData = data;
-    const normalizedData = getIdentityProviderDataDefaults(data);
 
     const one = await this.get();
 
     if (one?.alias) {
+      const normalizedData = getIdentityProviderUpdateData(one, data);
+
       await this.core.identityProviders.update(
         { realm: this.realmName, alias: one.alias },
         { ...normalizedData, alias: this.alias },
       );
     } else {
+      const normalizedData = getIdentityProviderCreateData(data);
+
       await this.core.identityProviders.create({
         ...normalizedData,
         realm: this.realmName,

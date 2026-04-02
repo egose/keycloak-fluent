@@ -2,7 +2,7 @@ import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import RealmHandle from '../realm';
-import ClientHandle from './client';
+import { getClientByClientId } from './client-lookup';
 import ServiceAccountHandle, { type ServiceAccountInputData } from './service-account';
 
 export type RealmAdminServiceAccountInputData = ServiceAccountInputData;
@@ -44,7 +44,7 @@ export default class RealmAdminServiceAccountHandle extends ServiceAccountHandle
       realmManagementRoleName = 'realm-admin';
     }
 
-    const realmManagementClient = await ClientHandle.getByClientId(this.core, this.realmName, realmManagementClientId);
+    const realmManagementClient = await getClientByClientId(this.core, this.realmName, realmManagementClientId);
     if (!realmManagementClient) {
       throw new Error(`Realm Management Client "${realmManagementClientId}" not found in realm "${this.realmName}"`);
     }

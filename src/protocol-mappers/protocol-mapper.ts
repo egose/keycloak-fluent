@@ -1,7 +1,9 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import ProtocolMapperRepresentation from '@keycloak/keycloak-admin-client/lib/defs/protocolMapperRepresentation';
-import ClientHandle from '../clients/client';
+import type ClientHandle from '../clients/client';
+import { getClientByClientId } from '../clients/client-lookup';
 
 export type ProtocolMapperProtocol = 'openid-connect' | 'saml';
 
@@ -14,7 +16,15 @@ export const defaultProtocolMapperData = Object.freeze({
 export interface ProtocolMapperRepresentationExt extends ProtocolMapperRepresentation {
   protocol?: ProtocolMapperProtocol;
 }
-export type ProtocolMapperInputData = Omit<ProtocolMapperRepresentationExt, 'name | id'>;
+export type ProtocolMapperInputData = Omit<ProtocolMapperRepresentationExt, 'name' | 'id'>;
+
+function getProtocolMapperUpdateData(
+  mapper: ProtocolMapperRepresentation,
+  data: ProtocolMapperInputData,
+  mapperName: string,
+) {
+  return _merge({}, mapper, data, { name: mapperName });
+}
 
 export default class ProtocolMapperHandle {
   public core: KeycloakAdminClient;
@@ -24,7 +34,7 @@ export default class ProtocolMapperHandle {
   public client?: ClientRepresentation | null;
   public mapperName: string;
   public clientProtocolMapper?: ProtocolMapperRepresentation | null;
-  public clientProtocolMapperData?: Omit<ProtocolMapperRepresentation, 'name | id'>;
+  public clientProtocolMapperData?: Omit<ProtocolMapperRepresentation, 'name' | 'id'>;
 
   constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, mapperName: string) {
     this.core = core;
@@ -43,17 +53,23 @@ export default class ProtocolMapperHandle {
     };
   }
 
+  private getCurrentClientId() {
+    return this.clientHandle.client?.clientId ?? this.clientHandle.clientId;
+  }
+
   private async resolveClient() {
     if (this.client?.id) {
       return this.client;
     }
 
-    const client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
+    const clientId = this.getCurrentClientId();
+    const client = this.clientHandle.client ?? (await getClientByClientId(this.core, this.realmName, clientId));
     if (!client) {
-      throw new Error(`Client "${this.clientId}" not found in realm "${this.realmName}"`);
+      throw new Error(`Client "${clientId}" not found in realm "${this.realmName}"`);
     }
 
     this.client = client;
+    this.clientId = client.clientId ?? clientId;
     return client;
   }
 
@@ -111,9 +127,7 @@ export default class ProtocolMapperHandle {
     }
 
     await this.core.clients.updateProtocolMapper(this.getQuery(client, one.id), {
-      ...data,
-      id: one.id,
-      name: this.mapperName,
+      ...getProtocolMapperUpdateData(one, data, this.mapperName),
     });
 
     return this.get();
@@ -139,9 +153,7 @@ export default class ProtocolMapperHandle {
 
     if (one?.id) {
       await this.core.clients.updateProtocolMapper(this.getQuery(client, one.id), {
-        ...data,
-        id: one.id,
-        name: this.mapperName,
+        ...getProtocolMapperUpdateData(one, data, this.mapperName),
       });
     } else {
       await this.core.clients.addProtocolMapper(

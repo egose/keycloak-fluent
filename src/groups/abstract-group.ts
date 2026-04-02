@@ -3,9 +3,12 @@ import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupR
 import RoleRepresentation, { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 import type RoleHandle from '../role';
-import ClientHandle from '../clients/client';
+import type ClientHandle from '../clients/client';
 import type ClientRoleHandle from '../client-role';
+import { getClientByClientId } from '../clients/client-lookup';
 import { retryTransientAdminError } from '../utils/retry';
+
+const groupMembersPageSize = 1000;
 
 export abstract class AbstractGroupHandle {
   public core: KeycloakAdminClient;
@@ -43,7 +46,7 @@ export abstract class AbstractGroupHandle {
   protected async resolveClientRole(clientRoleHandle: ClientRoleHandle) {
     let client = clientRoleHandle.client ?? null;
     if (!client) {
-      client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
+      client = (await getClientByClientId(this.core, this.realmName, clientRoleHandle.clientHandle.clientId)) ?? null;
     }
 
     if (!client) {
@@ -77,16 +80,25 @@ export abstract class AbstractGroupHandle {
 
   public async listAssignedUsers() {
     const one = await this.requireGroup();
+    const result: UserRepresentation[] = [];
 
-    const result = await this.core.groups.listMembers({
-      realm: this.realmName,
-      id: one.id,
-      first: 0,
-      max: 1000,
-      briefRepresentation: false,
-    });
+    for (let first = 0; ; first += groupMembersPageSize) {
+      const page = await retryTransientAdminError(() =>
+        this.core.groups.listMembers({
+          realm: this.realmName,
+          id: one.id,
+          first,
+          max: groupMembersPageSize,
+          briefRepresentation: false,
+        }),
+      );
 
-    return result;
+      result.push(...page);
+
+      if (page.length < groupMembersPageSize) {
+        return result;
+      }
+    }
   }
 
   public async assignRole(roleHandle: RoleHandle) {
@@ -164,8 +176,7 @@ export abstract class AbstractGroupHandle {
   public async listAssignedClientRoles(clientHandle: ClientHandle): Promise<RoleRepresentation[]> {
     const group = await this.requireGroup();
     const groupId = group.id;
-    const client =
-      clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
+    const client = clientHandle.client ?? (await getClientByClientId(this.core, this.realmName, clientHandle.clientId));
     if (!client) {
       throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
     }

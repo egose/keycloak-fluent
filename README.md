@@ -316,7 +316,8 @@ The currently documented and tested surface includes:
 
 ## Notes
 
-- `WorkflowHandle.ensure(...)` currently guarantees existence, but does not update an existing workflow. That matches the current implementation and tests.
+- For resource-style handles, `update(...)` and the update path of `ensure(...)` now merge the supplied fields into the existing representation before sending the admin update call. This keeps unspecified nested fields such as attributes, config blocks, redirect URIs, and other existing settings intact.
+- `WorkflowHandle` now follows the same contract as the other mutable handles: it exposes `create(...)`, `update(...)`, `ensure(...)`, `delete()`, and `discard()`.
 - Some higher-level helpers resolve resources lazily by alias or name, so code stays concise while still failing explicitly when a resource cannot be resolved.
 - You can always access the underlying official admin client through `kc.core`.
 

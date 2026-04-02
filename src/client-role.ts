@@ -1,11 +1,17 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import ClientHandle from './clients/client';
+import type ClientHandle from './clients/client';
+import { getClientByClientId } from './clients/client-lookup';
 import type RoleHandle from './role';
 import { retryTransientAdminError } from './utils/retry';
 
-export type ClientRoleInputData = Omit<RoleRepresentation, 'name | id'>;
+export type ClientRoleInputData = Omit<RoleRepresentation, 'name' | 'id'>;
+
+function getClientRoleUpdateData(role: RoleRepresentation, data: ClientRoleInputData, roleName: string) {
+  return _merge({}, role, data, { name: roleName });
+}
 
 export default class ClientRoleHandle {
   public core: KeycloakAdminClient;
@@ -42,17 +48,23 @@ export default class ClientRoleHandle {
     };
   }
 
+  private getCurrentClientId() {
+    return this.clientHandle.client?.clientId ?? this.clientHandle.clientId;
+  }
+
   private async resolveClient() {
     if (this.client?.id) {
       return this.client;
     }
 
-    const client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
+    const clientId = this.getCurrentClientId();
+    const client = await getClientByClientId(this.core, this.realmName, clientId);
     if (!client) {
-      throw new Error(`Client "${this.clientId}" not found in realm "${this.realmName}"`);
+      throw new Error(`Client "${clientId}" not found in realm "${this.realmName}"`);
     }
 
     this.client = client;
+    this.clientId = client.clientId ?? clientId;
     return client;
   }
 
@@ -81,7 +93,7 @@ export default class ClientRoleHandle {
     roleName: string,
     client?: ClientRepresentation | null,
   ) {
-    client = client ?? (await ClientHandle.getByClientId(core, realm, clientId));
+    client = client ?? (await getClientByClientId(core, realm, clientId));
     if (!client) {
       throw new Error(`Client "${clientId}" not found in realm "${realm}"`);
     }
@@ -119,7 +131,7 @@ export default class ClientRoleHandle {
       throw new Error(`Role "${this.roleName}" not found in client "${client.clientId}"`);
     }
 
-    await this.core.clients.updateRole(this.getQuery(client), { ...data, name: this.roleName });
+    await this.core.clients.updateRole(this.getQuery(client), getClientRoleUpdateData(one, data, this.roleName));
     return this.get();
   }
 
@@ -143,7 +155,7 @@ export default class ClientRoleHandle {
     const one = await this.get();
 
     if (one?.id) {
-      await this.core.clients.updateRole(this.getQuery(client), { ...data, name: this.roleName });
+      await this.core.clients.updateRole(this.getQuery(client), getClientRoleUpdateData(one, data, this.roleName));
     } else {
       await this.core.clients.createRole({ ...data, ...this.getData(client) });
     }
@@ -231,8 +243,7 @@ export default class ClientRoleHandle {
   public async listClientComposites(clientHandle: ClientHandle) {
     const role = await this.requireRole();
     const roleId = role.id;
-    const client =
-      clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
+    const client = clientHandle.client ?? (await getClientByClientId(this.core, this.realmName, clientHandle.clientId));
     if (!client) {
       throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
     }

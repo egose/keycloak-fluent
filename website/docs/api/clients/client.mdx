@@ -94,6 +94,7 @@ public async update(data: ClientInputData)
 
 - **Parameters**:
   - `data`: The updated data for the client.
+- **Behavior**: Partial updates preserve unspecified existing fields by merging the supplied data into the current client representation before calling the admin update endpoint.
 - **Throws**: An error if the client does not exist.
 
 ---
@@ -120,6 +121,7 @@ public async ensure(data: ClientInputData)
 
 - **Parameters**:
   - `data`: The data for the client.
+- **Behavior**: On the update path, the supplied data is merged into the current client representation so existing nested settings remain intact unless you explicitly override them.
 
 ---
 
@@ -173,7 +175,7 @@ public protocolMapper(mapperName: string)
 
 - **Parameters**:
   - `mapperName`: The name of the protocol mapper.
-- **Returns**: An instance of `UserAttributeProtocolMapperHandle`.
+- **Returns**: An instance of `ProtocolMapperHandle`.
 
 ---
 
@@ -226,7 +228,7 @@ public audienceProtocolMapper(mapperName: string)
 The input data type for creating or updating a client.
 
 ```typescript
-export type ClientInputData = Omit<ClientRepresentation, 'realm | clientId | id'>;
+export type ClientInputData = Omit<ClientRepresentation, 'realm' | 'clientId' | 'id'>;
 ```
 
 ---

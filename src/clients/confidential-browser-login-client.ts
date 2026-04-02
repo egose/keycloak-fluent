@@ -18,19 +18,29 @@ export default class ConfidentialBrowserLoginClientHandle extends ClientHandle {
   }
 
   public async create(data: ConfidentialBrowserLoginClientInputData) {
-    return super.create(this.decorateInputData(data));
+    return super.create(this.decorateCreateInputData(data));
   }
 
   public async update(data: ConfidentialBrowserLoginClientInputData) {
-    return super.update(this.decorateInputData(data));
+    return super.update(this.decorateUpdateInputData(data));
   }
 
   public async ensure(data: ConfidentialBrowserLoginClientInputData) {
-    return super.ensure(this.decorateInputData(data));
+    if (await this.get()) {
+      return super.ensure(this.decorateUpdateInputData(data));
+    }
+
+    return super.ensure(this.decorateCreateInputData(data));
   }
 
-  private decorateInputData(data: ConfidentialBrowserLoginClientInputData) {
-    const redirectUris = data.redirectUris ?? [];
+  private decorateCreateInputData(data: ConfidentialBrowserLoginClientInputData) {
+    return this.decorateUpdateInputData({
+      ...data,
+      redirectUris: data.redirectUris?.length ? data.redirectUris : ['*'],
+    });
+  }
+
+  private decorateUpdateInputData(data: ConfidentialBrowserLoginClientInputData) {
     return {
       ...data,
       ...{
@@ -40,7 +50,6 @@ export default class ConfidentialBrowserLoginClientHandle extends ClientHandle {
         directAccessGrantsEnabled: false,
         implicitFlowEnabled: false,
         serviceAccountsEnabled: false,
-        redirectUris: redirectUris.length === 0 ? ['*'] : redirectUris,
       },
     };
   }

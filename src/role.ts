@@ -1,11 +1,17 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
 import RealmHandle from './realm';
-import ClientHandle from './clients/client';
+import type ClientHandle from './clients/client';
 import type ClientRoleHandle from './client-role';
+import { getClientByClientId } from './clients/client-lookup';
 import { retryTransientAdminError } from './utils/retry';
 
-export type RoleInputData = Omit<RoleRepresentation, 'name | id'>;
+export type RoleInputData = Omit<RoleRepresentation, 'name' | 'id'>;
+
+function getRoleUpdateData(role: RoleRepresentation, data: RoleInputData, roleName: string) {
+  return _merge({}, role, data, { name: roleName });
+}
 
 export default class RoleHandle {
   public core: KeycloakAdminClient;
@@ -85,7 +91,10 @@ export default class RoleHandle {
       throw new Error(`Role "${this.roleName}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.roles.updateById({ realm: this.realmName, id: one.id }, { ...data, name: this.roleName });
+    await this.core.roles.updateById(
+      { realm: this.realmName, id: one.id },
+      getRoleUpdateData(one, data, this.roleName),
+    );
 
     return this.get();
   }
@@ -108,7 +117,10 @@ export default class RoleHandle {
     const one = await this.get();
 
     if (one?.id) {
-      await this.core.roles.updateById({ realm: this.realmName, id: one.id }, { ...data, name: this.roleName });
+      await this.core.roles.updateById(
+        { realm: this.realmName, id: one.id },
+        getRoleUpdateData(one, data, this.roleName),
+      );
     } else {
       await this.core.roles.create({ ...data, realm: this.realmName, name: this.roleName });
     }
@@ -183,8 +195,7 @@ export default class RoleHandle {
   public async listClientComposites(clientHandle: ClientHandle) {
     const role = await this.requireRole();
     const roleId = role.id;
-    const client =
-      clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
+    const client = clientHandle.client ?? (await getClientByClientId(this.core, this.realmName, clientHandle.clientId));
     if (!client) {
       throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
     }

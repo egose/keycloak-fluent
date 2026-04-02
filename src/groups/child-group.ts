@@ -1,10 +1,16 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
-import GroupHandle from './group';
+import type GroupHandle from './group';
 import NestedChildGroupHandle from './nested-child-group';
 import { AbstractGroupHandle } from './abstract-group';
+import { getChildGroupByName, getGroupById, getGroupByName, listSubGroups } from './group-lookup';
 
-export type ChildGroupInputData = Omit<GroupRepresentation, 'name | id'>;
+export type ChildGroupInputData = Omit<GroupRepresentation, 'name' | 'id'>;
+
+function getChildGroupUpdateData(group: GroupRepresentation, data: ChildGroupInputData, groupName: string) {
+  return _merge({}, group, data, { name: groupName });
+}
 
 export default class ChildGroupHandle extends AbstractGroupHandle {
   public parentGroupHandle: GroupHandle;
@@ -18,16 +24,15 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
   }
 
   static async getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string) {
-    const group = await GroupHandle.getByName(core, realm, parentGroupName);
-    if (!group) return null;
+    return getChildGroupByName(core, realm, parentGroupName, groupName);
+  }
 
-    const subGroups = await GroupHandle.listSubGroups(core, realm, group.id!);
-    const subgroup = subGroups.find((v) => v.name === groupName);
-    return subgroup ?? null;
+  private getCurrentParentGroupName() {
+    return this.parentGroupHandle.group?.name ?? this.parentGroupHandle.groupName;
   }
 
   public async getById(id: string) {
-    this.group = await GroupHandle.getById(this.core, this.realmName, id);
+    this.group = await getGroupById(this.core, this.realmName, id);
 
     if (this.group) {
       this.groupName = this.group.name!;
@@ -37,7 +42,9 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
   }
 
   public async get(): Promise<GroupRepresentation | null> {
-    this.group = await ChildGroupHandle.getByName(this.core, this.realmName, this.parentGroupName, this.groupName);
+    const parentGroupName = this.getCurrentParentGroupName();
+    this.parentGroupName = parentGroupName;
+    this.group = await ChildGroupHandle.getByName(this.core, this.realmName, parentGroupName, this.groupName);
 
     if (this.group) {
       this.groupName = this.group.name!;
@@ -51,9 +58,11 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
       throw new Error(`Child Group "${this.groupName}" already exists in realm "${this.realmName}"`);
     }
 
-    const group = this.parentGroupHandle.group ?? (await this.parentGroupHandle.get());
+    const parentGroupName = this.getCurrentParentGroupName();
+    this.parentGroupName = parentGroupName;
+    const group = this.parentGroupHandle.group ?? (await getGroupByName(this.core, this.realmName, parentGroupName));
     if (!group) {
-      throw new Error(`Group "${this.parentGroupName}" not found in realm "${this.realmName}"`);
+      throw new Error(`Group "${parentGroupName}" not found in realm "${this.realmName}"`);
     }
 
     await this.core.groups.createChildGroup(
@@ -68,9 +77,11 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
   }
 
   public async update(data: ChildGroupInputData) {
-    const group = this.parentGroupHandle.group ?? (await this.parentGroupHandle.get());
+    const parentGroupName = this.getCurrentParentGroupName();
+    this.parentGroupName = parentGroupName;
+    const group = this.parentGroupHandle.group ?? (await getGroupByName(this.core, this.realmName, parentGroupName));
     if (!group) {
-      throw new Error(`Group "${this.parentGroupName}" not found in realm "${this.realmName}"`);
+      throw new Error(`Group "${parentGroupName}" not found in realm "${this.realmName}"`);
     }
 
     const one = await this.get();
@@ -80,7 +91,7 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
 
     await this.core.groups.updateChildGroup(
       { realm: this.realmName, id: group.id! },
-      { ...data, id: one.id!, name: this.groupName },
+      getChildGroupUpdateData(one, data, this.groupName),
     );
 
     return this.get();
@@ -101,16 +112,18 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
   public async ensure(data: ChildGroupInputData) {
     this.groupData = data;
 
-    const group = this.parentGroupHandle.group ?? (await this.parentGroupHandle.get());
+    const parentGroupName = this.getCurrentParentGroupName();
+    this.parentGroupName = parentGroupName;
+    const group = this.parentGroupHandle.group ?? (await getGroupByName(this.core, this.realmName, parentGroupName));
     if (!group) {
-      throw new Error(`Group "${this.parentGroupName}" not found in realm "${this.realmName}"`);
+      throw new Error(`Group "${parentGroupName}" not found in realm "${this.realmName}"`);
     }
 
     const one = await this.get();
     if (one?.id) {
       await this.core.groups.updateChildGroup(
         { realm: this.realmName, id: group.id! },
-        { ...data, id: one.id!, name: this.groupName },
+        getChildGroupUpdateData(one, data, this.groupName),
       );
     } else {
       await this.core.groups.createChildGroup(

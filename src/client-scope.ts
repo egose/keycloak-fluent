@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ClientScopeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientScopeRepresentation';
 import RealmHandle from './realm';
@@ -26,7 +27,15 @@ export interface ClientScopeRepresentationExt extends ClientScopeRepresentation 
   type?: ClientScopeType;
   protocol?: ClientScopeProtocol;
 }
-export type ClientScopeInputData = Omit<ClientScopeRepresentationExt, 'name | id'>;
+export type ClientScopeInputData = Omit<ClientScopeRepresentationExt, 'name' | 'id'>;
+
+function getClientScopeUpdateData(
+  clientScope: ClientScopeRepresentation,
+  data: ClientScopeInputData,
+  scopeName: string,
+) {
+  return _merge({}, clientScope, data, { name: scopeName });
+}
 
 export default class ClientScopeHandle {
   public core: KeycloakAdminClient;
@@ -34,7 +43,7 @@ export default class ClientScopeHandle {
   public realmName: string;
   public scopeName: string;
   public clientScope?: ClientScopeRepresentation | null;
-  public clientScopeData?: Omit<ClientScopeRepresentation, 'name | id'>;
+  public clientScopeData?: Omit<ClientScopeRepresentation, 'name' | 'id'>;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, scopeName: string) {
     this.core = core;
@@ -87,7 +96,7 @@ export default class ClientScopeHandle {
     await retryTransientAdminError(() =>
       this.core.clientScopes.update(
         { realm: this.realmName, id: clientScopeId },
-        { ...defaultScopeData, ...data, name: this.scopeName },
+        getClientScopeUpdateData(one, data, this.scopeName),
       ),
     );
 
@@ -118,7 +127,7 @@ export default class ClientScopeHandle {
       await retryTransientAdminError(() =>
         this.core.clientScopes.update(
           { realm: this.realmName, id: clientScopeId },
-          { ...defaultScopeData, ...data, name: this.scopeName },
+          getClientScopeUpdateData(one, data, this.scopeName),
         ),
       );
     } else {

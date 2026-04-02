@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import type IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation';
 import type OrganizationRepresentation from '@keycloak/keycloak-admin-client/lib/defs/organizationRepresentation';
@@ -15,6 +16,14 @@ function getPaginationParams(options?: { page?: number; pageSize?: number }) {
     first: (page - 1) * pageSize,
     max: pageSize,
   };
+}
+
+function getOrganizationUpdateData(
+  organization: OrganizationRepresentation,
+  data: OrganizationInputData,
+  organizationAlias: string,
+) {
+  return _merge({}, organization, data, { alias: organizationAlias });
 }
 
 export const defaultOrganizationData = Object.freeze({
@@ -134,10 +143,7 @@ export default class OrganizationHandle {
           realm: this.realmName,
           id: organizationId,
         },
-        {
-          ...data,
-          alias: this.organizationAlias,
-        },
+        getOrganizationUpdateData(organization, data, this.organizationAlias),
       ),
     );
 
@@ -172,10 +178,7 @@ export default class OrganizationHandle {
             realm: this.realmName,
             id: organizationId,
           },
-          {
-            ...data,
-            alias: this.organizationAlias,
-          },
+          getOrganizationUpdateData(organization, data, this.organizationAlias),
         ),
       );
     } else {

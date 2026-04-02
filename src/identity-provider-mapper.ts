@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import IdentityProviderMapperRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderMapperRepresentation';
 import IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation';
@@ -7,6 +8,15 @@ export type IdentityProviderMapperInputData = Omit<
   IdentityProviderMapperRepresentation,
   'id' | 'name' | 'identityProviderAlias'
 >;
+
+function getIdentityProviderMapperUpdateData(
+  mapper: IdentityProviderMapperRepresentation,
+  data: IdentityProviderMapperInputData,
+  mapperName: string,
+  identityProviderAlias: string,
+) {
+  return _merge({}, mapper, data, { name: mapperName, identityProviderAlias });
+}
 
 export default class IdentityProviderMapperHandle {
   public core: KeycloakAdminClient;
@@ -27,8 +37,13 @@ export default class IdentityProviderMapperHandle {
     this.mapperName = mapperName;
   }
 
+  private getCurrentAlias() {
+    return this.identityProviderHandle.identityProvider?.alias ?? this.identityProviderHandle.alias;
+  }
+
   private async resolveIdentityProvider() {
     const identityProvider = this.identityProviderHandle.identityProvider ?? (await this.identityProviderHandle.get());
+    this.alias = this.getCurrentAlias();
     if (!identityProvider?.alias) {
       throw new Error(`Identity Provider "${this.alias}" not found in realm "${this.realmName}"`);
     }
@@ -39,12 +54,18 @@ export default class IdentityProviderMapperHandle {
   }
 
   private toPayload(data: IdentityProviderMapperInputData, id?: string): IdentityProviderMapperRepresentation {
+    const alias = this.getCurrentAlias();
+
     return {
       ...data,
       ...(id ? { id } : {}),
       name: this.mapperName,
-      identityProviderAlias: this.alias,
+      identityProviderAlias: alias,
     };
+  }
+
+  private getUpdatePayload(mapper: IdentityProviderMapperRepresentation, data: IdentityProviderMapperInputData) {
+    return getIdentityProviderMapperUpdateData(mapper, data, this.mapperName, this.getCurrentAlias());
   }
 
   public async getById(id: string) {
@@ -111,7 +132,7 @@ export default class IdentityProviderMapperHandle {
         alias: identityProvider.alias,
         id: one.id,
       },
-      this.toPayload(data, one.id),
+      this.getUpdatePayload(one, data),
     );
 
     return this.get();
@@ -148,7 +169,7 @@ export default class IdentityProviderMapperHandle {
           alias: identityProvider.alias,
           id: one.id,
         },
-        this.toPayload(data, one.id),
+        this.getUpdatePayload(one, data),
       );
     } else {
       await this.core.identityProviders.createMapper({

@@ -249,7 +249,7 @@ export const defaultUserData = Object.freeze({
 The input data type for creating or updating a user.
 
 ```typescript
-export type UserInputData = Omit<UserRepresentation, 'username | id'> & {
+export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {
   password?: string;
 };
 ```

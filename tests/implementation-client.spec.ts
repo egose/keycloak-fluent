@@ -56,6 +56,38 @@ describe('Implementation Consistency: Clients', () => {
     });
   });
 
+  test('child handles follow parent client rebinding after getById', async () => {
+    const core = {
+      clients: {
+        findOne: vi.fn().mockResolvedValue({ id: 'client-1', clientId: 'resolved-client' }),
+        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'resolved-client' }]),
+        findRole: vi.fn().mockResolvedValue({ id: 'role-1', name: 'reader' }),
+        findProtocolMapperByName: vi.fn().mockResolvedValue({ id: 'mapper-1', name: 'email-mapper' }),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const clientHandle = realmHandle.client('placeholder-client-id');
+    const roleHandle = clientHandle.role('reader');
+    const mapperHandle = clientHandle.protocolMapper('email-mapper');
+
+    await clientHandle.getById('client-1');
+    await roleHandle.get();
+    await mapperHandle.get();
+
+    expect(core.clients.find).toHaveBeenCalledWith({ realm: 'demo', clientId: 'resolved-client' });
+    expect(core.clients.findRole).toHaveBeenCalledWith({
+      realm: 'demo',
+      id: 'client-1',
+      roleName: 'reader',
+    });
+    expect(core.clients.findProtocolMapperByName).toHaveBeenCalledWith({
+      realm: 'demo',
+      id: 'client-1',
+      name: 'email-mapper',
+    });
+  });
+
   test('client default scope assignment resolves client and scope lazily', async () => {
     const core = {
       clients: {
@@ -96,6 +128,46 @@ describe('Implementation Consistency: Clients', () => {
       realm: 'demo',
       id: 'client-1',
     });
+  });
+
+  test('client update preserves existing fields while applying partial changes', async () => {
+    const core = {
+      clients: {
+        find: vi.fn().mockResolvedValue([
+          {
+            id: 'client-1',
+            clientId: 'app-client',
+            protocol: 'openid-connect',
+            redirectUris: ['https://existing.example/callback'],
+            attributes: {
+              'post.logout.redirect.uris': 'https://existing.example/logout',
+            },
+            standardFlowEnabled: true,
+          },
+        ]),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const clientHandle = realmHandle.client('app-client');
+
+    await clientHandle.update({ description: 'Updated description' });
+
+    expect(core.clients.update).toHaveBeenCalledWith(
+      { realm: 'demo', id: 'client-1' },
+      expect.objectContaining({
+        id: 'client-1',
+        clientId: 'app-client',
+        description: 'Updated description',
+        protocol: 'openid-connect',
+        redirectUris: ['https://existing.example/callback'],
+        attributes: {
+          'post.logout.redirect.uris': 'https://existing.example/logout',
+        },
+        standardFlowEnabled: true,
+      }),
+    );
   });
 
   test('client scope mapping helpers resolve clients and roles lazily', async () => {
@@ -356,6 +428,7 @@ describe('Implementation Consistency: Clients', () => {
         findPolicyByName: vi.fn().mockResolvedValue({ id: 'policy-1', name: 'allow-admins' }),
         createPolicy: vi.fn().mockResolvedValue({ id: 'policy-2', name: 'deny-guests' }),
         updatePolicy: vi.fn().mockResolvedValue(undefined),
+        findOnePolicyWithType: vi.fn().mockResolvedValue({ id: 'policy-1', name: 'allow-admins' }),
         delPolicy: vi.fn().mockResolvedValue(undefined),
         listDependentPolicies: vi.fn().mockResolvedValue([{ id: 'policy-3', name: 'aggregate' }]),
         listPolicyProviders: vi.fn().mockResolvedValue([{ type: 'role', name: 'Role Policy' }]),
@@ -392,7 +465,7 @@ describe('Implementation Consistency: Clients', () => {
       name: 'deny-guests',
     });
     await expect(clientHandle.updateAuthorizationPolicy('role', 'policy-1', { name: 'allow-admins' })).resolves.toEqual(
-      [{ id: 'policy-1', name: 'allow-admins' }],
+      { id: 'policy-1', name: 'allow-admins' },
     );
     await clientHandle.deleteAuthorizationPolicy('policy-1');
     await expect(clientHandle.listDependentAuthorizationPolicies('policy-1')).resolves.toEqual([

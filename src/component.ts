@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ComponentRepresentation from '@keycloak/keycloak-admin-client/lib/defs/componentRepresentation';
 import ComponentTypeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/componentTypeRepresentation';
@@ -6,6 +7,10 @@ import { retryTransientAdminError } from './utils/retry';
 
 export type ComponentLookupData = Pick<ComponentRepresentation, 'parentId' | 'providerId' | 'providerType' | 'subType'>;
 export type ComponentInputData = Omit<ComponentRepresentation, 'id' | 'name'>;
+
+function getComponentUpdateData(component: ComponentRepresentation, data: ComponentInputData, componentName: string) {
+  return _merge({}, component, data, { name: componentName });
+}
 
 export default class ComponentHandle {
   public core: KeycloakAdminClient;
@@ -120,11 +125,7 @@ export default class ComponentHandle {
     await retryTransientAdminError(() =>
       this.core.components.update(
         { realm: this.realmName, id: componentId },
-        {
-          ...data,
-          id: componentId,
-          name: this.componentName,
-        },
+        getComponentUpdateData(component, data, this.componentName),
       ),
     );
 
@@ -151,11 +152,7 @@ export default class ComponentHandle {
       await retryTransientAdminError(() =>
         this.core.components.update(
           { realm: this.realmName, id: existingComponent.id },
-          {
-            ...data,
-            id: existingComponent.id,
-            name: this.componentName,
-          },
+          getComponentUpdateData(existingComponent, data, this.componentName),
         ),
       );
     } else {

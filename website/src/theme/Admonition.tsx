@@ -1,20 +1,30 @@
 import React from 'react';
 import Admonition from '@theme-original/Admonition';
 
-export default function AdmonitionWrapper(props) {
+type AdmonitionWrapperProps = React.ComponentProps<typeof Admonition>;
+
+export default function AdmonitionWrapper(props: AdmonitionWrapperProps) {
   return (
     <>
       <div className="text-right -mb-10 mr-2">
         <button
           className="cursor-pointer"
-          onClick={(event) => {
+          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
             const btn = event.currentTarget;
-            const siblingDiv = btn.parentElement.nextElementSibling;
+            const siblingDiv = btn.parentElement?.nextElementSibling;
+            if (!(siblingDiv instanceof HTMLElement)) {
+              return;
+            }
+
             const contentElm = siblingDiv.querySelector('p > strong');
             if (contentElm) {
               const text = contentElm.textContent;
+              if (!text || typeof SpeechSynthesisUtterance === 'undefined') {
+                return;
+              }
+
               const utterance = new SpeechSynthesisUtterance(text);
-              utterance.lang = 'en-US'; // or "ko-KR", "fr-FR", etc.
+              utterance.lang = 'en-US';
               speechSynthesis.speak(utterance);
             }
           }}
@@ -26,10 +36,10 @@ export default function AdmonitionWrapper(props) {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="icon icon-tabler icons-tabler-outline icon-tabler-volume"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="icon icon-tabler icons-tabler-outline icon-tabler-volume"
           >
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M15 8a5 5 0 0 1 0 8" />

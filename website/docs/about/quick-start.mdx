@@ -62,7 +62,7 @@ If you need full control over the underlying Keycloak grant configuration, you c
 
 You can create resource handlers for Keycloak resources such as **realms**, **users**, **groups**, **roles**, **clients**, **authentication flows**, **organizations**, and more.
 
-The `ensure` method will create the resource if it does not exist, or patch the existing resource, and then return the resource handler.
+For resource-style handles, `ensure(...)` will create the resource if it does not exist, or update the existing resource by merging the supplied fields into the current representation. It then returns the resource handle.
 
 ```ts
 const realm = await kc.realm('my-realm').ensure({

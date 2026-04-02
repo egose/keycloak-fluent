@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
@@ -7,10 +8,11 @@ import RoleRepresentation, { RoleMappingPayload } from '@keycloak/keycloak-admin
 import { type RequiredActionAlias } from '@keycloak/keycloak-admin-client/lib/defs/requiredActionProviderRepresentation';
 import RealmHandle from './realm';
 import RoleHandle from './role';
-import ClientHandle from './clients/client';
+import type ClientHandle from './clients/client';
 import ClientRoleHandle from './client-role';
 import IdentityProviderHandle from './identity-provider';
 import { AbstractGroupHandle } from './groups/abstract-group';
+import { getClientByClientId } from './clients/client-lookup';
 
 export const defaultUserData = Object.freeze({
   firstName: '',
@@ -33,12 +35,16 @@ export const defaultUserData = Object.freeze({
   attributes: {},
 });
 
-export type UserInputData = Omit<UserRepresentation, 'username | id'> & {
+export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {
   password?: string;
 };
 
 export type UserRequiredAction = RequiredActionAlias | string;
 export type FederatedIdentityInputData = Omit<FederatedIdentityRepresentation, 'identityProvider'>;
+
+function getUserUpdateData(user: UserRepresentation, data: Omit<UserInputData, 'password'>, username: string) {
+  return _merge({}, user, data, { username });
+}
 
 export default class UserHandle {
   public core: KeycloakAdminClient;
@@ -102,7 +108,7 @@ export default class UserHandle {
     }
 
     const { password, ...rest } = data;
-    await this.core.users.update({ realm: this.realmName, id: one.id }, { ...rest, username: this.username });
+    await this.core.users.update({ realm: this.realmName, id: one.id }, getUserUpdateData(one, rest, this.username));
 
     if (password) await this.resetPassword(one.id, password);
     return this.get();
@@ -127,7 +133,7 @@ export default class UserHandle {
     const { password, ...rest } = data;
 
     if (one?.id) {
-      await this.core.users.update({ realm: this.realmName, id: one.id }, { ...rest, username: this.username });
+      await this.core.users.update({ realm: this.realmName, id: one.id }, getUserUpdateData(one, rest, this.username));
       if (password) await this.resetPassword(one.id, password);
     } else {
       const { id } = await this.core.users.create({
@@ -200,8 +206,7 @@ export default class UserHandle {
   }
 
   private async resolveClient(clientHandle: ClientHandle) {
-    const client =
-      clientHandle.client ?? (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId));
+    const client = clientHandle.client ?? (await getClientByClientId(this.core, this.realmName, clientHandle.clientId));
     if (!client?.clientId) {
       throw new Error(`Client "${clientHandle.clientId}" not found in realm "${this.realmName}"`);
     }
@@ -249,7 +254,7 @@ export default class UserHandle {
     const user = await this.requireUser();
     let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
     if (!client) {
-      client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
+      client = (await getClientByClientId(this.core, this.realmName, clientRoleHandle.clientHandle.clientId)) ?? null;
     }
 
     if (!client) {
@@ -283,7 +288,7 @@ export default class UserHandle {
     const user = await this.requireUser();
     let client: ClientRepresentation | null = clientRoleHandle.client ?? null;
     if (!client) {
-      client = (await ClientHandle.getByClientId(this.core, this.realmName, clientRoleHandle.clientId)) ?? null;
+      client = (await getClientByClientId(this.core, this.realmName, clientRoleHandle.clientHandle.clientId)) ?? null;
     }
 
     if (!client) {
@@ -317,7 +322,7 @@ export default class UserHandle {
     const user = await this.requireUser();
     let client: ClientRepresentation | null = clientHandle.client ?? null;
     if (!client) {
-      client = (await ClientHandle.getByClientId(this.core, this.realmName, clientHandle.clientId)) ?? null;
+      client = (await getClientByClientId(this.core, this.realmName, clientHandle.clientId)) ?? null;
     }
 
     if (!client) {

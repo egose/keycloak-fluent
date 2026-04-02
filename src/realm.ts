@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import type AdminEventRepresentation from '@keycloak/keycloak-admin-client/lib/defs/adminEventRepresentation';
 import type { ClientSessionStat } from '@keycloak/keycloak-admin-client/lib/defs/clientSessionStat';
@@ -84,6 +85,10 @@ function getPaginationParams(options?: { page?: number; pageSize?: number }) {
   };
 }
 
+function getRealmUpdateData(realm: RealmRepresentation, data: RealmInputData) {
+  return _merge({}, realm, data);
+}
+
 export default class RealmHandle {
   public core: KeycloakAdminClient;
   public realmName: string;
@@ -116,11 +121,12 @@ export default class RealmHandle {
   }
 
   public async update(data: RealmInputData) {
-    if (!(await this.get())) {
+    const realm = await this.get();
+    if (!realm) {
       throw new Error(`Realm "${this.realmName}" not found`);
     }
 
-    await this.core.realms.update({ realm: this.realmName }, { ...data });
+    await this.core.realms.update({ realm: this.realmName }, getRealmUpdateData(realm, data));
     return this.get();
   }
 
@@ -137,9 +143,9 @@ export default class RealmHandle {
   public async ensure(data: RealmInputData) {
     this.realmData = data;
 
-    const one = await this.get();
-    if (one) {
-      await this.core.realms.update({ realm: this.realmName }, { ...data });
+    const realm = await this.get();
+    if (realm) {
+      await this.core.realms.update({ realm: this.realmName }, getRealmUpdateData(realm, data));
     } else {
       await this.core.realms.create({ ...defaultRealmData, ...data, realm: this.realmName });
     }

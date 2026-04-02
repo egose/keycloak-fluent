@@ -1,8 +1,17 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import ProtocolMapperRepresentation from '@keycloak/keycloak-admin-client/lib/defs/protocolMapperRepresentation';
 import ClientScopeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientScopeRepresentation';
 import ClientScopeHandle from '../client-scope';
 import { defaultProtocolMapperData, type ProtocolMapperInputData } from './protocol-mapper';
+
+function getClientScopeProtocolMapperUpdateData(
+  mapper: ProtocolMapperRepresentation,
+  data: ProtocolMapperInputData,
+  mapperName: string,
+) {
+  return _merge({}, mapper, data, { name: mapperName });
+}
 
 export default class ClientScopeProtocolMapperHandle {
   public core: KeycloakAdminClient;
@@ -12,7 +21,7 @@ export default class ClientScopeProtocolMapperHandle {
   public clientScope?: ClientScopeRepresentation | null;
   public mapperName: string;
   public clientScopeProtocolMapper?: ProtocolMapperRepresentation | null;
-  public clientScopeProtocolMapperData?: Omit<ProtocolMapperRepresentation, 'name | id'>;
+  public clientScopeProtocolMapperData?: Omit<ProtocolMapperRepresentation, 'name' | 'id'>;
 
   constructor(core: KeycloakAdminClient, clientScopeHandle: ClientScopeHandle, mapperName: string) {
     this.core = core;
@@ -21,6 +30,10 @@ export default class ClientScopeProtocolMapperHandle {
     this.clientScope = clientScopeHandle.clientScope ?? null;
     this.realmName = clientScopeHandle.realmName;
     this.mapperName = mapperName;
+  }
+
+  private getCurrentScopeName() {
+    return this.clientScopeHandle.clientScope?.name ?? this.clientScopeHandle.scopeName;
   }
 
   private getQuery(clientScope: ClientScopeRepresentation, mapperId: string) {
@@ -37,11 +50,13 @@ export default class ClientScopeProtocolMapperHandle {
     }
 
     const clientScope = this.clientScopeHandle.clientScope ?? (await this.clientScopeHandle.get());
+    this.scopeName = this.getCurrentScopeName();
     if (!clientScope?.id) {
       throw new Error(`Client Scope "${this.scopeName}" not found in realm "${this.realmName}"`);
     }
 
     this.clientScope = clientScope;
+    this.scopeName = clientScope.name ?? this.scopeName;
     return clientScope;
   }
 
@@ -99,9 +114,7 @@ export default class ClientScopeProtocolMapperHandle {
     }
 
     await this.core.clientScopes.updateProtocolMapper(this.getQuery(clientScope, one.id), {
-      ...data,
-      id: one.id,
-      name: this.mapperName,
+      ...getClientScopeProtocolMapperUpdateData(one, data, this.mapperName),
     });
 
     return this.get();
@@ -127,9 +140,7 @@ export default class ClientScopeProtocolMapperHandle {
 
     if (one?.id) {
       await this.core.clientScopes.updateProtocolMapper(this.getQuery(clientScope, one.id), {
-        ...data,
-        id: one.id,
-        name: this.mapperName,
+        ...getClientScopeProtocolMapperUpdateData(one, data, this.mapperName),
       });
     } else {
       await this.core.clientScopes.addProtocolMapper(

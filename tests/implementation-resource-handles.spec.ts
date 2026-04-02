@@ -76,7 +76,11 @@ describe('Implementation Consistency: Resource Handles', () => {
     });
     expect(core.organizations.updateById).toHaveBeenCalledWith(
       { realm: 'demo', id: 'org-1' },
-      { alias: 'acme', name: 'Acme Corp' },
+      expect.objectContaining({
+        id: 'org-1',
+        alias: 'acme',
+        name: 'Acme Corp',
+      }),
     );
     expect(core.organizations.listMembers).toHaveBeenCalledWith({
       realm: 'demo',
@@ -312,12 +316,14 @@ describe('Implementation Consistency: Resource Handles', () => {
           .mockResolvedValueOnce([])
           .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
           .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
+          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
           .mockResolvedValueOnce([
             { id: 'wf-1', name: 'approval', enabled: true },
             { id: 'wf-2', name: 'auto-approval', enabled: false },
           ])
           .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }]),
         create: vi.fn().mockResolvedValue({ id: 'wf-1' }),
+        update: vi.fn().mockResolvedValue(undefined),
         delById: vi.fn().mockResolvedValue(undefined),
       },
     } as any;
@@ -341,6 +347,10 @@ describe('Implementation Consistency: Resource Handles', () => {
       name: 'approval',
       enabled: true,
     });
+    expect(core.workflows.update).toHaveBeenCalledWith(
+      { realm: 'demo', id: 'wf-1' },
+      { id: 'wf-1', name: 'approval', enabled: true },
+    );
     expect(core.workflows.delById).toHaveBeenCalledWith({ realm: 'demo', id: 'wf-1' });
   });
 
@@ -352,8 +362,10 @@ describe('Implementation Consistency: Resource Handles', () => {
           .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
           .mockResolvedValueOnce([])
           .mockResolvedValueOnce([{ id: 'wf-2', name: 'review', enabled: false }])
+          .mockResolvedValueOnce([{ id: 'wf-2', name: 'review', enabled: false }])
           .mockResolvedValueOnce([{ id: 'wf-2', name: 'review', enabled: false }]),
         create: vi.fn().mockResolvedValue({ id: 'wf-2' }),
+        update: vi.fn().mockResolvedValue(undefined),
         delById: vi.fn().mockResolvedValue(undefined),
       },
     } as any;
@@ -368,6 +380,37 @@ describe('Implementation Consistency: Resource Handles', () => {
 
     expect(core.workflows.create).toHaveBeenCalledWith({ realm: 'demo', name: 'review', enabled: false });
     expect(core.workflows.delById).toHaveBeenCalledWith({ realm: 'demo', id: 'wf-2' });
+  });
+
+  test('workflow handle exposes update for existing workflows', async () => {
+    const core = {
+      workflows: {
+        find: vi
+          .fn()
+          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true, description: 'Existing' }])
+          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true, description: 'Existing' }]),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const workflowHandle = new RealmHandle(core, 'demo').workflow('approval');
+
+    await expect(workflowHandle.update({ enabled: false })).resolves.toEqual({
+      id: 'wf-1',
+      name: 'approval',
+      enabled: true,
+      description: 'Existing',
+    });
+
+    expect(core.workflows.update).toHaveBeenCalledWith(
+      { realm: 'demo', id: 'wf-1' },
+      expect.objectContaining({
+        id: 'wf-1',
+        name: 'approval',
+        enabled: false,
+        description: 'Existing',
+      }),
+    );
   });
 
   test('server info and who-am-i helpers forward root-scoped system operations', async () => {

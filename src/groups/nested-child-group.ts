@@ -1,9 +1,14 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
-import GroupHandle from './group';
 import { AbstractGroupHandle } from './abstract-group';
+import { getGroupByPath } from './group-lookup';
 
-export type NestedChildGroupInputData = Omit<GroupRepresentation, 'name | id'>;
+export type NestedChildGroupInputData = Omit<GroupRepresentation, 'name' | 'id'>;
+
+function getNestedChildGroupUpdateData(group: GroupRepresentation, data: NestedChildGroupInputData, groupName: string) {
+  return _merge({}, group, data, { name: groupName });
+}
 
 export default class NestedChildGroupHandle extends AbstractGroupHandle {
   public parentGroupPath: string;
@@ -16,7 +21,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
   }
 
   static async getByName(core: KeycloakAdminClient, realm: string, parentGroupPath: string, groupName: string) {
-    const group = await GroupHandle.getByPath(core, realm, `${parentGroupPath}/${groupName}`);
+    const group = await getGroupByPath(core, realm, `${parentGroupPath}/${groupName}`);
     return group;
   }
 
@@ -40,7 +45,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
       throw new Error(`Child Group "${this.groupName}" already exists in realm "${this.realmName}"`);
     }
 
-    const parentGroup = await GroupHandle.getByPath(this.core, this.realmName, this.parentGroupPath);
+    const parentGroup = await getGroupByPath(this.core, this.realmName, this.parentGroupPath);
     if (!parentGroup) {
       throw new Error(`Parent Group Path "${this.parentGroupPath}" not found in realm "${this.realmName}"`);
     }
@@ -57,7 +62,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
   }
 
   public async update(data: NestedChildGroupInputData) {
-    const parentGroup = await GroupHandle.getByPath(this.core, this.realmName, this.parentGroupPath);
+    const parentGroup = await getGroupByPath(this.core, this.realmName, this.parentGroupPath);
     if (!parentGroup) {
       throw new Error(`Parent Group Path "${this.parentGroupPath}" not found in realm "${this.realmName}"`);
     }
@@ -69,7 +74,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
 
     await this.core.groups.updateChildGroup(
       { realm: this.realmName, id: parentGroup.id! },
-      { ...data, id: one.id!, name: this.groupName },
+      getNestedChildGroupUpdateData(one, data, this.groupName),
     );
 
     return this.get();
@@ -90,7 +95,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
   public async ensure(data: NestedChildGroupInputData) {
     this.groupData = data;
 
-    const parentGroup = await GroupHandle.getByPath(this.core, this.realmName, this.parentGroupPath);
+    const parentGroup = await getGroupByPath(this.core, this.realmName, this.parentGroupPath);
     if (!parentGroup) {
       throw new Error(`Parent Group Path "${this.parentGroupPath}" not found in realm "${this.realmName}"`);
     }
@@ -99,7 +104,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
     if (one?.id) {
       await this.core.groups.updateChildGroup(
         { realm: this.realmName, id: parentGroup.id! },
-        { ...data, id: one.id!, name: this.groupName },
+        getNestedChildGroupUpdateData(one, data, this.groupName),
       );
     } else {
       await this.core.groups.createChildGroup(
