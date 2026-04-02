@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
+import { type ComponentProps, useEffect } from 'react';
 import { useLocation } from '@docusaurus/router';
 import OriginalLayout from '@theme-original/Layout';
+
+type LayoutProps = ComponentProps<typeof OriginalLayout>;
 
 function useOnRouteChange(callback: () => void) {
   const location = useLocation();
@@ -10,10 +12,8 @@ function useOnRouteChange(callback: () => void) {
   }, [location.pathname]);
 }
 
-export default function Layout(props) {
+export default function Layout(props: LayoutProps) {
   useOnRouteChange(() => {
-    console.log('Page changed to:', window.location.pathname);
-
     const adElement = document.querySelector('ins.adsbygoogle');
 
     if (adElement && adElement.getAttribute('data-ad-status') !== 'filled') {

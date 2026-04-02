@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import CertificateRepresentation from '@keycloak/keycloak-admin-client/lib/defs/certificateRepresentation';
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
@@ -20,6 +21,7 @@ import UserSessionRepresentation from '@keycloak/keycloak-admin-client/lib/defs/
 import RealmHandle from '../realm';
 import ClientRoleHandle from '../client-role';
 import type ClientScopeHandle from '../client-scope';
+import { getClientByClientId, getClientById } from './client-lookup';
 import type RoleHandle from '../role';
 import ProtocolMapperHandle from '../protocol-mappers/protocol-mapper';
 import UserAttributeProtocolMapperHandle from '../protocol-mappers/user-attribute-protocol-mapper';
@@ -37,7 +39,11 @@ function getPaginationParams(options?: { page?: number; pageSize?: number }) {
   };
 }
 
-export type ClientInputData = Omit<ClientRepresentation, 'realm | clientId | id'>;
+function getClientUpdateData(client: ClientRepresentation, data: ClientInputData, clientId: string) {
+  return _merge({}, client, data, { clientId });
+}
+
+export type ClientInputData = Omit<ClientRepresentation, 'realm' | 'clientId' | 'id'>;
 export type AuthorizationResourceQuery = {
   id?: string;
   name?: string;
@@ -92,13 +98,11 @@ export default class ClientHandle {
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
-    const one = await retryTransientAdminError(() => core.clients.findOne({ realm, id }));
-    return one ?? null;
+    return getClientById(core, realm, id);
   }
 
   static async getByClientId(core: KeycloakAdminClient, realm: string, clientId: string) {
-    const ones = await retryTransientAdminError(() => core.clients.find({ realm, clientId }));
-    return ones.find((v) => v.clientId === clientId) ?? null;
+    return getClientByClientId(core, realm, clientId);
   }
 
   private async requireClient(): Promise<ClientRepresentation & { id: string }> {
@@ -175,9 +179,10 @@ export default class ClientHandle {
     }
 
     const clientInternalId = one.id;
+    const updateData = getClientUpdateData(one, data, this.clientId);
 
     await retryTransientAdminError(() =>
-      this.core.clients.update({ realm: this.realmName, id: clientInternalId }, { ...data, clientId: this.clientId }),
+      this.core.clients.update({ realm: this.realmName, id: clientInternalId }, updateData),
     );
 
     return this.get();
@@ -203,9 +208,10 @@ export default class ClientHandle {
 
     if (one?.id) {
       const clientInternalId = one.id;
+      const updateData = getClientUpdateData(one, data, this.clientId);
 
       await retryTransientAdminError(() =>
-        this.core.clients.update({ realm: this.realmName, id: clientInternalId }, { ...data, clientId: this.clientId }),
+        this.core.clients.update({ realm: this.realmName, id: clientInternalId }, updateData),
       );
     } else {
       await retryTransientAdminError(() =>
@@ -1049,6 +1055,21 @@ export default class ClientHandle {
     );
   }
 
+  public async getAuthorizationPolicy(type: string, policyId: string): Promise<PolicyRepresentation | undefined> {
+    const client = await this.requireClient();
+    const clientInternalId = client.id;
+
+    return retryTransientAdminError(
+      () =>
+        this.core.clients.findOnePolicyWithType({
+          realm: this.realmName,
+          id: clientInternalId,
+          type,
+          policyId,
+        }) as Promise<PolicyRepresentation | undefined>,
+    );
+  }
+
   public async updateAuthorizationPolicy(type: string, policyId: string, data: PolicyRepresentation) {
     const client = await this.requireClient();
     const clientInternalId = client.id;
@@ -1065,7 +1086,7 @@ export default class ClientHandle {
       ),
     );
 
-    return this.listAuthorizationPolicies({ type, page: 1, pageSize: 1000 });
+    return this.getAuthorizationPolicy(type, policyId);
   }
 
   public async deleteAuthorizationPolicy(policyId: string) {

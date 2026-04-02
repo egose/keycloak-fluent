@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import type AuthenticationExecutionInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticationExecutionInfoRepresentation';
 import type AuthenticatorConfigInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigInfoRepresentation';
@@ -27,6 +28,14 @@ export type AuthenticationSubFlowInputData = {
 export type AuthenticationExecutionsQuery = {
   flowAlias?: string;
 };
+
+function getAuthenticationFlowUpdateData(
+  flow: AuthenticationFlowRepresentation,
+  data: AuthenticationFlowInputData,
+  alias: string,
+) {
+  return _merge({}, flow, data, { alias });
+}
 
 export default class AuthenticationFlowHandle {
   public core: KeycloakAdminClient;
@@ -106,12 +115,7 @@ export default class AuthenticationFlowHandle {
     await retryTransientAdminError(() =>
       this.core.authenticationManagement.updateFlow(
         { realm: this.realmName, flowId },
-        {
-          ...defaultAuthenticationFlowData,
-          ...data,
-          id: flowId,
-          alias: this.alias,
-        },
+        getAuthenticationFlowUpdateData(flow, data, this.alias),
       ),
     );
 
@@ -143,12 +147,7 @@ export default class AuthenticationFlowHandle {
       await retryTransientAdminError(() =>
         this.core.authenticationManagement.updateFlow(
           { realm: this.realmName, flowId: existingFlow.id },
-          {
-            ...defaultAuthenticationFlowData,
-            ...data,
-            id: existingFlow.id,
-            alias: this.alias,
-          },
+          getAuthenticationFlowUpdateData(existingFlow, data, this.alias),
         ),
       );
     } else {

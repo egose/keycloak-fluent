@@ -150,7 +150,7 @@ export type ClientScopeProtocol = 'openid-connect' | 'saml';
 The input data type for creating or updating a client scope.
 
 ```typescript
-export type ClientScopeInputData = Omit<ClientScopeRepresentationExt, 'name | id'>;
+export type ClientScopeInputData = Omit<ClientScopeRepresentationExt, 'name' | 'id'>;
 ```
 
 ---

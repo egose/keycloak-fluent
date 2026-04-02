@@ -17,6 +17,7 @@ const workflow = realm.workflow('approval');
 
 - `get()` and `getById(id)`
 - `create(data)`
+- `update(data)`
 - `delete()`
 - `ensure(data)`
 - `discard()`
@@ -29,11 +30,17 @@ const workflow = await realm.workflow('approval').ensure({
   enabled: true,
 });
 
+await workflow.update({
+  enabled: false,
+});
+
 const pageTwo = await workflow.list({ page: 2, pageSize: 10 });
 ```
 
 ## Important Behavior
 
-Unlike most other handles in this library, `WorkflowHandle.ensure(...)` only guarantees that the workflow exists. If the workflow is already present, it does not currently issue an update.
+`WorkflowHandle` now follows the same lifecycle contract as the other mutable resource handles in this library.
 
-That behavior matches the implementation and tests, so it is worth keeping in mind when using workflows declaratively.
+- `update(...)` updates an existing workflow.
+- `ensure(...)` creates the workflow if it does not exist, or updates it if it already exists.
+- The update path preserves unspecified fields by merging your partial input into the current workflow representation before sending the admin update call.

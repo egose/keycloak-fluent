@@ -19,19 +19,29 @@ export default class PublicBrowserLoginClientHandle extends ClientHandle {
   }
 
   public async create(data: PublicBrowserLoginClientInputData) {
-    return super.create(this.decorateInputData(data));
+    return super.create(this.decorateCreateInputData(data));
   }
 
   public async update(data: PublicBrowserLoginClientInputData) {
-    return super.update(this.decorateInputData(data));
+    return super.update(this.decorateUpdateInputData(data));
   }
 
   public async ensure(data: PublicBrowserLoginClientInputData) {
-    return super.ensure(this.decorateInputData(data));
+    if (await this.get()) {
+      return super.ensure(this.decorateUpdateInputData(data));
+    }
+
+    return super.ensure(this.decorateCreateInputData(data));
   }
 
-  private decorateInputData(data: PublicBrowserLoginClientInputData) {
-    const redirectUris = data.redirectUris ?? [];
+  private decorateCreateInputData(data: PublicBrowserLoginClientInputData) {
+    return this.decorateUpdateInputData({
+      ...data,
+      redirectUris: data.redirectUris?.length ? data.redirectUris : ['*'],
+    });
+  }
+
+  private decorateUpdateInputData(data: PublicBrowserLoginClientInputData) {
     return {
       ...data,
       ...{
@@ -41,7 +51,6 @@ export default class PublicBrowserLoginClientHandle extends ClientHandle {
         directAccessGrantsEnabled: false,
         implicitFlowEnabled: false,
         serviceAccountsEnabled: false,
-        redirectUris: redirectUris.length === 0 ? ['*'] : redirectUris,
         secret: '',
       },
     };

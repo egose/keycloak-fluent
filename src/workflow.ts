@@ -1,3 +1,4 @@
+import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import type WorkflowRepresentation from '@keycloak/keycloak-admin-client/lib/defs/workflowRepresentation';
 import RealmHandle from './realm';
@@ -14,6 +15,10 @@ function getPaginationBounds(options?: { page?: number; pageSize?: number }) {
 }
 
 export type WorkflowInputData = Omit<WorkflowRepresentation, 'id' | 'name'>;
+
+function getWorkflowUpdateData(workflow: WorkflowRepresentation, data: WorkflowInputData, workflowName: string) {
+  return _merge({}, workflow, data, { name: workflowName });
+}
 
 export default class WorkflowHandle {
   public core: KeycloakAdminClient;
@@ -89,10 +94,41 @@ export default class WorkflowHandle {
     return this.get();
   }
 
+  public async update(data: WorkflowInputData) {
+    const workflow = await this.requireWorkflow();
+    const workflowId = workflow.id;
+
+    await retryTransientAdminError(() =>
+      this.core.workflows.update(
+        {
+          realm: this.realmName,
+          id: workflowId,
+        },
+        getWorkflowUpdateData(workflow, data, this.workflowName),
+      ),
+    );
+
+    return this.get();
+  }
+
   public async ensure(data: WorkflowInputData) {
     this.workflowData = data;
 
-    if (!(await this.get())) {
+    const workflow = await this.get();
+
+    if (workflow?.id) {
+      const workflowId = workflow.id;
+
+      await retryTransientAdminError(() =>
+        this.core.workflows.update(
+          {
+            realm: this.realmName,
+            id: workflowId,
+          },
+          getWorkflowUpdateData(workflow, data, this.workflowName),
+        ),
+      );
+    } else {
       await retryTransientAdminError(() =>
         this.core.workflows.create({
           realm: this.realmName,
@@ -100,9 +136,9 @@ export default class WorkflowHandle {
           ...data,
         }),
       );
-
-      await this.get();
     }
+
+    await this.get();
 
     return this;
   }

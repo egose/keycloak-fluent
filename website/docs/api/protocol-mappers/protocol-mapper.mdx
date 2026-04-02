@@ -134,7 +134,7 @@ export type ProtocolMapperProtocol = 'openid-connect' | 'saml';
 The input data type for creating or updating a protocol mapper.
 
 ```typescript
-export type ProtocolMapperInputData = Omit<ProtocolMapperRepresentationExt, 'name | id'>;
+export type ProtocolMapperInputData = Omit<ProtocolMapperRepresentationExt, 'name' | 'id'>;
 ```
 
 ---
