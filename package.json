@@ -70,7 +70,7 @@
     "@types/node": "^25.5.0",
     "conventional-changelog-cli": "^5.0.0",
     "dotenv": "^17.4.0",
-    "eslint": "10.1.0",
+    "eslint": "10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "fs-extra": "^11.3.4",
     "prettier": "4.0.0-alpha.13",
