@@ -1,3 +1,5 @@
+## [0.6.4](https://github.com/egose/keycloak-fluent/compare/v0.6.3...v0.6.4) (2026-04-19)
+
 ## [0.6.3](https://github.com/egose/keycloak-fluent/compare/v0.6.2...v0.6.3) (2026-04-02)
 
 ## [0.6.2](https://github.com/egose/keycloak-fluent/compare/v0.6.1...v0.6.2) (2026-04-02)
