@@ -1,12 +1,13 @@
-## [0.6.4](https://github.com/egose/keycloak-fluent/compare/v0.6.3...v0.6.4) (2026-04-19)
+## [0.7.0](https://github.com/egose/keycloak-fluent/compare/v0.6.4...v0.7.0) (2026-06-10)
 
-## [0.6.3](https://github.com/egose/keycloak-fluent/compare/v0.6.2...v0.6.3) (2026-04-02)
+### Features
 
-## [0.6.2](https://github.com/egose/keycloak-fluent/compare/v0.6.1...v0.6.2) (2026-04-02)
+* **website:** modernize changelog generation and workspace/tooling dependencies ([d201d0d](https://github.com/egose/keycloak-fluent/commit/d201d0db8c36aca6735e86e9a916d0b544312c1e))
 
 ### Bug Fixes
 
 * standardize resource handle updates and sync docs/site ([3ac3f3e](https://github.com/egose/keycloak-fluent/commit/3ac3f3ee74fd8576938bffc4acc6f547945b6b2c))
+* update sandbox postgres image and data volume cleanup ([e19f08d](https://github.com/egose/keycloak-fluent/commit/e19f08d7ba53a74de4e545f83e2610de862ca939))
 
 ## [0.6.1](https://github.com/egose/keycloak-fluent/compare/v0.6.0...v0.6.1) (2026-04-01)
 
