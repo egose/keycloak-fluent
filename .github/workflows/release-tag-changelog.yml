@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           ssh-key: ${{ secrets.SSH_KEY }}
           fetch-depth: 0
@@ -33,7 +33,7 @@ jobs:
         uses: ./.github/actions/setup-npm
 
       - name: Create Release Tag
-        uses: egose/actions/release-tag@9a09f2377dc8c8b8f8cfacc5f695448999670434
+        uses: egose/actions/release-tag@68448c0027aeafe0a824f6c9b33fd875e77b844c
         with:
           tag: ${{ github.event.inputs.tag }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
