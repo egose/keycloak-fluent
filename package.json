@@ -1,6 +1,6 @@
 {
   "name": "@egose/keycloak-fluent",
-  "version": "0.6.2",
+  "version": "0.6.4",
   "description": "Fluent TypeScript wrapper for the Keycloak Admin API with idempotent provisioning for realms, users, clients, flows, organizations, and admin operations.",
   "keywords": [
     "keycloak",
@@ -70,7 +70,7 @@
     "conventional-changelog": "^7.2.0",
     "conventional-changelog-conventionalcommits": "^9.3.1",
     "dotenv": "^17.4.0",
-    "eslint": "10.1.0",
+    "eslint": "10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "fs-extra": "^11.3.4",
     "prettier": "4.0.0-alpha.13",
