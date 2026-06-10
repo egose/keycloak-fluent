@@ -22,7 +22,7 @@ DESTROY_FLAGS = down --volumes --rmi all --remove-orphans
 LOGS_FALGS = logs --tail=5
 
 # Cleanup helpers
-VOLUME_CLEAN = docker volume rm sandbox_postgres_data || true
+VOLUME_CLEAN = docker volume rm sandbox_kc_fluent_postgres_data || true
 IMAGE_PRUNE = docker image prune -f
 
 up:
