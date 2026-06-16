@@ -57,7 +57,7 @@ describe('Implementation Consistency: Realm', () => {
       realm: 'demo',
       first: 80,
       max: 20,
-      q: 'email:alice',
+      email: 'alice',
       exact: false,
       briefRepresentation: false,
     });
@@ -147,7 +147,8 @@ describe('Implementation Consistency: Realm', () => {
   test('realm default group operations resolve the group lazily', async () => {
     const core = {
       groups: {
-        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'admins' }]),
+        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'admins', path: '/admins' }]),
+        findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'admins', path: '/admins' }),
       },
       realms: {
         addDefaultGroup: vi.fn().mockResolvedValue(undefined),

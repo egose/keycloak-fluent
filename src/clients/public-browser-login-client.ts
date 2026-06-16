@@ -1,4 +1,4 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
+import KeycloakAdminClient from '../keycloak-admin-client';
 import RealmHandle from '../realm';
 import ClientHandle, { type ClientInputData } from './client';
 
@@ -34,10 +34,18 @@ export default class PublicBrowserLoginClientHandle extends ClientHandle {
     return super.ensure(this.decorateCreateInputData(data));
   }
 
+  private requireRedirectUris(data: PublicBrowserLoginClientInputData) {
+    if (data.redirectUris?.length) {
+      return data.redirectUris;
+    }
+
+    throw new Error(`Public Browser Login Client "${this.clientId}" requires at least one redirect URI on create`);
+  }
+
   private decorateCreateInputData(data: PublicBrowserLoginClientInputData) {
     return this.decorateUpdateInputData({
       ...data,
-      redirectUris: data.redirectUris?.length ? data.redirectUris : ['*'],
+      redirectUris: this.requireRedirectUris(data),
     });
   }
 
