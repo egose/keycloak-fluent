@@ -6,9 +6,10 @@ test('Confidential Browser Login Clients', async () => {
     const clientId = 'testconfidentialloginclient';
     const clientDisplayName = 'A confidential browser login client for testing purposes';
 
-    const clientHandle = await realmHandle
-      .confidentialBrowserLoginClient(clientId)
-      .ensure({ description: clientDisplayName });
+    const clientHandle = await realmHandle.confidentialBrowserLoginClient(clientId).ensure({
+      description: clientDisplayName,
+      redirectUris: ['https://app.example/callback'],
+    });
 
     expect(clientHandle).toBeTruthy();
     expect(clientHandle?.realmName).toBe(realm);
@@ -19,6 +20,6 @@ test('Confidential Browser Login Clients', async () => {
     expect(clientHandle?.client?.directAccessGrantsEnabled).toBe(false);
     expect(clientHandle?.client?.implicitFlowEnabled).toBe(false);
     expect(clientHandle?.client?.serviceAccountsEnabled).toBe(false);
-    expect(clientHandle?.client?.redirectUris).toStrictEqual(['*']);
+    expect(clientHandle?.client?.redirectUris).toStrictEqual(['https://app.example/callback']);
   });
 });

@@ -597,6 +597,12 @@ describe('Implementation Consistency: Regressions', () => {
             attributes: { team: ['platform'] },
           },
         ]),
+        findOne: vi.fn().mockResolvedValue({
+          id: 'group-1',
+          name: 'staff',
+          path: '/staff',
+          attributes: { team: ['platform'] },
+        }),
         update: vi.fn().mockResolvedValue(undefined),
       },
     } as any;
@@ -620,7 +626,8 @@ describe('Implementation Consistency: Regressions', () => {
   test('child group ensure preserves existing attributes on update', async () => {
     const core = {
       groups: {
-        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'parent' }]),
+        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'parent', path: '/parent' }]),
+        findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'parent', path: '/parent' }),
         listSubGroups: vi
           .fn()
           .mockResolvedValueOnce([
@@ -662,7 +669,8 @@ describe('Implementation Consistency: Regressions', () => {
   test('nested child group update preserves existing attributes', async () => {
     const core = {
       groups: {
-        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'parent' }]),
+        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'parent', path: '/parent' }]),
+        findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'parent', path: '/parent' }),
         listSubGroups: vi.fn().mockImplementation(({ parentId }: { parentId: string }) => {
           if (parentId === 'group-1') {
             return Promise.resolve([{ id: 'child-1', name: 'child', path: '/parent/child' }]);
@@ -844,7 +852,8 @@ describe('Implementation Consistency: Regressions', () => {
   test('group role assignment resolves group and role lazily', async () => {
     const core = {
       groups: {
-        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'staff' }]),
+        find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'staff', path: '/staff' }]),
+        findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'staff', path: '/staff' }),
         addRealmRoleMappings: vi.fn().mockResolvedValue(undefined),
       },
       roles: {
@@ -887,7 +896,6 @@ describe('Implementation Consistency: Regressions', () => {
     await parentGroupHandle.getById('group-1');
     await expect(childGroupHandle.get()).resolves.toEqual({ id: 'child-1', name: 'team-a' });
 
-    expect(core.groups.find).toHaveBeenCalledWith({ realm: 'demo', search: 'resolved-parent', exact: true });
     expect(core.groups.listSubGroups).toHaveBeenCalledWith({
       realm: 'demo',
       parentId: 'group-1',
@@ -903,7 +911,8 @@ describe('Implementation Consistency: Regressions', () => {
         find: vi
           .fn()
           .mockRejectedValueOnce(new Error('unknown_error'))
-          .mockResolvedValueOnce([{ id: 'group-1', name: 'parent' }]),
+          .mockResolvedValueOnce([{ id: 'group-1', name: 'parent', path: '/parent' }]),
+        findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'parent', path: '/parent' }),
       },
     } as any;
 
@@ -917,6 +926,7 @@ describe('Implementation Consistency: Regressions', () => {
       realm: 'demo',
       search: 'parent',
       exact: true,
+      briefRepresentation: false,
     });
   });
 
@@ -978,7 +988,8 @@ describe('Implementation Consistency: Regressions', () => {
 
     const core = {
       groups: {
-        find: vi.fn().mockResolvedValue([{ id: 'parent-1', name: 'parent' }]),
+        find: vi.fn().mockResolvedValue([{ id: 'parent-1', name: 'parent', path: '/parent' }]),
+        findOne: vi.fn().mockResolvedValue({ id: 'parent-1', name: 'parent', path: '/parent' }),
         listSubGroups,
       },
     } as any;
@@ -996,5 +1007,22 @@ describe('Implementation Consistency: Regressions', () => {
       first: 0,
       max: 1000,
     });
+  });
+
+  test('browser login client create paths require explicit redirect uris', async () => {
+    const core = {
+      clients: {
+        find: vi.fn().mockResolvedValue([]),
+      },
+    } as any;
+
+    await expect(new RealmHandle(core, 'demo').publicBrowserLoginClient('public-app').ensure({})).rejects.toThrow(
+      'Public Browser Login Client "public-app" requires at least one redirect URI on create',
+    );
+    await expect(
+      new RealmHandle(core, 'demo').confidentialBrowserLoginClient('confidential-app').ensure({}),
+    ).rejects.toThrow(
+      'Confidential Browser Login Client "confidential-app" requires at least one redirect URI on create',
+    );
   });
 });

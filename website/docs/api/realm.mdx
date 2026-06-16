@@ -169,8 +169,10 @@ public async searchUsers(keyword: string, options?: { page?: number; pageSize?: 
 
 - **Parameters**:
   - `keyword`: The search keyword.
-  - `options`: Pagination options and the attribute to search by.
+  - `options`: Pagination options and the standard user field to search by.
 - **Returns**: A list of matching users.
+
+This method searches Keycloak's built-in user fields such as `username`, `email`, `firstName`, and `lastName`. It does not use the custom-attributes `q` query syntax.
 
 ---
 

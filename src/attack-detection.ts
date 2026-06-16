@@ -1,4 +1,4 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
+import KeycloakAdminClient from './keycloak-admin-client';
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 

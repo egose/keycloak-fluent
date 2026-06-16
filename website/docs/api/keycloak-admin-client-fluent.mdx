@@ -57,6 +57,8 @@ Chooses the grant type for you:
 - `password` grant when `password` is provided
 - `refresh_token` grant when `refreshToken` is provided
 - `client_credentials` grant otherwise
+- `username` and `password` must be provided together
+- `password` and `refreshToken` are mutually exclusive
 
 ```ts
 await kc.simpleAuth({ username: 'admin', password: 'admin' }); // pragma: allowlist secret
@@ -65,6 +67,8 @@ await kc.simpleAuth({ clientId: 'svc-admin', clientSecret: 'secret' }); // pragm
 ```
 
 By default, `clientId` is `admin-cli`.
+
+Authentication failures are rethrown with a `Keycloak authentication failed: ...` message while preserving the underlying cause.
 
 ### `realm(name)`
 

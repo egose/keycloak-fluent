@@ -1,23 +1,24 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import CertificateRepresentation from '@keycloak/keycloak-admin-client/lib/defs/certificateRepresentation';
-import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
-import ClientScopeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientScopeRepresentation';
-import CredentialRepresentation from '@keycloak/keycloak-admin-client/lib/defs/credentialRepresentation';
-import GlobalRequestResult from '@keycloak/keycloak-admin-client/lib/defs/globalRequestResult';
-import KeyStoreConfig from '@keycloak/keycloak-admin-client/lib/defs/keystoreConfig';
-import { ManagementPermissionReference } from '@keycloak/keycloak-admin-client/lib/defs/managementPermissionReference';
-import MappingsRepresentation from '@keycloak/keycloak-admin-client/lib/defs/mappingsRepresentation';
-import PolicyEvaluationResponse from '@keycloak/keycloak-admin-client/lib/defs/policyEvaluationResponse';
-import PolicyProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/policyProviderRepresentation';
-import PolicyRepresentation from '@keycloak/keycloak-admin-client/lib/defs/policyRepresentation';
-import ProtocolMapperRepresentation from '@keycloak/keycloak-admin-client/lib/defs/protocolMapperRepresentation';
-import ResourceEvaluation from '@keycloak/keycloak-admin-client/lib/defs/resourceEvaluation';
-import ResourceRepresentation from '@keycloak/keycloak-admin-client/lib/defs/resourceRepresentation';
-import ResourceServerRepresentation from '@keycloak/keycloak-admin-client/lib/defs/resourceServerRepresentation';
-import type RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import ScopeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/scopeRepresentation';
-import UserSessionRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userSessionRepresentation';
+import KeycloakAdminClient, {
+  type CertificateRepresentation,
+  type ClientRepresentation,
+  type ClientScopeRepresentation,
+  type CredentialRepresentation,
+  type GlobalRequestResult,
+  type KeyStoreConfig,
+  type ManagementPermissionReference,
+  type MappingsRepresentation,
+  type PolicyEvaluationResponse,
+  type PolicyProviderRepresentation,
+  type PolicyRepresentation,
+  type ProtocolMapperRepresentation,
+  type ResourceEvaluation,
+  type ResourceRepresentation,
+  type ResourceServerRepresentation,
+  type RoleRepresentation,
+  type ScopeRepresentation,
+  type UserSessionRepresentation,
+} from '../keycloak-admin-client';
 import RealmHandle from '../realm';
 import ClientRoleHandle from '../client-role';
 import type ClientScopeHandle from '../client-scope';
@@ -88,7 +89,6 @@ export default class ClientHandle {
   public realmName: string;
   public clientId: string;
   public client?: ClientRepresentation | null;
-  public clientData?: ClientInputData;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, clientId: string) {
     this.core = core;
@@ -202,8 +202,6 @@ export default class ClientHandle {
   }
 
   public async ensure(data: ClientInputData) {
-    this.clientData = data;
-
     const one = await this.get();
 
     if (one?.id) {

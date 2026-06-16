@@ -1,7 +1,8 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import ComponentRepresentation from '@keycloak/keycloak-admin-client/lib/defs/componentRepresentation';
-import ComponentTypeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/componentTypeRepresentation';
+import KeycloakAdminClient, {
+  type ComponentRepresentation,
+  type ComponentTypeRepresentation,
+} from './keycloak-admin-client';
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 
@@ -12,6 +13,14 @@ function getComponentUpdateData(component: ComponentRepresentation, data: Compon
   return _merge({}, component, data, { name: componentName });
 }
 
+function getComponentCreateData(componentLookup: ComponentLookupData, data: ComponentInputData, componentName: string) {
+  return {
+    ...componentLookup,
+    ...data,
+    name: componentName,
+  };
+}
+
 export default class ComponentHandle {
   public core: KeycloakAdminClient;
   public realmHandle: RealmHandle;
@@ -19,7 +28,6 @@ export default class ComponentHandle {
   public componentName: string;
   public componentLookup: ComponentLookupData;
   public component?: ComponentRepresentation | null;
-  public componentData?: ComponentInputData;
 
   constructor(
     core: KeycloakAdminClient,
@@ -62,6 +70,19 @@ export default class ComponentHandle {
     }
 
     return matches[0] ?? null;
+  }
+
+  private ensureLookupCompatible(data: ComponentInputData) {
+    for (const lookupKey of Object.keys(this.componentLookup) as (keyof ComponentLookupData)[]) {
+      const lookupValue = this.componentLookup[lookupKey];
+      const dataValue = data[lookupKey];
+
+      if (lookupValue !== undefined && dataValue !== undefined && dataValue !== lookupValue) {
+        throw new Error(
+          `Component "${this.componentName}" input ${lookupKey} conflicts with the handle lookup in realm "${this.realmName}"`,
+        );
+      }
+    }
   }
 
   private async requireComponent(): Promise<ComponentRepresentation & { id: string }> {
@@ -107,11 +128,12 @@ export default class ComponentHandle {
       throw new Error(`Component "${this.componentName}" already exists in realm "${this.realmName}"`);
     }
 
+    this.ensureLookupCompatible(data);
+
     await retryTransientAdminError(() =>
       this.core.components.create({
-        ...data,
+        ...getComponentCreateData(this.componentLookup, data, this.componentName),
         realm: this.realmName,
-        name: this.componentName,
       }),
     );
 
@@ -119,6 +141,8 @@ export default class ComponentHandle {
   }
 
   public async update(data: ComponentInputData) {
+    this.ensureLookupCompatible(data);
+
     const component = await this.requireComponent();
     const componentId = component.id;
 
@@ -143,7 +167,7 @@ export default class ComponentHandle {
   }
 
   public async ensure(data: ComponentInputData) {
-    this.componentData = data;
+    this.ensureLookupCompatible(data);
 
     const component = await this.get();
     if (component?.id) {
@@ -158,9 +182,8 @@ export default class ComponentHandle {
     } else {
       await retryTransientAdminError(() =>
         this.core.components.create({
-          ...data,
+          ...getComponentCreateData(this.componentLookup, data, this.componentName),
           realm: this.realmName,
-          name: this.componentName,
         }),
       );
     }

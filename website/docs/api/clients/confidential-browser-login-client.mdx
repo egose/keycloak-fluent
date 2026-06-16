@@ -34,7 +34,7 @@ public async create(data: ConfidentialBrowserLoginClientInputData)
 
 - **Parameters**:
   - `data`: The data for the new confidential browser login client.
-- **Throws**: An error if the client already exists.
+- **Throws**: An error if the client already exists or no `redirectUris` are provided on create.
 
 ---
 
@@ -63,6 +63,8 @@ public async ensure(data: ConfidentialBrowserLoginClientInputData)
 - **Parameters**:
   - `data`: The data for the confidential browser login client.
 
+When `ensure(...)` creates a client, `redirectUris` must be provided explicitly. Update calls preserve existing redirect URIs when you omit them.
+
 ---
 
 ### Types
@@ -85,4 +87,4 @@ export type ConfidentialBrowserLoginClientInputData = Omit<
 
 ---
 
-This API provides a specialized interface for managing confidential browser login clients in Keycloak, ensuring they are configured with the appropriate defaults for secure and browser-based login flows.
+This API provides a specialized interface for managing confidential browser login clients in Keycloak, ensuring they are configured with the appropriate defaults for secure and browser-based login flows without silently falling back to wildcard redirect URIs.

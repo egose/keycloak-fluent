@@ -1,5 +1,4 @@
-import type KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
+import type { default as KeycloakAdminClient, GroupRepresentation } from '../keycloak-admin-client';
 
 const groupLookupPageSize = 1000;
 
@@ -25,6 +24,22 @@ async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function getRootGroupPath(groupName: string) {
+  return `/${groupName}`;
+}
+
+function getExactGroupNameMatches(groups: GroupRepresentation[], groupName: string) {
+  return groups.filter((group) => group.name === groupName);
+}
+
+function ensureUniqueGroupMatch(matches: GroupRepresentation[], errorMessage: string) {
+  if (matches.length > 1) {
+    throw new Error(errorMessage);
+  }
+
+  return matches[0] ?? null;
+}
+
 export async function getGroupById(core: KeycloakAdminClient, realm: string, id: string) {
   const one = await core.groups.findOne({ realm, id });
   return one ?? null;
@@ -33,9 +48,20 @@ export async function getGroupById(core: KeycloakAdminClient, realm: string, id:
 export async function getGroupByName(core: KeycloakAdminClient, realm: string, groupName: string, attempts = 3) {
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
-      const groups = await core.groups.find({ realm, search: groupName, exact: true });
-      const group = groups.find((v) => v.name === groupName);
-      return group ?? null;
+      const groups = await core.groups.find({ realm, search: groupName, exact: true, briefRepresentation: false });
+      const rootGroups = getExactGroupNameMatches(groups, groupName).filter(
+        (group) => group.path === getRootGroupPath(groupName),
+      );
+      const rootGroup = ensureUniqueGroupMatch(
+        rootGroups,
+        `Group "${groupName}" is ambiguous in realm "${realm}". Use a group path to disambiguate nested groups.`,
+      );
+
+      if (!rootGroup?.id) {
+        return null;
+      }
+
+      return getGroupById(core, realm, rootGroup.id);
     } catch (error) {
       if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
         throw error;
@@ -82,6 +108,21 @@ export async function listSubGroups(core: KeycloakAdminClient, realm: string, pa
   }
 }
 
+export async function getChildGroupByParentId(
+  core: KeycloakAdminClient,
+  realm: string,
+  parentGroupId: string,
+  groupName: string,
+) {
+  const subGroups = await listSubGroups(core, realm, parentGroupId);
+  const childGroups = getExactGroupNameMatches(subGroups, groupName);
+
+  return ensureUniqueGroupMatch(
+    childGroups,
+    `Child Group "${groupName}" is ambiguous in realm "${realm}". Use a fully qualified group path to disambiguate it.`,
+  );
+}
+
 export async function getChildGroupByName(
   core: KeycloakAdminClient,
   realm: string,
@@ -89,11 +130,9 @@ export async function getChildGroupByName(
   groupName: string,
 ) {
   const group = await getGroupByName(core, realm, parentGroupName);
-  if (!group) return null;
+  if (!group?.id) return null;
 
-  const subGroups = await listSubGroups(core, realm, group.id!);
-  const subgroup = subGroups.find((v) => v.name === groupName);
-  return subgroup ?? null;
+  return getChildGroupByParentId(core, realm, group.id, groupName);
 }
 
 export async function getGroupByPath(
@@ -103,38 +142,17 @@ export async function getGroupByPath(
 ): Promise<GroupRepresentation | null> {
   const groupPathParts = normalizeGroupPath(groupPath);
 
-  if (groupPathParts.length === 1) {
-    return getGroupByName(core, realm, groupPathParts[0]);
-  }
-
-  if (groupPathParts.length === 2) {
-    return getChildGroupByName(core, realm, groupPathParts[0], groupPathParts[1]);
-  }
-
-  const firstChildGroup = await getChildGroupByName(core, realm, groupPathParts[0], groupPathParts[1]);
-
-  if (!firstChildGroup) {
+  let currentGroup = await getGroupByName(core, realm, groupPathParts[0]);
+  if (!currentGroup?.id) {
     return null;
   }
 
-  let currentGroupId = firstChildGroup.id ?? null;
-  let foundGroup: GroupRepresentation | null = null;
-
-  for (let i = 2; i < groupPathParts.length; i++) {
-    if (!currentGroupId) {
+  for (let i = 1; i < groupPathParts.length; i++) {
+    currentGroup = await getChildGroupByParentId(core, realm, currentGroup.id, groupPathParts[i]);
+    if (!currentGroup?.id) {
       return null;
     }
-
-    const subGroups = await listSubGroups(core, realm, currentGroupId);
-
-    foundGroup = subGroups.find((g) => g.name === groupPathParts[i]) ?? null;
-
-    if (!foundGroup) {
-      return null;
-    }
-
-    currentGroupId = foundGroup.id ?? null;
   }
 
-  return foundGroup;
+  return currentGroup;
 }

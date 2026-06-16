@@ -1,6 +1,5 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
+import KeycloakAdminClient, { type GroupRepresentation } from '../keycloak-admin-client';
 import { AbstractGroupHandle } from './abstract-group';
 import { getGroupByPath } from './group-lookup';
 
@@ -12,7 +11,6 @@ function getNestedChildGroupUpdateData(group: GroupRepresentation, data: NestedC
 
 export default class NestedChildGroupHandle extends AbstractGroupHandle {
   public parentGroupPath: string;
-  public groupData?: NestedChildGroupInputData;
 
   constructor(core: KeycloakAdminClient, realmName: string, parentGroupPath: string, groupName: string) {
     super(core, realmName, groupName);
@@ -93,8 +91,6 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
   }
 
   public async ensure(data: NestedChildGroupInputData) {
-    this.groupData = data;
-
     const parentGroup = await getGroupByPath(this.core, this.realmName, this.parentGroupPath);
     if (!parentGroup) {
       throw new Error(`Parent Group Path "${this.parentGroupPath}" not found in realm "${this.realmName}"`);

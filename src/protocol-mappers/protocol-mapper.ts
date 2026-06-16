@@ -1,7 +1,8 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
-import ProtocolMapperRepresentation from '@keycloak/keycloak-admin-client/lib/defs/protocolMapperRepresentation';
+import KeycloakAdminClient, {
+  type ClientRepresentation,
+  type ProtocolMapperRepresentation,
+} from '../keycloak-admin-client';
 import type ClientHandle from '../clients/client';
 import { getClientByClientId } from '../clients/client-lookup';
 
@@ -34,7 +35,6 @@ export default class ProtocolMapperHandle {
   public client?: ClientRepresentation | null;
   public mapperName: string;
   public clientProtocolMapper?: ProtocolMapperRepresentation | null;
-  public clientProtocolMapperData?: Omit<ProtocolMapperRepresentation, 'name' | 'id'>;
 
   constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, mapperName: string) {
     this.core = core;
@@ -146,7 +146,6 @@ export default class ProtocolMapperHandle {
   }
 
   public async ensure(data: ProtocolMapperInputData) {
-    this.clientProtocolMapperData = data;
     const client = await this.resolveClient();
 
     const one = await this.get();

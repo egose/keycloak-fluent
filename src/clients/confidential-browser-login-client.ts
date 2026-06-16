@@ -1,4 +1,4 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
+import KeycloakAdminClient from '../keycloak-admin-client';
 import RealmHandle from '../realm';
 import ClientHandle, { type ClientInputData } from './client';
 
@@ -33,10 +33,20 @@ export default class ConfidentialBrowserLoginClientHandle extends ClientHandle {
     return super.ensure(this.decorateCreateInputData(data));
   }
 
+  private requireRedirectUris(data: ConfidentialBrowserLoginClientInputData) {
+    if (data.redirectUris?.length) {
+      return data.redirectUris;
+    }
+
+    throw new Error(
+      `Confidential Browser Login Client "${this.clientId}" requires at least one redirect URI on create`,
+    );
+  }
+
   private decorateCreateInputData(data: ConfidentialBrowserLoginClientInputData) {
     return this.decorateUpdateInputData({
       ...data,
-      redirectUris: data.redirectUris?.length ? data.redirectUris : ['*'],
+      redirectUris: this.requireRedirectUris(data),
     });
   }
 

@@ -1,11 +1,13 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
-import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
-import FederatedIdentityRepresentation from '@keycloak/keycloak-admin-client/lib/defs/federatedIdentityRepresentation';
-import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
-import RoleRepresentation, { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import { type RequiredActionAlias } from '@keycloak/keycloak-admin-client/lib/defs/requiredActionProviderRepresentation';
+import KeycloakAdminClient, {
+  type ClientRepresentation,
+  type FederatedIdentityRepresentation,
+  type GroupRepresentation,
+  type RequiredActionAlias,
+  type RoleMappingPayload,
+  type RoleRepresentation,
+  type UserRepresentation,
+} from './keycloak-admin-client';
 import RealmHandle from './realm';
 import RoleHandle from './role';
 import type ClientHandle from './clients/client';
@@ -52,7 +54,6 @@ export default class UserHandle {
   public realmName: string;
   public username: string;
   public user?: UserRepresentation | null;
-  public userData?: UserInputData;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, username: string) {
     this.core = core;
@@ -127,8 +128,6 @@ export default class UserHandle {
   }
 
   public async ensure(data: UserInputData) {
-    this.userData = data;
-
     const one = await this.get();
     const { password, ...rest } = data;
 

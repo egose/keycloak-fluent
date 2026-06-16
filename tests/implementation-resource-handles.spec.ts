@@ -619,6 +619,35 @@ describe('Implementation Consistency: Resource Handles', () => {
     expect(core.components.del).toHaveBeenCalledWith({ realm: 'demo', id: 'component-2' });
   });
 
+  test('component create applies lookup fields and rejects conflicting input', async () => {
+    const core = {
+      components: {
+        find: vi.fn().mockResolvedValue([]),
+        create: vi.fn().mockResolvedValue({ id: 'component-1' }),
+      },
+    } as any;
+
+    const componentHandle = new RealmHandle(core, 'demo').component('ldap-users', {
+      parentId: 'demo',
+      providerId: 'ldap',
+      providerType: 'org.keycloak.storage.UserStorageProvider',
+    });
+
+    await expect(componentHandle.create({ config: { priority: ['0'] } })).resolves.toBeNull();
+    expect(core.components.create).toHaveBeenCalledWith({
+      realm: 'demo',
+      name: 'ldap-users',
+      parentId: 'demo',
+      providerId: 'ldap',
+      providerType: 'org.keycloak.storage.UserStorageProvider',
+      config: { priority: ['0'] },
+    });
+
+    await expect(componentHandle.create({ providerId: 'different-provider' })).rejects.toThrow(
+      'Component "ldap-users" input providerId conflicts with the handle lookup in realm "demo"',
+    );
+  });
+
   test('component lookup ambiguity is rejected', async () => {
     const core = {
       components: {

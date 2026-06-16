@@ -1,4 +1,4 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
+import KeycloakAdminClient from '../keycloak-admin-client';
 import _merge from 'lodash-es/merge.js';
 import type ClientScopeHandle from '../client-scope';
 import ClientScopeProtocolMapperHandle from './client-scope-protocol-mapper';
