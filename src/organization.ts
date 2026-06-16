@@ -1,8 +1,9 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation';
-import type OrganizationRepresentation from '@keycloak/keycloak-admin-client/lib/defs/organizationRepresentation';
-import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
+import KeycloakAdminClient, {
+  type IdentityProviderRepresentation,
+  type OrganizationRepresentation,
+  type UserRepresentation,
+} from './keycloak-admin-client';
 import type IdentityProviderHandle from './identity-provider';
 import RealmHandle from './realm';
 import type UserHandle from './user';
@@ -38,7 +39,6 @@ export default class OrganizationHandle {
   public realmName: string;
   public organizationAlias: string;
   public organization?: OrganizationRepresentation | null;
-  public organizationData?: OrganizationInputData;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, organizationAlias: string) {
     this.core = core;
@@ -166,8 +166,6 @@ export default class OrganizationHandle {
   }
 
   public async ensure(data: OrganizationInputData) {
-    this.organizationData = data;
-
     const organization = await this.get();
     if (organization?.id) {
       const organizationId = organization.id;

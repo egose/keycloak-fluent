@@ -1,6 +1,5 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation';
+import KeycloakAdminClient, { type IdentityProviderRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
 import IdentityProviderMapperHandle from './identity-provider-mapper';
 
@@ -79,7 +78,6 @@ export default class IdentityProviderHandle {
   public realmName: string;
   public alias: string;
   public identityProvider?: IdentityProviderRepresentation | null;
-  public identityProviderData?: IdentityProviderInputData;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string) {
     this.core = core;
@@ -150,8 +148,6 @@ export default class IdentityProviderHandle {
   }
 
   public async ensure(data: IdentityProviderInputData) {
-    this.identityProviderData = data;
-
     const one = await this.get();
 
     if (one?.alias) {

@@ -1,5 +1,4 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type SynchronizationResultRepresentation from '@keycloak/keycloak-admin-client/lib/defs/synchronizationResultRepresentation';
+import KeycloakAdminClient, { type SynchronizationResultRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 

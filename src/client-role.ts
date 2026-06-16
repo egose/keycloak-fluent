@@ -1,7 +1,5 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
-import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
+import KeycloakAdminClient, { type ClientRepresentation, type RoleRepresentation } from './keycloak-admin-client';
 import type ClientHandle from './clients/client';
 import { getClientByClientId } from './clients/client-lookup';
 import type RoleHandle from './role';
@@ -21,7 +19,6 @@ export default class ClientRoleHandle {
   public client?: ClientRepresentation | null;
   public roleName: string;
   public role?: RoleRepresentation | null;
-  public roleData?: ClientRoleInputData;
 
   constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, roleName: string) {
     this.core = core;
@@ -149,7 +146,6 @@ export default class ClientRoleHandle {
   }
 
   public async ensure(data: ClientRoleInputData) {
-    this.roleData = data;
     const client = await this.resolveClient();
 
     const one = await this.get();

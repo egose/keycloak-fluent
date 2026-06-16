@@ -1,6 +1,5 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import ClientScopeRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientScopeRepresentation';
+import KeycloakAdminClient, { type ClientScopeRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
 import ClientScopeProtocolMapperHandle from './protocol-mappers/client-scope-protocol-mapper';
 import ClientScopeUserAttributeProtocolMapperHandle from './protocol-mappers/client-scope-user-attribute-protocol-mapper';
@@ -43,7 +42,6 @@ export default class ClientScopeHandle {
   public realmName: string;
   public scopeName: string;
   public clientScope?: ClientScopeRepresentation | null;
-  public clientScopeData?: Omit<ClientScopeRepresentation, 'name' | 'id'>;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, scopeName: string) {
     this.core = core;
@@ -117,8 +115,6 @@ export default class ClientScopeHandle {
   }
 
   public async ensure(data: ClientScopeInputData) {
-    this.clientScopeData = data;
-
     const one = await this.get();
 
     if (one?.id) {

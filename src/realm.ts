@@ -1,18 +1,18 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type AdminEventRepresentation from '@keycloak/keycloak-admin-client/lib/defs/adminEventRepresentation';
-import type { ClientSessionStat } from '@keycloak/keycloak-admin-client/lib/defs/clientSessionStat';
-import type ClientInitialAccessPresentation from '@keycloak/keycloak-admin-client/lib/defs/clientInitialAccessPresentation';
-import type EventRepresentation from '@keycloak/keycloak-admin-client/lib/defs/eventRepresentation';
-import type EventType from '@keycloak/keycloak-admin-client/lib/defs/eventTypes';
-import type KeysMetadataRepresentation from '@keycloak/keycloak-admin-client/lib/defs/keyMetadataRepresentation';
-import type { ManagementPermissionReference } from '@keycloak/keycloak-admin-client/lib/defs/managementPermissionReference';
-import type { RealmEventsConfigRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/realmEventsConfigRepresentation';
-import type WorkflowRepresentation from '@keycloak/keycloak-admin-client/lib/defs/workflowRepresentation';
-import RealmRepresentation, {
+import KeycloakAdminClient, {
+  type AdminEventRepresentation,
+  type ClientInitialAccessPresentation,
+  type ClientSessionStat,
+  type EventRepresentation,
+  type EventType,
+  type KeysMetadataRepresentation,
+  type ManagementPermissionReference,
+  type RealmEventsConfigRepresentation,
+  type WorkflowRepresentation,
+  type RealmRepresentation,
   type PartialImportRealmRepresentation,
   type PartialImportResponse,
-} from '@keycloak/keycloak-admin-client/lib/defs/realmRepresentation';
+} from './keycloak-admin-client';
 import ClientHandle from './clients/client';
 import ClientScopeHandle from './client-scope';
 import AuthenticationFlowHandle from './authentication-flow';
@@ -75,6 +75,8 @@ export type RealmAdminEventsQuery = {
   resourceTypes?: string;
 };
 
+export type RealmUserSearchAttribute = 'username' | 'firstName' | 'lastName' | 'email';
+
 function getPaginationParams(options?: { page?: number; pageSize?: number }) {
   const page = Math.max(1, options?.page ?? 1);
   const pageSize = Math.max(1, options?.pageSize ?? 100);
@@ -93,7 +95,6 @@ export default class RealmHandle {
   public core: KeycloakAdminClient;
   public realmName: string;
   public realm?: RealmRepresentation | null;
-  public realmData?: RealmInputData;
 
   constructor(core: KeycloakAdminClient, realmName: string) {
     this.core = core;
@@ -141,8 +142,6 @@ export default class RealmHandle {
   }
 
   public async ensure(data: RealmInputData) {
-    this.realmData = data;
-
     const realm = await this.get();
     if (realm) {
       await this.core.realms.update({ realm: this.realmName }, getRealmUpdateData(realm, data));
@@ -422,18 +421,32 @@ export default class RealmHandle {
 
   public async searchUsers(
     keyword: string,
-    options?: { page?: number; pageSize?: number; attribute?: 'username' | 'firstName' | 'lastName' | 'email' },
+    options?: { page?: number; pageSize?: number; attribute?: RealmUserSearchAttribute },
   ) {
     const { attribute = 'username' } = options ?? {};
     const { first, max } = getPaginationParams(options);
-
-    const result = await this.core.users.find({
+    const searchQuery: {
+      realm: string;
+      first: number;
+      max: number;
+      exact: false;
+      briefRepresentation: false;
+      username?: string;
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+    } = {
       realm: this.realmName,
       first,
       max,
-      q: `${attribute}:${keyword}`,
       exact: false,
       briefRepresentation: false,
+    };
+
+    searchQuery[attribute] = keyword;
+
+    const result = await this.core.users.find({
+      ...searchQuery,
     });
 
     return result;

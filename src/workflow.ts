@@ -1,6 +1,5 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type WorkflowRepresentation from '@keycloak/keycloak-admin-client/lib/defs/workflowRepresentation';
+import KeycloakAdminClient, { type WorkflowRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 
@@ -26,7 +25,6 @@ export default class WorkflowHandle {
   public realmName: string;
   public workflowName: string;
   public workflow?: WorkflowRepresentation | null;
-  public workflowData?: WorkflowInputData;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, workflowName: string) {
     this.core = core;
@@ -112,8 +110,6 @@ export default class WorkflowHandle {
   }
 
   public async ensure(data: WorkflowInputData) {
-    this.workflowData = data;
-
     const workflow = await this.get();
 
     if (workflow?.id) {

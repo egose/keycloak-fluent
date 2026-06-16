@@ -1,5 +1,4 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type WhoAmIRepresentation from '@keycloak/keycloak-admin-client/lib/defs/whoAmIRepresentation';
+import KeycloakAdminClient, { type WhoAmIRepresentation } from './keycloak-admin-client';
 import { retryTransientAdminError } from './utils/retry';
 
 export default class WhoAmIHandle {

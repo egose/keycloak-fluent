@@ -1,5 +1,4 @@
-import type KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
+import type { default as KeycloakAdminClient, ClientRepresentation } from '../keycloak-admin-client';
 import { retryTransientAdminError } from '../utils/retry';
 
 export async function getClientById(core: KeycloakAdminClient, realm: string, id: string) {

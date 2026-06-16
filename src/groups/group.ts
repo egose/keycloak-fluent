@@ -1,6 +1,5 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
+import KeycloakAdminClient, { type GroupRepresentation } from '../keycloak-admin-client';
 import RealmHandle from '../realm';
 import ChildGroupHandle from './child-group';
 import { AbstractGroupHandle } from './abstract-group';
@@ -14,7 +13,6 @@ function getGroupUpdateData(group: GroupRepresentation, data: GroupInputData, gr
 
 export default class GroupHandle extends AbstractGroupHandle {
   public realmHandle: RealmHandle;
-  public groupData?: GroupInputData;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, groupName: string) {
     super(core, realmHandle.realmName, groupName);
@@ -90,8 +88,6 @@ export default class GroupHandle extends AbstractGroupHandle {
   }
 
   public async ensure(data: GroupInputData) {
-    this.groupData = data;
-
     const one = await this.get();
 
     if (one?.id) {

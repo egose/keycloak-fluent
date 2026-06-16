@@ -1,13 +1,14 @@
 import _merge from 'lodash-es/merge.js';
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type AuthenticationExecutionInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticationExecutionInfoRepresentation';
-import type AuthenticatorConfigInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigInfoRepresentation';
-import type AuthenticatorConfigRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation';
-import type { AuthenticationProviderRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/authenticatorConfigRepresentation';
-import type AuthenticationFlowRepresentation from '@keycloak/keycloak-admin-client/lib/defs/authenticationFlowRepresentation';
-import type RequiredActionConfigInfoRepresentation from '@keycloak/keycloak-admin-client/lib/defs/requiredActionConfigInfoRepresentation';
-import type RequiredActionConfigRepresentation from '@keycloak/keycloak-admin-client/lib/defs/requiredActionConfigRepresentation';
-import type RequiredActionProviderRepresentation from '@keycloak/keycloak-admin-client/lib/defs/requiredActionProviderRepresentation';
+import KeycloakAdminClient, {
+  type AuthenticationExecutionInfoRepresentation,
+  type AuthenticationFlowRepresentation,
+  type AuthenticationProviderRepresentation,
+  type AuthenticatorConfigInfoRepresentation,
+  type AuthenticatorConfigRepresentation,
+  type RequiredActionConfigInfoRepresentation,
+  type RequiredActionConfigRepresentation,
+  type RequiredActionProviderRepresentation,
+} from './keycloak-admin-client';
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 
@@ -43,7 +44,6 @@ export default class AuthenticationFlowHandle {
   public realmName: string;
   public alias: string;
   public flow?: AuthenticationFlowRepresentation | null;
-  public flowData?: AuthenticationFlowInputData;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string) {
     this.core = core;
@@ -138,8 +138,6 @@ export default class AuthenticationFlowHandle {
   }
 
   public async ensure(data: AuthenticationFlowInputData) {
-    this.flowData = data;
-
     const flow = await this.get();
     if (flow?.id) {
       const existingFlow = flow as AuthenticationFlowRepresentation & { id: string };

@@ -1,6 +1,7 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type ClientPoliciesRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientPoliciesRepresentation';
-import type ClientProfilesRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientProfilesRepresentation';
+import KeycloakAdminClient, {
+  type ClientPoliciesRepresentation,
+  type ClientProfilesRepresentation,
+} from './keycloak-admin-client';
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 

@@ -1,6 +1,7 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type EffectiveMessageBundleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/effectiveMessageBundleRepresentation';
-import type { ServerInfoRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/serverInfoRepesentation';
+import KeycloakAdminClient, {
+  type EffectiveMessageBundleRepresentation,
+  type ServerInfoRepresentation,
+} from './keycloak-admin-client';
 import { retryTransientAdminError } from './utils/retry';
 
 export type EffectiveMessageBundleQuery = {

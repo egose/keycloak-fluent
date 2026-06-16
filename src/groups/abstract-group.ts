@@ -1,7 +1,9 @@
-import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
-import RoleRepresentation, { RoleMappingPayload } from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
+import KeycloakAdminClient, {
+  type GroupRepresentation,
+  type RoleMappingPayload,
+  type RoleRepresentation,
+  type UserRepresentation,
+} from '../keycloak-admin-client';
 import type RoleHandle from '../role';
 import type ClientHandle from '../clients/client';
 import type ClientRoleHandle from '../client-role';
