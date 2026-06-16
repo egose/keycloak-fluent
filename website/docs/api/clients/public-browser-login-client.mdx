@@ -34,7 +34,7 @@ public async create(data: PublicBrowserLoginClientInputData)
 
 - **Parameters**:
   - `data`: The data for the new public browser login client.
-- **Throws**: An error if the client already exists.
+- **Throws**: An error if the client already exists or no `redirectUris` are provided on create.
 
 ---
 
@@ -63,6 +63,8 @@ public async ensure(data: PublicBrowserLoginClientInputData)
 - **Parameters**:
   - `data`: The data for the public browser login client.
 
+When `ensure(...)` creates a client, `redirectUris` must be provided explicitly. Update calls preserve existing redirect URIs when you omit them.
+
 ---
 
 ### Types
@@ -86,4 +88,4 @@ export type PublicBrowserLoginClientInputData = Omit<
 
 ---
 
-This API provides a specialized interface for managing public browser login clients in Keycloak, ensuring they are configured with the appropriate defaults for public and browser-based login flows.
+This API provides a specialized interface for managing public browser login clients in Keycloak, ensuring they are configured with the appropriate defaults for public and browser-based login flows without silently falling back to wildcard redirect URIs.

@@ -127,6 +127,8 @@ await user.assignGroup(group);
 - `password` grant when `password` is provided
 - `refresh_token` grant when `refreshToken` is provided
 - `client_credentials` grant otherwise
+- `username` and `password` must be provided together
+- `password` and `refreshToken` are mutually exclusive
 
 ```ts
 await kc.simpleAuth({
