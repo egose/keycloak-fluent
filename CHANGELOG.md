@@ -1,3 +1,17 @@
+## [0.8.0](https://github.com/egose/keycloak-fluent/compare/v0.7.0...v0.8.0) (2026-06-17)
+
+### Features
+
+* **website:** enhance auth validation and group lookup robustness ([3e9bd64](https://github.com/egose/keycloak-fluent/commit/3e9bd644f726132e629f9984c451a8c487aab0c9))
+
+### Docs
+
+* **website:** update documentation and landing page ([0c54437](https://github.com/egose/keycloak-fluent/commit/0c54437ab1c7072eca0f81af7bc38165d56e355b))
+
+### Refactors
+
+* **website:** centralize admin client imports and remove handle state ([58f7f8d](https://github.com/egose/keycloak-fluent/commit/58f7f8dad9625eeeccc03be4189213dba5b372fc))
+
 ## [0.7.0](https://github.com/egose/keycloak-fluent/compare/v0.6.4...v0.7.0) (2026-06-10)
 
 ### Features
@@ -6,8 +20,17 @@
 
 ### Bug Fixes
 
-* standardize resource handle updates and sync docs/site ([3ac3f3e](https://github.com/egose/keycloak-fluent/commit/3ac3f3ee74fd8576938bffc4acc6f547945b6b2c))
 * update sandbox postgres image and data volume cleanup ([e19f08d](https://github.com/egose/keycloak-fluent/commit/e19f08d7ba53a74de4e545f83e2610de862ca939))
+
+## [0.6.4](https://github.com/egose/keycloak-fluent/compare/v0.6.3...v0.6.4) (2026-04-19)
+
+## [0.6.3](https://github.com/egose/keycloak-fluent/compare/v0.6.2...v0.6.3) (2026-04-02)
+
+## [0.6.2](https://github.com/egose/keycloak-fluent/compare/v0.6.1...v0.6.2) (2026-04-02)
+
+### Bug Fixes
+
+* standardize resource handle updates and sync docs/site ([3ac3f3e](https://github.com/egose/keycloak-fluent/commit/3ac3f3ee74fd8576938bffc4acc6f547945b6b2c))
 
 ## [0.6.1](https://github.com/egose/keycloak-fluent/compare/v0.6.0...v0.6.1) (2026-04-01)
 
