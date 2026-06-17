@@ -47,7 +47,6 @@ a.breadcrumbs__link[aria-label='Home page'] {
 /* Tailwind preflight makes svg display:block, which breaks Docusaurus inline UI icons. */
 .navbar__link svg,
 .navbar__brand svg,
-.clean-btn svg,
 .breadcrumbs__link svg,
 .pagination-nav__link svg,
 .table-of-contents__link svg {
