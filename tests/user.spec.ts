@@ -90,3 +90,36 @@ test('Users', async () => {
     expect(searchedUsers.length).toBeGreaterThan(0);
   });
 });
+
+test('User search uses built-in field filters', async () => {
+  await withEnsuredMasterRealm('testusersearchrealm', async ({ realmHandle }) => {
+    const searchableUsername = 'searchable-user';
+    const searchableEmail = 'alice.search@example.com';
+    const searchableLastName = 'Example';
+
+    await realmHandle.user(searchableUsername).ensure({
+      firstName: 'AliceSearch',
+      lastName: searchableLastName,
+      email: searchableEmail,
+      enabled: true,
+    });
+
+    await realmHandle.user('other-user').ensure({
+      firstName: 'BobOther',
+      lastName: 'Different',
+      email: 'bob.other@example.com',
+      enabled: true,
+    });
+
+    const usernameMatches = await realmHandle.searchUsers('able-us');
+    const firstNameMatches = await realmHandle.searchUsers('liceSea', { attribute: 'firstName' });
+    const lastNameMatches = await realmHandle.searchUsers('xamp', { attribute: 'lastName' });
+    const emailMatches = await realmHandle.searchUsers('search@', { attribute: 'email' });
+
+    expect(usernameMatches.some((user) => user.username === searchableUsername)).toBe(true);
+    expect(firstNameMatches.some((user) => user.username === searchableUsername)).toBe(true);
+    expect(lastNameMatches.some((user) => user.username === searchableUsername)).toBe(true);
+    expect(emailMatches.some((user) => user.username === searchableUsername)).toBe(true);
+    expect(emailMatches.some((user) => user.username === 'other-user')).toBe(false);
+  });
+});
