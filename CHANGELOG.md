@@ -1,3 +1,9 @@
+## [0.8.1](https://github.com/egose/keycloak-fluent/compare/v0.8.0...v0.8.1) (2026-06-19)
+
+### Bug Fixes
+
+* **website:** remove display override for clean-btn icons ([82c34f4](https://github.com/egose/keycloak-fluent/commit/82c34f46f645c505147707c33c5af32c07bd47cb))
+
 ## [0.8.0](https://github.com/egose/keycloak-fluent/compare/v0.7.0...v0.8.0) (2026-06-17)
 
 ### Features
