@@ -29,8 +29,16 @@ import UserAttributeProtocolMapperHandle from '../protocol-mappers/user-attribut
 import HardcodedClaimProtocolMapperHandle from '../protocol-mappers/hardcoded-claim-protocol-mapper';
 import AudienceProtocolMapperHandle from '../protocol-mappers/audience-protocol-mapper';
 import { retryTransientAdminError } from '../utils/retry';
+import { fetchAll } from '../utils/fetch-all';
 
-function getPaginationParams(options?: { page?: number; pageSize?: number }) {
+function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
+  if (options?.first !== undefined || options?.max !== undefined) {
+    return {
+      first: options.first ?? 0,
+      max: options.max ?? 100,
+    };
+  }
+
   const page = Math.max(1, options?.page ?? 1);
   const pageSize = Math.max(1, options?.pageSize ?? 100);
 
@@ -597,7 +605,14 @@ export default class ClientHandle {
     );
   }
 
-  public async listSessions(options?: { page?: number; pageSize?: number }): Promise<UserSessionRepresentation[]> {
+  public async listSessions(options?: {
+    page?: number;
+    pageSize?: number;
+    first?: number;
+    max?: number;
+    user?: string;
+    client?: string;
+  }): Promise<UserSessionRepresentation[]> {
     const client = await this.requireClient();
     const clientInternalId = client.id;
     const { first, max } = getPaginationParams(options);
@@ -608,13 +623,17 @@ export default class ClientHandle {
         id: clientInternalId,
         first,
         max,
-      }),
+        ...(options?.user && { user: options.user }),
+        ...(options?.client && { client: options.client }),
+      } as { id: string; first?: number; max?: number; realm?: string }),
     );
   }
 
   public async listOfflineSessions(options?: {
     page?: number;
     pageSize?: number;
+    first?: number;
+    max?: number;
   }): Promise<UserSessionRepresentation[]> {
     const client = await this.requireClient();
     const clientInternalId = client.id;
@@ -627,6 +646,40 @@ export default class ClientHandle {
         first,
         max,
       }),
+    );
+  }
+
+  public async listSessionsAll(options?: { user?: string; client?: string }): Promise<UserSessionRepresentation[]> {
+    const client = await this.requireClient();
+    const clientInternalId = client.id;
+
+    return fetchAll((first, max) =>
+      retryTransientAdminError(() =>
+        this.core.clients.listSessions({
+          realm: this.realmName,
+          id: clientInternalId,
+          first,
+          max,
+          ...(options?.user && { user: options.user }),
+          ...(options?.client && { client: options.client }),
+        } as { id: string; first?: number; max?: number; realm?: string }),
+      ),
+    );
+  }
+
+  public async listOfflineSessionsAll(): Promise<UserSessionRepresentation[]> {
+    const client = await this.requireClient();
+    const clientInternalId = client.id;
+
+    return fetchAll((first, max) =>
+      retryTransientAdminError(() =>
+        this.core.clients.listOfflineSessions({
+          realm: this.realmName,
+          id: clientInternalId,
+          first,
+          max,
+        }),
+      ),
     );
   }
 

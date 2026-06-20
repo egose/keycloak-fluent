@@ -373,7 +373,7 @@ export default class UserHandle {
     });
   }
 
-  public async listAssignedGroups() {
+  public async listAssignedGroups(options?: { briefRepresentation?: boolean; search?: string }) {
     const user = await this.requireUser();
     const allGroups: GroupRepresentation[] = [];
     let first = 0;
@@ -385,7 +385,8 @@ export default class UserHandle {
         id: user.id,
         first,
         max,
-        briefRepresentation: false,
+        briefRepresentation: options?.briefRepresentation ?? false,
+        search: options?.search,
       });
 
       if (!groups || groups.length === 0) {

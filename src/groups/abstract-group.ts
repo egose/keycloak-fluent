@@ -80,7 +80,7 @@ export abstract class AbstractGroupHandle {
     return group;
   }
 
-  public async listAssignedUsers() {
+  public async listAssignedUsers(options?: { briefRepresentation?: boolean }) {
     const one = await this.requireGroup();
     const result: UserRepresentation[] = [];
 
@@ -91,7 +91,7 @@ export abstract class AbstractGroupHandle {
           id: one.id,
           first,
           max: groupMembersPageSize,
-          briefRepresentation: false,
+          briefRepresentation: options?.briefRepresentation ?? false,
         }),
       );
 
