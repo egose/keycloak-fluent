@@ -4,6 +4,7 @@ import type ClientHandle from './clients/client';
 import { getClientByClientId } from './clients/client-lookup';
 import type RoleHandle from './role';
 import { retryTransientAdminError } from './utils/retry';
+import { fetchAll } from './utils/fetch-all';
 
 export type ClientRoleInputData = Omit<RoleRepresentation, 'name' | 'id'>;
 
@@ -221,6 +222,23 @@ export default class ClientRoleHandle {
         first: (page - 1) * pageSize,
         max: pageSize,
       }),
+    );
+  }
+
+  public async listCompositesAll(options?: { keyword?: string }) {
+    const role = await this.requireRole();
+    const roleId = role.id;
+
+    return fetchAll((first, max) =>
+      retryTransientAdminError(() =>
+        this.core.roles.getCompositeRoles({
+          realm: this.realmName,
+          id: roleId,
+          search: options?.keyword,
+          first,
+          max,
+        }),
+      ),
     );
   }
 

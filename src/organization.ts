@@ -8,8 +8,16 @@ import type IdentityProviderHandle from './identity-provider';
 import RealmHandle from './realm';
 import type UserHandle from './user';
 import { retryTransientAdminError } from './utils/retry';
+import { fetchAll } from './utils/fetch-all';
 
-function getPaginationParams(options?: { page?: number; pageSize?: number }) {
+function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
+  if (options?.first !== undefined || options?.max !== undefined) {
+    return {
+      first: options.first ?? 0,
+      max: options.max ?? 100,
+    };
+  }
+
   const page = Math.max(1, options?.page ?? 1);
   const pageSize = Math.max(1, options?.pageSize ?? 100);
 
@@ -214,7 +222,11 @@ export default class OrganizationHandle {
   public async listMembers(options?: {
     page?: number;
     pageSize?: number;
+    first?: number;
+    max?: number;
     membershipType?: string;
+    exact?: boolean;
+    search?: string;
   }): Promise<UserRepresentation[]> {
     const organization = await this.requireOrganization();
     const { first, max } = getPaginationParams(options);
@@ -226,7 +238,31 @@ export default class OrganizationHandle {
         first,
         max,
         membershipType: options?.membershipType,
-      }),
+        ...(options?.exact !== undefined && { exact: options.exact }),
+        ...(options?.search && { search: options.search }),
+      } as { orgId: string; first?: number; max?: number; realm?: string; membershipType?: string }),
+    );
+  }
+
+  public async listMembersAll(options?: {
+    membershipType?: string;
+    exact?: boolean;
+    search?: string;
+  }): Promise<UserRepresentation[]> {
+    const organization = await this.requireOrganization();
+
+    return fetchAll((first, max) =>
+      retryTransientAdminError(() =>
+        this.core.organizations.listMembers({
+          realm: this.realmName,
+          orgId: organization.id,
+          first,
+          max,
+          membershipType: options?.membershipType,
+          ...(options?.exact !== undefined && { exact: options.exact }),
+          ...(options?.search && { search: options.search }),
+        } as { orgId: string; first?: number; max?: number; realm?: string; membershipType?: string }),
+      ),
     );
   }
 

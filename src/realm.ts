@@ -32,6 +32,7 @@ import PublicBrowserLoginClientHandle from './clients/public-browser-login-clien
 import ServiceAccountHandle from './clients/service-account';
 import RealmAdminServiceAccountHandle from './clients/realm-admin-service-account';
 import { retryTransientAdminError } from './utils/retry';
+import { fetchAll } from './utils/fetch-all';
 
 export const defaultRealmData = Object.freeze({
   enabled: true,
@@ -77,7 +78,14 @@ export type RealmAdminEventsQuery = {
 
 export type RealmUserSearchAttribute = 'username' | 'firstName' | 'lastName' | 'email';
 
-function getPaginationParams(options?: { page?: number; pageSize?: number }) {
+function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
+  if (options?.first !== undefined || options?.max !== undefined) {
+    return {
+      first: options.first ?? 0,
+      max: options.max ?? 100,
+    };
+  }
+
   const page = Math.max(1, options?.page ?? 1);
   const pageSize = Math.max(1, options?.pageSize ?? 100);
 
@@ -363,17 +371,41 @@ export default class RealmHandle {
     );
   }
 
-  public async searchClients(keyword: string, options?: { page?: number; pageSize?: number }) {
+  public async searchClients(
+    keyword: string,
+    options?: {
+      page?: number;
+      pageSize?: number;
+      first?: number;
+      max?: number;
+      search?: boolean;
+      viewableOnly?: boolean;
+    },
+  ) {
     const { first, max } = getPaginationParams(options);
     const result = await this.core.clients.find({
       realm: this.realmName,
       first,
       max,
       clientId: keyword,
-      search: true,
+      search: options?.search ?? true,
+      viewableOnly: options?.viewableOnly,
     });
 
     return result;
+  }
+
+  public async searchClientsAll(keyword: string, options?: { search?: boolean; viewableOnly?: boolean }) {
+    return fetchAll((first, max) =>
+      this.core.clients.find({
+        realm: this.realmName,
+        first,
+        max,
+        clientId: keyword,
+        search: options?.search ?? true,
+        viewableOnly: options?.viewableOnly,
+      }),
+    );
   }
 
   public async searchClientScopes(keyword: string) {
@@ -390,7 +422,10 @@ export default class RealmHandle {
     });
   }
 
-  public async searchRoles(keyword: string, options?: { page?: number; pageSize?: number }) {
+  public async searchRoles(
+    keyword: string,
+    options?: { page?: number; pageSize?: number; first?: number; max?: number; briefRepresentation?: boolean },
+  ) {
     const { first, max } = getPaginationParams(options);
 
     const result = await this.core.roles.find({
@@ -398,13 +433,35 @@ export default class RealmHandle {
       first,
       max,
       search: keyword,
-      briefRepresentation: false,
+      briefRepresentation: options?.briefRepresentation ?? false,
     });
 
     return result;
   }
 
-  public async searchGroups(keyword: string, options?: { page?: number; pageSize?: number }) {
+  public async searchRolesAll(keyword: string, options?: { briefRepresentation?: boolean }) {
+    return fetchAll((first, max) =>
+      this.core.roles.find({
+        realm: this.realmName,
+        first,
+        max,
+        search: keyword,
+        briefRepresentation: options?.briefRepresentation ?? false,
+      }),
+    );
+  }
+
+  public async searchGroups(
+    keyword: string,
+    options?: {
+      page?: number;
+      pageSize?: number;
+      first?: number;
+      max?: number;
+      exact?: boolean;
+      briefRepresentation?: boolean;
+    },
+  ) {
     const { first, max } = getPaginationParams(options);
 
     const result = await this.core.groups.find({
@@ -412,16 +469,38 @@ export default class RealmHandle {
       first,
       max,
       search: keyword,
-      exact: false,
-      briefRepresentation: false,
+      exact: options?.exact ?? false,
+      briefRepresentation: options?.briefRepresentation ?? false,
     });
 
     return result;
   }
 
+  public async searchGroupsAll(keyword: string, options?: { exact?: boolean; briefRepresentation?: boolean }) {
+    return fetchAll((first, max) =>
+      this.core.groups.find({
+        realm: this.realmName,
+        first,
+        max,
+        search: keyword,
+        exact: options?.exact ?? false,
+        briefRepresentation: options?.briefRepresentation ?? false,
+      }),
+    );
+  }
+
   public async searchUsers(
     keyword: string,
-    options?: { page?: number; pageSize?: number; attribute?: RealmUserSearchAttribute },
+    options?: {
+      page?: number;
+      pageSize?: number;
+      first?: number;
+      max?: number;
+      attribute?: RealmUserSearchAttribute;
+      exact?: boolean;
+      briefRepresentation?: boolean;
+      enabled?: boolean;
+    },
   ) {
     const { attribute = 'username' } = options ?? {};
     const { first, max } = getPaginationParams(options);
@@ -429,8 +508,9 @@ export default class RealmHandle {
       realm: string;
       first: number;
       max: number;
-      exact: false;
-      briefRepresentation: false;
+      exact: boolean;
+      briefRepresentation: boolean;
+      enabled?: boolean;
       username?: string;
       firstName?: string;
       lastName?: string;
@@ -439,8 +519,9 @@ export default class RealmHandle {
       realm: this.realmName,
       first,
       max,
-      exact: false,
-      briefRepresentation: false,
+      exact: options?.exact ?? false,
+      briefRepresentation: options?.briefRepresentation ?? false,
+      enabled: options?.enabled,
     };
 
     searchQuery[attribute] = keyword;
@@ -450,6 +531,44 @@ export default class RealmHandle {
     });
 
     return result;
+  }
+
+  public async searchUsersAll(
+    keyword: string,
+    options?: {
+      attribute?: RealmUserSearchAttribute;
+      exact?: boolean;
+      briefRepresentation?: boolean;
+      enabled?: boolean;
+    },
+  ) {
+    const { attribute = 'username' } = options ?? {};
+
+    return fetchAll((first, max) => {
+      const searchQuery: {
+        realm: string;
+        first: number;
+        max: number;
+        exact: boolean;
+        briefRepresentation: boolean;
+        enabled?: boolean;
+        username?: string;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+      } = {
+        realm: this.realmName,
+        first,
+        max,
+        exact: options?.exact ?? false,
+        briefRepresentation: options?.briefRepresentation ?? false,
+        enabled: options?.enabled,
+      };
+
+      searchQuery[attribute] = keyword;
+
+      return this.core.users.find(searchQuery);
+    });
   }
 
   public async searchIdentityProviders(keyword: string) {
@@ -466,17 +585,43 @@ export default class RealmHandle {
     });
   }
 
-  public async searchOrganizations(keyword: string, options?: { page?: number; pageSize?: number }) {
+  public async searchOrganizations(
+    keyword: string,
+    options?: {
+      page?: number;
+      pageSize?: number;
+      first?: number;
+      max?: number;
+      exact?: boolean;
+      briefRepresentation?: boolean;
+    },
+  ) {
     const { first, max } = getPaginationParams(options);
 
     return retryTransientAdminError(() =>
       this.core.organizations.find({
         realm: this.realmName,
         search: keyword,
-        exact: false,
+        exact: options?.exact ?? false,
         first,
         max,
-      }),
+        ...(options?.briefRepresentation !== undefined && { briefRepresentation: options.briefRepresentation }),
+      } as { realm?: string; search?: string; exact?: boolean; first?: number; max?: number }),
+    );
+  }
+
+  public async searchOrganizationsAll(keyword: string, options?: { exact?: boolean; briefRepresentation?: boolean }) {
+    return fetchAll((first, max) =>
+      retryTransientAdminError(() =>
+        this.core.organizations.find({
+          realm: this.realmName,
+          search: keyword,
+          exact: options?.exact ?? false,
+          first,
+          max,
+          ...(options?.briefRepresentation !== undefined && { briefRepresentation: options.briefRepresentation }),
+        } as { realm?: string; search?: string; exact?: boolean; first?: number; max?: number }),
+      ),
     );
   }
 
@@ -493,7 +638,10 @@ export default class RealmHandle {
     });
   }
 
-  public async searchWorkflows(keyword: string, options?: { page?: number; pageSize?: number }) {
+  public async searchWorkflows(
+    keyword: string,
+    options?: { page?: number; pageSize?: number; first?: number; max?: number },
+  ) {
     const workflows = await retryTransientAdminError(
       () => this.core.workflows.find({ realm: this.realmName }) as Promise<WorkflowRepresentation[]>,
     );

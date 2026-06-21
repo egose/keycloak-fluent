@@ -3,7 +3,13 @@ import KeycloakAdminClient, { type WorkflowRepresentation } from './keycloak-adm
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 
-function getPaginationBounds(options?: { page?: number; pageSize?: number }) {
+function getPaginationBounds(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
+  if (options?.first !== undefined || options?.max !== undefined) {
+    const first = options.first ?? 0;
+    const max = options.max ?? 100;
+    return { start: first, end: first + max };
+  }
+
   const page = Math.max(1, options?.page ?? 1);
   const pageSize = Math.max(1, options?.pageSize ?? 100);
 
@@ -171,7 +177,7 @@ export default class WorkflowHandle {
     return this.workflowName;
   }
 
-  public async list(options?: { page?: number; pageSize?: number }) {
+  public async list(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
     const workflows = await WorkflowHandle.list(this.core, this.realmName);
     const { start, end } = getPaginationBounds(options);
 
