@@ -1,3 +1,10 @@
+## [0.9.0](https://github.com/egose/keycloak-fluent/compare/v0.8.2...v0.9.0) (2026-06-21)
+
+### Features
+
+* add fetchAll utility and query type definitions ([8b35adb](https://github.com/egose/keycloak-fluent/commit/8b35adb71444906b6775d0ef45e2710261608182))
+* extend resource handles with pagination and search options ([55a1c69](https://github.com/egose/keycloak-fluent/commit/55a1c69482a2314adddf9c10dad08c60cafa0e0e))
+
 ## [0.8.2](https://github.com/egose/keycloak-fluent/compare/v0.8.1...v0.8.2) (2026-06-19)
 
 ## [0.8.1](https://github.com/egose/keycloak-fluent/compare/v0.8.0...v0.8.1) (2026-06-19)
