@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from '../utils/merge-update-data';
 import KeycloakAdminClient, {
   type ClientScopeRepresentation,
   type ProtocolMapperRepresentation,
@@ -11,7 +11,7 @@ function getClientScopeProtocolMapperUpdateData(
   data: ProtocolMapperInputData,
   mapperName: string,
 ) {
-  return _merge({}, mapper, data, { name: mapperName });
+  return mergeUpdateData(mapper, data, { name: mapperName });
 }
 
 export default class ClientScopeProtocolMapperHandle {

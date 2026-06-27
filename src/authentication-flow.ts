@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, {
   type AuthenticationExecutionInfoRepresentation,
   type AuthenticationFlowRepresentation,
@@ -35,7 +35,7 @@ function getAuthenticationFlowUpdateData(
   data: AuthenticationFlowInputData,
   alias: string,
 ) {
-  return _merge({}, flow, data, { alias });
+  return mergeUpdateData(flow, data, { alias });
 }
 
 export default class AuthenticationFlowHandle {

@@ -1,4 +1,3 @@
-import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient, {
   type AdminEventRepresentation,
   type ClientInitialAccessPresentation,
@@ -35,6 +34,7 @@ import ServiceAccountHandle from './clients/service-account';
 import RealmAdminServiceAccountHandle from './clients/realm-admin-service-account';
 import { retryTransientAdminError } from './utils/retry';
 import { fetchAll } from './utils/fetch-all';
+import { mergeUpdateData } from './utils/merge-update-data';
 
 export const defaultRealmData = Object.freeze({
   enabled: true,
@@ -101,7 +101,7 @@ function getPaginationParams(options?: { page?: number; pageSize?: number; first
 }
 
 function getRealmUpdateData(realm: RealmRepresentation, data: RealmInputData) {
-  return _merge({}, realm, data);
+  return mergeUpdateData(realm, data);
 }
 
 export default class RealmHandle {

@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, {
   type IdentityProviderRepresentation,
   type OrganizationRepresentation,
@@ -32,7 +32,7 @@ function getOrganizationUpdateData(
   data: OrganizationInputData,
   organizationAlias: string,
 ) {
-  return _merge({}, organization, data, { alias: organizationAlias });
+  return mergeUpdateData(organization, data, { alias: organizationAlias });
 }
 
 export const defaultOrganizationData = Object.freeze({

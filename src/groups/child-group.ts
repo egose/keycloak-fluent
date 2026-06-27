@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from '../utils/merge-update-data';
 import KeycloakAdminClient, { type GroupRepresentation } from '../keycloak-admin-client';
 import type GroupHandle from './group';
 import NestedChildGroupHandle from './nested-child-group';
@@ -8,7 +8,7 @@ import { getChildGroupByName, getChildGroupByParentId, getGroupById } from './gr
 export type ChildGroupInputData = Omit<GroupRepresentation, 'name' | 'id'>;
 
 function getChildGroupUpdateData(group: GroupRepresentation, data: ChildGroupInputData, groupName: string) {
-  return _merge({}, group, data, { name: groupName });
+  return mergeUpdateData(group, data, { name: groupName });
 }
 
 export default class ChildGroupHandle extends AbstractGroupHandle {

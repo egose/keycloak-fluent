@@ -2,6 +2,7 @@ import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient, { type IdentityProviderRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
 import IdentityProviderMapperHandle from './identity-provider-mapper';
+import { mergeUpdateData } from './utils/merge-update-data';
 
 export type IdentityProviderProviderId =
   | 'saml'
@@ -70,7 +71,7 @@ const getIdentityProviderCreateData = (data: IdentityProviderInputData) =>
 const getIdentityProviderUpdateData = (
   identityProvider: IdentityProviderRepresentation,
   data: IdentityProviderInputData,
-) => normalizeIdentityProviderData(_merge({}, identityProvider, data));
+) => normalizeIdentityProviderData(mergeUpdateData(identityProvider, data));
 
 export default class IdentityProviderHandle {
   public core: KeycloakAdminClient;
