@@ -1,3 +1,10 @@
+## [0.10.0](https://github.com/egose/keycloak-fluent/compare/v0.9.1...v0.10.0) (2026-06-27)
+
+### Features
+
+* add realm user profile helpers and ensure support ([8eb0825](https://github.com/egose/keycloak-fluent/commit/8eb08252c6a93a57e5851dfeee1a23799f216bfc))
+* replace array merging in update data with copy-on-write helper ([4153f24](https://github.com/egose/keycloak-fluent/commit/4153f24594624ec80e2770f1bfef71a148a962c5))
+
 ## [0.9.1](https://github.com/egose/keycloak-fluent/compare/v0.9.0...v0.9.1) (2026-06-22)
 
 ## [0.9.0](https://github.com/egose/keycloak-fluent/compare/v0.8.2...v0.9.0) (2026-06-21)
