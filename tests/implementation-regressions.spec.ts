@@ -303,6 +303,124 @@ describe('Implementation Consistency: Regressions', () => {
     );
   });
 
+  test('realm ensure replaces explicit array fields instead of merging them by index', async () => {
+    const core = {
+      realms: {
+        findOne: vi.fn().mockResolvedValue({
+          realm: 'demo',
+          enabled: true,
+          defaultDefaultClientScopes: ['profile', 'email'],
+          smtpServer: {
+            host: 'smtp.example.test',
+          },
+        }),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+
+    await realmHandle.ensure({ defaultDefaultClientScopes: ['openid'] });
+
+    expect(core.realms.update).toHaveBeenCalledWith(
+      { realm: 'demo' },
+      expect.objectContaining({
+        realm: 'demo',
+        enabled: true,
+        defaultDefaultClientScopes: ['openid'],
+        smtpServer: {
+          host: 'smtp.example.test',
+        },
+      }),
+    );
+  });
+
+  test('realm ensure updates the user profile virtual field without sending it to the realm endpoint', async () => {
+    const core = {
+      realms: {
+        findOne: vi.fn().mockResolvedValue({
+          realm: 'demo',
+          enabled: true,
+          displayName: 'Existing realm',
+        }),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      users: {
+        getProfile: vi.fn().mockResolvedValue({
+          attributes: [{ name: 'username' }],
+          unmanagedAttributePolicy: 'DISABLED',
+        }),
+        updateProfile: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+
+    await realmHandle.ensure({
+      displayNameHtml: '<b>Updated realm</b>',
+      userProfile: {
+        groups: [{ name: 'personal-info' }],
+        unmanagedAttributePolicy: 'ADMIN_EDIT',
+      },
+    });
+
+    expect(core.realms.update).toHaveBeenCalledWith(
+      { realm: 'demo' },
+      expect.objectContaining({
+        realm: 'demo',
+        enabled: true,
+        displayName: 'Existing realm',
+        displayNameHtml: '<b>Updated realm</b>',
+      }),
+    );
+    expect(core.realms.update.mock.calls[0][1]).not.toHaveProperty('userProfile');
+    expect(core.users.getProfile).toHaveBeenCalledWith({ realm: 'demo' });
+    expect(core.users.updateProfile).toHaveBeenCalledWith({
+      realm: 'demo',
+      attributes: [{ name: 'username' }],
+      groups: [{ name: 'personal-info' }],
+      unmanagedAttributePolicy: 'ADMIN_EDIT',
+    });
+  });
+
+  test('realm ensure applies the user profile virtual field after creating the realm', async () => {
+    const core = {
+      realms: {
+        findOne: vi
+          .fn()
+          .mockResolvedValueOnce(undefined)
+          .mockResolvedValueOnce({ realm: 'demo', enabled: true, displayName: 'Created realm' }),
+        create: vi.fn().mockResolvedValue(undefined),
+      },
+      users: {
+        getProfile: vi.fn().mockResolvedValue({ groups: [{ name: 'existing-group' }] }),
+        updateProfile: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+
+    await realmHandle.ensure({
+      displayName: 'Created realm',
+      userProfile: {
+        attributes: [{ name: 'department' }],
+      },
+    });
+
+    expect(core.realms.create).toHaveBeenCalledWith({
+      realm: 'demo',
+      enabled: true,
+      displayName: 'Created realm',
+    });
+    expect(core.realms.create.mock.calls[0][0]).not.toHaveProperty('userProfile');
+    expect(core.users.getProfile).toHaveBeenCalledWith({ realm: 'demo' });
+    expect(core.users.updateProfile).toHaveBeenCalledWith({
+      realm: 'demo',
+      groups: [{ name: 'existing-group' }],
+      attributes: [{ name: 'department' }],
+    });
+  });
+
   test('organization ensure preserves existing settings on update', async () => {
     const core = {
       organizations: {
@@ -400,6 +518,32 @@ describe('Implementation Consistency: Regressions', () => {
     );
   });
 
+  test('role update replaces nested array attributes instead of merging them by index', async () => {
+    const core = {
+      roles: {
+        findOneByName: vi.fn().mockResolvedValue({
+          id: 'role-1',
+          name: 'admin',
+          attributes: { source: ['seeded', 'legacy'] },
+        }),
+        updateById: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const roleHandle = new RealmHandle(core, 'demo').role('admin');
+
+    await roleHandle.update({ attributes: { source: ['manual'] } });
+
+    expect(core.roles.updateById).toHaveBeenCalledWith(
+      { realm: 'demo', id: 'role-1' },
+      expect.objectContaining({
+        id: 'role-1',
+        name: 'admin',
+        attributes: { source: ['manual'] },
+      }),
+    );
+  });
+
   test('user update preserves existing attributes and access while handling password separately', async () => {
     const core = {
       users: {
@@ -441,6 +585,36 @@ describe('Implementation Consistency: Regressions', () => {
         value: 'new-secret',
       },
     });
+  });
+
+  test('user update replaces required actions arrays instead of merging them by index', async () => {
+    const core = {
+      users: {
+        find: vi.fn().mockResolvedValue([
+          {
+            id: 'user-1',
+            username: 'alice',
+            requiredActions: [RequiredActionAlias.VERIFY_EMAIL, RequiredActionAlias.UPDATE_PASSWORD],
+            access: { manage: true },
+          },
+        ]),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const userHandle = new RealmHandle(core, 'demo').user('alice');
+
+    await userHandle.update({ requiredActions: [RequiredActionAlias.UPDATE_PROFILE] });
+
+    expect(core.users.update).toHaveBeenCalledWith(
+      { realm: 'demo', id: 'user-1' },
+      expect.objectContaining({
+        id: 'user-1',
+        username: 'alice',
+        requiredActions: [RequiredActionAlias.UPDATE_PROFILE],
+        access: { manage: true },
+      }),
+    );
   });
 
   test('authentication flow ensure preserves existing flags on update', async () => {

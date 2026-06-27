@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, { type ClientScopeRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
 import ClientScopeProtocolMapperHandle from './protocol-mappers/client-scope-protocol-mapper';
@@ -33,7 +33,7 @@ function getClientScopeUpdateData(
   data: ClientScopeInputData,
   scopeName: string,
 ) {
-  return _merge({}, clientScope, data, { name: scopeName });
+  return mergeUpdateData(clientScope, data, { name: scopeName });
 }
 
 export default class ClientScopeHandle {

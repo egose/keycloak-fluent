@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, {
   type IdentityProviderMapperRepresentation,
   type IdentityProviderRepresentation,
@@ -16,7 +16,7 @@ function getIdentityProviderMapperUpdateData(
   mapperName: string,
   identityProviderAlias: string,
 ) {
-  return _merge({}, mapper, data, { name: mapperName, identityProviderAlias });
+  return mergeUpdateData(mapper, data, { name: mapperName, identityProviderAlias });
 }
 
 export default class IdentityProviderMapperHandle {

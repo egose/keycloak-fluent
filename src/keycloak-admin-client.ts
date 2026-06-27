@@ -59,6 +59,10 @@ export type { ServerInfoRepresentation } from '@keycloak/keycloak-admin-client/l
 export type { default as ScopeRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/scopeRepresentation';
 export type { default as SynchronizationResultRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/synchronizationResultRepresentation';
 export type { default as UserRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
+export type {
+  UserProfileConfig,
+  UserProfileMetadata,
+} from '@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata';
 export type { default as UserSessionRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/userSessionRepresentation';
 export type { default as WhoAmIRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/whoAmIRepresentation';
 export type { default as WorkflowRepresentation } from '@keycloak/keycloak-admin-client/lib/defs/workflowRepresentation';

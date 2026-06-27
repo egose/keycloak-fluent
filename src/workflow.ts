@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, { type WorkflowRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
@@ -22,7 +22,7 @@ function getPaginationBounds(options?: { page?: number; pageSize?: number; first
 export type WorkflowInputData = Omit<WorkflowRepresentation, 'id' | 'name'>;
 
 function getWorkflowUpdateData(workflow: WorkflowRepresentation, data: WorkflowInputData, workflowName: string) {
-  return _merge({}, workflow, data, { name: workflowName });
+  return mergeUpdateData(workflow, data, { name: workflowName });
 }
 
 export default class WorkflowHandle {

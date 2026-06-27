@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, {
   type ClientRepresentation,
   type FederatedIdentityRepresentation,
@@ -45,7 +45,7 @@ export type UserRequiredAction = RequiredActionAlias | string;
 export type FederatedIdentityInputData = Omit<FederatedIdentityRepresentation, 'identityProvider'>;
 
 function getUserUpdateData(user: UserRepresentation, data: Omit<UserInputData, 'password'>, username: string) {
-  return _merge({}, user, data, { username });
+  return mergeUpdateData(user, data, { username });
 }
 
 export default class UserHandle {

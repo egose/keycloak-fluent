@@ -1,10 +1,10 @@
-import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient, {
   type ClientRepresentation,
   type ProtocolMapperRepresentation,
 } from '../keycloak-admin-client';
 import type ClientHandle from '../clients/client';
 import { getClientByClientId } from '../clients/client-lookup';
+import { mergeUpdateData } from '../utils/merge-update-data';
 
 export type ProtocolMapperProtocol = 'openid-connect' | 'saml';
 
@@ -24,7 +24,7 @@ function getProtocolMapperUpdateData(
   data: ProtocolMapperInputData,
   mapperName: string,
 ) {
-  return _merge({}, mapper, data, { name: mapperName });
+  return mergeUpdateData(mapper, data, { name: mapperName });
 }
 
 export default class ProtocolMapperHandle {

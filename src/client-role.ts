@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, { type ClientRepresentation, type RoleRepresentation } from './keycloak-admin-client';
 import type ClientHandle from './clients/client';
 import { getClientByClientId } from './clients/client-lookup';
@@ -9,7 +9,7 @@ import { fetchAll } from './utils/fetch-all';
 export type ClientRoleInputData = Omit<RoleRepresentation, 'name' | 'id'>;
 
 function getClientRoleUpdateData(role: RoleRepresentation, data: ClientRoleInputData, roleName: string) {
-  return _merge({}, role, data, { name: roleName });
+  return mergeUpdateData(role, data, { name: roleName });
 }
 
 export default class ClientRoleHandle {

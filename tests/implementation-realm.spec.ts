@@ -144,6 +144,64 @@ describe('Implementation Consistency: Realm', () => {
     });
   });
 
+  test('realm user profile read helpers forward to the users profile endpoints', async () => {
+    const profile = {
+      attributes: [{ name: 'username' }],
+      groups: [{ name: 'personal-info' }],
+    };
+    const metadata = {
+      attributes: [{ name: 'username', required: true }],
+      groups: [{ name: 'personal-info' }],
+    };
+    const core = {
+      users: {
+        getProfile: vi.fn().mockResolvedValue(profile),
+        getProfileMetadata: vi.fn().mockResolvedValue(metadata),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+
+    await expect(realmHandle.getUserProfile()).resolves.toEqual(profile);
+    await expect(realmHandle.getUserProfileMetadata()).resolves.toEqual(metadata);
+    expect(core.users.getProfile).toHaveBeenCalledWith({ realm: 'demo' });
+    expect(core.users.getProfileMetadata).toHaveBeenCalledWith({ realm: 'demo' });
+  });
+
+  test('realm user profile updates merge the existing profile before writing', async () => {
+    const profile = {
+      attributes: [{ name: 'username' }],
+      unmanagedAttributePolicy: 'DISABLED',
+    };
+    const updatedProfile = {
+      attributes: [{ name: 'department' }],
+      groups: [{ name: 'personal-info' }],
+      unmanagedAttributePolicy: 'ADMIN_EDIT',
+    };
+    const core = {
+      users: {
+        getProfile: vi.fn().mockResolvedValue(profile),
+        updateProfile: vi.fn().mockResolvedValue(updatedProfile),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+
+    await expect(
+      realmHandle.updateUserProfile({
+        groups: [{ name: 'personal-info' }],
+        unmanagedAttributePolicy: 'ADMIN_EDIT',
+      }),
+    ).resolves.toEqual(updatedProfile);
+    expect(core.users.getProfile).toHaveBeenCalledWith({ realm: 'demo' });
+    expect(core.users.updateProfile).toHaveBeenCalledWith({
+      realm: 'demo',
+      attributes: [{ name: 'username' }],
+      groups: [{ name: 'personal-info' }],
+      unmanagedAttributePolicy: 'ADMIN_EDIT',
+    });
+  });
+
   test('realm default group operations resolve the group lazily', async () => {
     const core = {
       groups: {

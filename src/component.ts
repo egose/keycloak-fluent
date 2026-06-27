@@ -1,4 +1,4 @@
-import _merge from 'lodash-es/merge.js';
+import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, {
   type ComponentRepresentation,
   type ComponentTypeRepresentation,
@@ -10,7 +10,7 @@ export type ComponentLookupData = Pick<ComponentRepresentation, 'parentId' | 'pr
 export type ComponentInputData = Omit<ComponentRepresentation, 'id' | 'name'>;
 
 function getComponentUpdateData(component: ComponentRepresentation, data: ComponentInputData, componentName: string) {
-  return _merge({}, component, data, { name: componentName });
+  return mergeUpdateData(component, data, { name: componentName });
 }
 
 function getComponentCreateData(componentLookup: ComponentLookupData, data: ComponentInputData, componentName: string) {

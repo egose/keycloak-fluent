@@ -1,4 +1,3 @@
-import _merge from 'lodash-es/merge.js';
 import KeycloakAdminClient, {
   type CertificateRepresentation,
   type ClientRepresentation,
@@ -30,6 +29,7 @@ import HardcodedClaimProtocolMapperHandle from '../protocol-mappers/hardcoded-cl
 import AudienceProtocolMapperHandle from '../protocol-mappers/audience-protocol-mapper';
 import { retryTransientAdminError } from '../utils/retry';
 import { fetchAll } from '../utils/fetch-all';
+import { mergeUpdateData } from '../utils/merge-update-data';
 
 function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
   if (options?.first !== undefined || options?.max !== undefined) {
@@ -49,7 +49,7 @@ function getPaginationParams(options?: { page?: number; pageSize?: number; first
 }
 
 function getClientUpdateData(client: ClientRepresentation, data: ClientInputData, clientId: string) {
-  return _merge({}, client, data, { clientId });
+  return mergeUpdateData(client, data, { clientId });
 }
 
 export type ClientInputData = Omit<ClientRepresentation, 'realm' | 'clientId' | 'id'>;
