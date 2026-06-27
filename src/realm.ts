@@ -12,6 +12,8 @@ import KeycloakAdminClient, {
   type RealmRepresentation,
   type PartialImportRealmRepresentation,
   type PartialImportResponse,
+  type UserProfileConfig,
+  type UserProfileMetadata,
 } from './keycloak-admin-client';
 import ClientHandle from './clients/client';
 import ClientScopeHandle from './client-scope';
@@ -39,6 +41,9 @@ export const defaultRealmData = Object.freeze({
 });
 
 export type RealmInputData = Omit<RealmRepresentation, 'realm'>;
+export type RealmEnsureInputData = RealmInputData & {
+  userProfile?: UserProfileConfig;
+};
 export type RealmEventsConfigInputData = RealmEventsConfigRepresentation;
 export type RealmExportOptions = {
   exportClients?: boolean;
@@ -120,6 +125,26 @@ export default class RealmHandle {
     return this.realm;
   }
 
+  public async getUserProfile(): Promise<UserProfileConfig> {
+    return retryTransientAdminError(() => this.core.users.getProfile({ realm: this.realmName }));
+  }
+
+  public async getUserProfileMetadata(): Promise<UserProfileMetadata> {
+    return retryTransientAdminError(() => this.core.users.getProfileMetadata({ realm: this.realmName }));
+  }
+
+  public async updateUserProfile(data: UserProfileConfig): Promise<UserProfileConfig> {
+    const profile = await this.getUserProfile();
+
+    return retryTransientAdminError(() =>
+      this.core.users.updateProfile({
+        realm: this.realmName,
+        ...profile,
+        ...data,
+      }),
+    );
+  }
+
   public async create(data: RealmInputData) {
     if (await this.get()) {
       throw new Error(`Realm "${this.realmName}" already exists`);
@@ -149,12 +174,18 @@ export default class RealmHandle {
     return this.realmName;
   }
 
-  public async ensure(data: RealmInputData) {
+  public async ensure(data: RealmEnsureInputData) {
+    const { userProfile, ...realmData } = data;
     const realm = await this.get();
+
     if (realm) {
-      await this.core.realms.update({ realm: this.realmName }, getRealmUpdateData(realm, data));
+      await this.core.realms.update({ realm: this.realmName }, getRealmUpdateData(realm, realmData));
     } else {
-      await this.core.realms.create({ ...defaultRealmData, ...data, realm: this.realmName });
+      await this.core.realms.create({ ...defaultRealmData, ...realmData, realm: this.realmName });
+    }
+
+    if (userProfile) {
+      await this.updateUserProfile(userProfile);
     }
 
     await this.get();

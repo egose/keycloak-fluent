@@ -303,6 +303,92 @@ describe('Implementation Consistency: Regressions', () => {
     );
   });
 
+  test('realm ensure updates the user profile virtual field without sending it to the realm endpoint', async () => {
+    const core = {
+      realms: {
+        findOne: vi.fn().mockResolvedValue({
+          realm: 'demo',
+          enabled: true,
+          displayName: 'Existing realm',
+        }),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      users: {
+        getProfile: vi.fn().mockResolvedValue({
+          attributes: [{ name: 'username' }],
+          unmanagedAttributePolicy: 'DISABLED',
+        }),
+        updateProfile: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+
+    await realmHandle.ensure({
+      displayNameHtml: '<b>Updated realm</b>',
+      userProfile: {
+        groups: [{ name: 'personal-info' }],
+        unmanagedAttributePolicy: 'ADMIN_EDIT',
+      },
+    });
+
+    expect(core.realms.update).toHaveBeenCalledWith(
+      { realm: 'demo' },
+      expect.objectContaining({
+        realm: 'demo',
+        enabled: true,
+        displayName: 'Existing realm',
+        displayNameHtml: '<b>Updated realm</b>',
+      }),
+    );
+    expect(core.realms.update.mock.calls[0][1]).not.toHaveProperty('userProfile');
+    expect(core.users.getProfile).toHaveBeenCalledWith({ realm: 'demo' });
+    expect(core.users.updateProfile).toHaveBeenCalledWith({
+      realm: 'demo',
+      attributes: [{ name: 'username' }],
+      groups: [{ name: 'personal-info' }],
+      unmanagedAttributePolicy: 'ADMIN_EDIT',
+    });
+  });
+
+  test('realm ensure applies the user profile virtual field after creating the realm', async () => {
+    const core = {
+      realms: {
+        findOne: vi
+          .fn()
+          .mockResolvedValueOnce(undefined)
+          .mockResolvedValueOnce({ realm: 'demo', enabled: true, displayName: 'Created realm' }),
+        create: vi.fn().mockResolvedValue(undefined),
+      },
+      users: {
+        getProfile: vi.fn().mockResolvedValue({ groups: [{ name: 'existing-group' }] }),
+        updateProfile: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+
+    await realmHandle.ensure({
+      displayName: 'Created realm',
+      userProfile: {
+        attributes: [{ name: 'department' }],
+      },
+    });
+
+    expect(core.realms.create).toHaveBeenCalledWith({
+      realm: 'demo',
+      enabled: true,
+      displayName: 'Created realm',
+    });
+    expect(core.realms.create.mock.calls[0][0]).not.toHaveProperty('userProfile');
+    expect(core.users.getProfile).toHaveBeenCalledWith({ realm: 'demo' });
+    expect(core.users.updateProfile).toHaveBeenCalledWith({
+      realm: 'demo',
+      groups: [{ name: 'existing-group' }],
+      attributes: [{ name: 'department' }],
+    });
+  });
+
   test('organization ensure preserves existing settings on update', async () => {
     const core = {
       organizations: {
