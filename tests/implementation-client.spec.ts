@@ -170,6 +170,43 @@ describe('Implementation Consistency: Clients', () => {
     );
   });
 
+  test('client update replaces explicit array fields instead of merging them by index', async () => {
+    const core = {
+      clients: {
+        find: vi.fn().mockResolvedValue([
+          {
+            id: 'client-1',
+            clientId: 'app-client',
+            protocol: 'openid-connect',
+            redirectUris: ['https://existing.example/callback', 'https://existing.example/alt'],
+            attributes: {
+              'post.logout.redirect.uris': 'https://existing.example/logout',
+            },
+          },
+        ]),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const clientHandle = realmHandle.client('app-client');
+
+    await clientHandle.update({ redirectUris: ['https://new.example/callback'] });
+
+    expect(core.clients.update).toHaveBeenCalledWith(
+      { realm: 'demo', id: 'client-1' },
+      expect.objectContaining({
+        id: 'client-1',
+        clientId: 'app-client',
+        protocol: 'openid-connect',
+        redirectUris: ['https://new.example/callback'],
+        attributes: {
+          'post.logout.redirect.uris': 'https://existing.example/logout',
+        },
+      }),
+    );
+  });
+
   test('client scope mapping helpers resolve clients and roles lazily', async () => {
     const core = {
       clients: {
