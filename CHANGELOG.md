@@ -1,3 +1,9 @@
+## [0.10.1](https://github.com/egose/keycloak-fluent/compare/v0.10.0...v0.10.1) (2026-07-06)
+
+### Docs
+
+* update license copyright notice ([c121e61](https://github.com/egose/keycloak-fluent/commit/c121e61a25ca442634c00881ef348eb95688e304))
+
 ## [0.10.0](https://github.com/egose/keycloak-fluent/compare/v0.9.1...v0.10.0) (2026-06-27)
 
 ### Features
