@@ -24,7 +24,7 @@
     "test:integration": "vitest run --no-cache --config vitest.integration.config.ts",
     "test": "vitest run --no-cache",
     "release": "release-it",
-    "changelog": "node changelog.mjs"
+    "changelog": "repo-toolkit-changelog"
   },
   "type": "module",
   "author": "J.Dev",
