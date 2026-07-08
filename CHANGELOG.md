@@ -1,6 +1,8 @@
+## [0.10.2](https://github.com/egose/keycloak-fluent/compare/v0.10.1...v0.10.2) (2026-07-08)
+
 ## [0.10.1](https://github.com/egose/keycloak-fluent/compare/v0.10.0...v0.10.1) (2026-07-06)
 
-### Docs
+### Documentation
 
 * update license copyright notice ([c121e61](https://github.com/egose/keycloak-fluent/commit/c121e61a25ca442634c00881ef348eb95688e304))
 
@@ -34,11 +36,11 @@
 
 * **website:** enhance auth validation and group lookup robustness ([3e9bd64](https://github.com/egose/keycloak-fluent/commit/3e9bd644f726132e629f9984c451a8c487aab0c9))
 
-### Docs
+### Documentation
 
 * **website:** update documentation and landing page ([0c54437](https://github.com/egose/keycloak-fluent/commit/0c54437ab1c7072eca0f81af7bc38165d56e355b))
 
-### Refactors
+### Code Refactoring
 
 * **website:** centralize admin client imports and remove handle state ([58f7f8d](https://github.com/egose/keycloak-fluent/commit/58f7f8dad9625eeeccc03be4189213dba5b372fc))
 
