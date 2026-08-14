@@ -315,13 +315,8 @@ describe('Implementation Consistency: Resource Handles', () => {
           .fn()
           .mockResolvedValueOnce([])
           .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
-          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
-          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
-          .mockResolvedValueOnce([
-            { id: 'wf-1', name: 'approval', enabled: true },
-            { id: 'wf-2', name: 'auto-approval', enabled: false },
-          ])
-          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }]),
+          .mockResolvedValueOnce([{ id: 'wf-2', name: 'auto-approval', enabled: false }]),
+        findOne: vi.fn().mockResolvedValue({ id: 'wf-1', name: 'approval', enabled: true }),
         create: vi.fn().mockResolvedValue({ id: 'wf-1' }),
         update: vi.fn().mockResolvedValue(undefined),
         delById: vi.fn().mockResolvedValue(undefined),
@@ -359,11 +354,12 @@ describe('Implementation Consistency: Resource Handles', () => {
       workflows: {
         find: vi
           .fn()
-          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }])
           .mockResolvedValueOnce([])
-          .mockResolvedValueOnce([{ id: 'wf-2', name: 'review', enabled: false }])
-          .mockResolvedValueOnce([{ id: 'wf-2', name: 'review', enabled: false }])
           .mockResolvedValueOnce([{ id: 'wf-2', name: 'review', enabled: false }]),
+        findOne: vi
+          .fn()
+          .mockResolvedValueOnce({ id: 'wf-1', name: 'approval', enabled: true })
+          .mockResolvedValue(undefined),
         create: vi.fn().mockResolvedValue({ id: 'wf-2' }),
         update: vi.fn().mockResolvedValue(undefined),
         delById: vi.fn().mockResolvedValue(undefined),
@@ -378,6 +374,8 @@ describe('Implementation Consistency: Resource Handles', () => {
     await expect(workflowHandle.ensure({ enabled: false })).resolves.toBe(workflowHandle);
     await expect(workflowHandle.discard()).resolves.toBe('review');
 
+    expect(core.workflows.findOne).toHaveBeenCalledWith({ id: 'wf-1', realm: 'demo', includeId: true });
+    expect(core.workflows.find).toHaveBeenCalledWith({ realm: 'demo', search: 'review', exact: true });
     expect(core.workflows.create).toHaveBeenCalledWith({ realm: 'demo', name: 'review', enabled: false });
     expect(core.workflows.delById).toHaveBeenCalledWith({ realm: 'demo', id: 'wf-2' });
   });
@@ -385,10 +383,7 @@ describe('Implementation Consistency: Resource Handles', () => {
   test('workflow handle exposes update for existing workflows', async () => {
     const core = {
       workflows: {
-        find: vi
-          .fn()
-          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true, description: 'Existing' }])
-          .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true, description: 'Existing' }]),
+        find: vi.fn().mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true, description: 'Existing' }]),
         update: vi.fn().mockResolvedValue(undefined),
       },
     } as any;
@@ -402,6 +397,7 @@ describe('Implementation Consistency: Resource Handles', () => {
       description: 'Existing',
     });
 
+    expect(core.workflows.find).toHaveBeenCalledWith({ realm: 'demo', search: 'approval', exact: true });
     expect(core.workflows.update).toHaveBeenCalledWith(
       { realm: 'demo', id: 'wf-1' },
       expect.objectContaining({

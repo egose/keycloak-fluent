@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v6.0.0
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # pragma: allowlist secret; frozen: v6.0.0
   hooks:
   - id: check-case-conflict
   - id: check-executables-have-shebangs
@@ -12,11 +12,16 @@ repos:
   - id: end-of-file-fixer
   - id: trailing-whitespace
 - repo: https://github.com/Yelp/detect-secrets
-  rev: v1.5.0
+  rev: 68e8b45440415753fff70a312ece8da92ba85b4a  # pragma: allowlist secret; frozen: v1.5.0
   hooks:
   - id: detect-secrets
     args: [--baseline, .secrets.baseline]
-    exclude: ^(pnpm-lock\.yaml|.*/pnpm-lock\.yaml)$
+    exclude: |
+      (?x)^(
+          pnpm-lock\.yaml$ |
+          .*/pnpm-lock\.yaml$ |
+          docs/tasks/.*
+      )
 - repo: local
   hooks:
   - id: prettier

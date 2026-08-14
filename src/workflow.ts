@@ -1,21 +1,22 @@
 import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, { type WorkflowRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
-import { retryTransientAdminError } from './utils/retry';
+import { getErrorStatus, getResponseErrorMessage, retryTransientAdminError } from './utils/retry';
+import { fetchAll, fetchAllStream, type FetchAllOptions } from './utils/fetch-all';
 
 function getPaginationBounds(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
   if (options?.first !== undefined || options?.max !== undefined) {
     const first = options.first ?? 0;
     const max = options.max ?? 100;
-    return { start: first, end: first + max };
+    return { first, max };
   }
 
   const page = Math.max(1, options?.page ?? 1);
   const pageSize = Math.max(1, options?.pageSize ?? 100);
 
   return {
-    start: (page - 1) * pageSize,
-    end: page * pageSize,
+    first: (page - 1) * pageSize,
+    max: pageSize,
   };
 }
 
@@ -25,58 +26,224 @@ function getWorkflowUpdateData(workflow: WorkflowRepresentation, data: WorkflowI
   return mergeUpdateData(workflow, data, { name: workflowName });
 }
 
+/**
+ * Raised by {@link WorkflowHandle.requireWorkflow} / mutating methods when the
+ * named workflow cannot be resolved in the target realm. Carrying `realmName`
+ * and `workflowName` lets callers distinguish this from a transient HTTP error
+ * without string-matching the message.
+ */
+export class WorkflowNotFoundError extends Error {
+  public readonly realmName: string;
+  public readonly workflowName: string;
+
+  constructor(realmName: string, workflowName: string) {
+    super(`Workflow "${workflowName}" not found in realm "${realmName}"`);
+    this.name = 'WorkflowNotFoundError';
+    this.realmName = realmName;
+    this.workflowName = workflowName;
+    Object.setPrototypeOf(this, WorkflowNotFoundError.prototype);
+  }
+}
+
+/**
+ * Raised by name lookup ({@link WorkflowHandle.get} and the static
+ * {@link WorkflowHandle.getByName}) when Keycloak returns more than one
+ * workflow matching the exact name. The previous fluent implementation
+ * silently selected the first match; doing so would let a duplicate-name
+ * collision masquerade as a successful single-workflow provision, so the
+ * boundary now fails loudly. Callers that intentionally want all matches can
+ * use {@link WorkflowHandle.list} / {@link WorkflowHandle.listAll}.
+ */
+export class DuplicateWorkflowNameError extends Error {
+  public readonly realmName: string;
+  public readonly workflowName: string;
+  public readonly matchCount: number;
+
+  constructor(realmName: string, workflowName: string, matchCount: number) {
+    super(
+      `Workflow name "${workflowName}" matched ${matchCount} workflows in realm "${realmName}"; expected exactly one`,
+    );
+    this.name = 'DuplicateWorkflowNameError';
+    this.realmName = realmName;
+    this.workflowName = workflowName;
+    this.matchCount = matchCount;
+    Object.setPrototypeOf(this, DuplicateWorkflowNameError.prototype);
+  }
+}
+
+/**
+ * Pagination/slicing options accepted by {@link WorkflowHandle.list}.
+ *
+ * As with the other handles, callers may use either `page`/`pageSize`
+ * (1-indexed) or raw `first`/`max` offset/limit values. When both are
+ * supplied, `first`/`max` take precedence. `list()` requests exactly one page
+ * from the Keycloak workflows endpoint (admin `/admin/realms/{realm}/workflows`
+ * accepts `first` and `max` query parameters) and returns the page the server
+ * produced without re-slicing it. Use {@link WorkflowHandle.listAll} /
+ * {@link WorkflowHandle.listAllStream} to iterate the full collection.
+ */
+export type WorkflowListOptions = {
+  page?: number;
+  pageSize?: number;
+  first?: number;
+  max?: number;
+};
+
+/**
+ * Full-collection iteration options. Inherits PAGE-01 validation and bounds
+ * (`pageSize`, `first`, `maxPages`, `signal`) from {@link FetchAllOptions}.
+ */
+export type WorkflowListAllOptions = FetchAllOptions;
+
 export default class WorkflowHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public workflowName: string;
-  public workflow?: WorkflowRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _workflowName: string;
+  private _workflow?: WorkflowRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, workflowName: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.workflowName = workflowName;
+    this._workflowName = workflowName;
   }
 
-  static async list(core: KeycloakAdminClient, realm: string): Promise<WorkflowRepresentation[]> {
-    return retryTransientAdminError(() => core.workflows.find({ realm }) as Promise<WorkflowRepresentation[]>);
+  public get workflowName(): string {
+    return this._workflowName;
   }
 
-  static async getById(core: KeycloakAdminClient, realm: string, id: string) {
-    const workflows = await WorkflowHandle.list(core, realm);
-    return workflows.find((workflow) => workflow.id === id) ?? null;
+  public get workflow(): WorkflowRepresentation | null | undefined {
+    return this._workflow;
   }
 
-  static async getByName(core: KeycloakAdminClient, realm: string, workflowName: string) {
-    const workflows = await WorkflowHandle.list(core, realm);
-    return workflows.find((workflow) => workflow.name === workflowName) ?? null;
+  /**
+   * Re-targets this handle to a different workflow name and clears the
+   * cached representation. Returns `this` for chaining.
+   */
+  public rebind(newWorkflowName: string): this {
+    this._workflowName = newWorkflowName;
+    this._workflow = undefined;
+    return this;
+  }
+
+  /**
+   * Lists workflows on the server, supporting server-side pagination.
+   *
+   * Forwards `first`/`max` to `GET /admin/realms/{realm}/workflows` (the
+   * endpoint documents `first` and `max` query parameters) and returns the
+   * page the server produced. Unlike the previous implementation, this DOES
+   * NOT fetch every workflow and slice the array in memory.
+   *
+   * To iterate the full collection without losing rows past the first page,
+   * use {@link WorkflowHandle.listAll} / {@link WorkflowHandle.listAllStream}.
+   */
+  static async list(
+    core: KeycloakAdminClient,
+    realm: string,
+    options?: WorkflowListOptions,
+  ): Promise<WorkflowRepresentation[]> {
+    const { first, max } = getPaginationBounds(options);
+    return retryTransientAdminError(
+      () => core.workflows.find({ realm, first, max }) as Promise<WorkflowRepresentation[]>,
+    );
+  }
+
+  /**
+   * Resolves a workflow by its internal id via `GET /admin/realms/{realm}/workflows/{id}`.
+   * A missing id resolves to `null`. Unlike other Keycloak resources, this
+   * endpoint never returns 404 for an unknown id: on Keycloak 26.6.x it
+   * returns HTTP 400 `Not a valid workflow resource: <id>` (the OpenAPI spec
+   * documents only 200 and 400 for this route, no 404). The upstream `findOne`
+   * route's `catchNotFound: true` only catches 404, so the 400 is intercepted
+   * here and coerced to `null` when the server message identifies it as the
+   * unknown-workflow-resource not-found signal. Any other 400 (e.g. a future
+   * validation error) is rethrown so genuine client errors are not masked as
+   * not-found. This terminates as soon as the unique match is known and never
+   * loads the full list.
+   */
+  static async getById(core: KeycloakAdminClient, realm: string, id: string): Promise<WorkflowRepresentation | null> {
+    try {
+      const workflow = await retryTransientAdminError(
+        () => core.workflows.findOne({ id, realm, includeId: true }) as Promise<WorkflowRepresentation | undefined>,
+      );
+      return workflow ?? null;
+    } catch (error) {
+      if (getErrorStatus(error) === 400) {
+        const message = getResponseErrorMessage(error);
+        if (message !== undefined && /^Not a valid workflow resource:/.test(message)) {
+          return null;
+        }
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Resolves a workflow by exact name match using the server-side `search` +
+   * `exact:true` query parameters documented at
+   * `GET /admin/realms/{realm}/workflows`. Terminates as soon as the unique
+   * match is known; never loads every workflow.
+   *
+   * Duplicate-name behavior is explicit: if Keycloak returns more than one
+   * workflow matching the exact name, a {@link DuplicateWorkflowNameError} is
+   * raised. The previous implementation silently selected the first match,
+   * which let a duplicate collision masquerade as a successful single-workflow
+   * provision; failing loudly is safer for `ensure()`/`create()` callers.
+   */
+  static async getByName(
+    core: KeycloakAdminClient,
+    realm: string,
+    workflowName: string,
+  ): Promise<WorkflowRepresentation | null> {
+    const workflows = (await retryTransientAdminError(
+      () =>
+        core.workflows.find({
+          realm,
+          search: workflowName,
+          exact: true,
+        }) as Promise<WorkflowRepresentation[]>,
+    )) as WorkflowRepresentation[];
+
+    if (!workflows || workflows.length === 0) {
+      return null;
+    }
+
+    if (workflows.length > 1) {
+      throw new DuplicateWorkflowNameError(realm, workflowName, workflows.length);
+    }
+
+    return workflows[0] ?? null;
   }
 
   private async requireWorkflow(): Promise<WorkflowRepresentation & { id: string; name: string }> {
     const workflow = this.workflow ?? (await this.get());
     if (!workflow?.id || !workflow.name) {
-      throw new Error(`Workflow "${this.workflowName}" not found in realm "${this.realmName}"`);
+      throw new WorkflowNotFoundError(this.realmName, this.workflowName);
     }
 
     return workflow as WorkflowRepresentation & { id: string; name: string };
   }
 
-  public async getById(id: string) {
-    this.workflow = await WorkflowHandle.getById(this.core, this.realmName, id);
+  public async getById(id: string): Promise<WorkflowRepresentation | null> {
+    this._workflow = await WorkflowHandle.getById(this.core, this.realmName, id);
 
-    if (this.workflow?.name) {
-      this.workflowName = this.workflow.name;
+    if (this._workflow?.name) {
+      this._workflowName = this._workflow.name;
     }
 
-    return this.workflow;
+    return this.workflow ?? null;
   }
 
   public async get(): Promise<WorkflowRepresentation | null> {
-    this.workflow = await WorkflowHandle.getByName(this.core, this.realmName, this.workflowName);
+    if (this.workflow?.id) {
+      return this.workflow;
+    }
 
-    if (this.workflow?.name) {
-      this.workflowName = this.workflow.name;
+    this._workflow = await WorkflowHandle.getByName(this.core, this.realmName, this.workflowName);
+
+    if (this._workflow?.name) {
+      this._workflowName = this._workflow.name;
     }
 
     return this.workflow ?? null;
@@ -156,7 +323,7 @@ export default class WorkflowHandle {
       }),
     );
 
-    this.workflow = null;
+    this._workflow = null;
     return this.workflowName;
   }
 
@@ -171,16 +338,56 @@ export default class WorkflowHandle {
           id: workflowId,
         }),
       );
-      this.workflow = null;
+      this._workflow = null;
     }
 
     return this.workflowName;
   }
 
-  public async list(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
-    const workflows = await WorkflowHandle.list(this.core, this.realmName);
-    const { start, end } = getPaginationBounds(options);
+  /**
+   * Lists workflows via server-side pagination.
+   *
+   * Forwards `page`/`pageSize` (or `first`/`max`) to the Keycloak workflows
+   * endpoint and returns exactly the page the server produced; this method
+   * does not slice the result further. To iterate every workflow in the
+   * realm, use {@link WorkflowHandle.listAll} (eager array) or
+   * {@link WorkflowHandle.listAllStream} (async iterator).
+   */
+  public async list(options?: WorkflowListOptions): Promise<WorkflowRepresentation[]> {
+    return WorkflowHandle.list(this.core, this.realmName, options);
+  }
 
-    return workflows.slice(start, end);
+  /**
+   * Iterates every workflow in the realm using {@link fetchAll}, advancing by
+   * the page length Keycloak actually returns. Validates `first`/`pageSize`/
+   * `maxPages`, aborts runaway loops with `RangeError`, and supports an
+   * {@link AbortSignal}. Returned array preserves the order returned by the
+   * server.
+   */
+  public async listAll(options?: WorkflowListAllOptions): Promise<WorkflowRepresentation[]> {
+    const opts = options ?? {};
+    return fetchAll<WorkflowRepresentation>(
+      (first, max) =>
+        retryTransientAdminError(
+          () => this.core.workflows.find({ realm: this.realmName, first, max }) as Promise<WorkflowRepresentation[]>,
+        ),
+      opts,
+    );
+  }
+
+  /**
+   * Async iterator yielding one workflow page at a time from the server. Same
+   * bounded-loop guarantees as {@link fetchAllStream}, plus reference-identity
+   * repeated-page protection against endpoints that ignore `first`.
+   */
+  public async *listAllStream(options?: WorkflowListAllOptions): AsyncIterableIterator<WorkflowRepresentation[]> {
+    const opts = options ?? {};
+    yield* fetchAllStream<WorkflowRepresentation>(
+      (first, max) =>
+        retryTransientAdminError(
+          () => this.core.workflows.find({ realm: this.realmName, first, max }) as Promise<WorkflowRepresentation[]>,
+        ),
+      opts,
+    );
   }
 }

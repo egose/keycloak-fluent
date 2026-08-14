@@ -48,6 +48,21 @@ public async create(data: UserInputData)
   - `data`: The data for the new user, including optional password.
 - **Throws**: An error if the user already exists.
 
+##### Password provisioning failure semantics
+
+When `data.password` is provided, the user is created with `enabled: false`
+first, the password is reset against the disabled account, and only then is
+the user enabled (unless `data.enabled` is explicitly `false`, in which case
+the account stays disabled after a successful password setup). This means a
+password-reset failure can never leave an enabled, usable account.
+
+On a password failure during creation, the just-created disabled user is
+deleted best-effort so retrying starts clean. If the deletion also fails, the
+disabled account is left behind (it is unusable) and the original password
+error is rethrown as a `UserPasswordProvisioningError` with the cleanup
+failure annotated on `cause`. The plaintext password is never included in the
+error, its `cause`, or any serialized form.
+
 ---
 
 #### `update(data: UserInputData)`
@@ -61,6 +76,16 @@ public async update(data: UserInputData)
 - **Parameters**:
   - `data`: The updated data for the user, including optional password.
 - **Throws**: An error if the user does not exist.
+
+##### Partial-success semantics
+
+If a `password` is supplied, the profile update is applied first and the
+password reset runs second. A password-reset failure does **not** roll back
+the preceding profile update (it has already been committed in Keycloak).
+Instead a `UserPasswordProvisioningError` is thrown with `profileApplied: true`
+and `initialProvisioning: false`; the caller can retry the password step
+explicitly or otherwise remediate. The plaintext password is never included in
+the error or its `cause`.
 
 ---
 
@@ -86,6 +111,10 @@ public async ensure(data: UserInputData)
 
 - **Parameters**:
   - `data`: The data for the user, including optional password.
+
+On the create branch, `ensure` uses the same disabled-until-password-success
+semantics as `create`. On the update branch, it uses the same partial-success
+semantics as `update`.
 
 ---
 
@@ -253,6 +282,32 @@ export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {
   password?: string;
 };
 ```
+
+#### `UserPasswordProvisioningError`
+
+Error thrown when password setup fails after user profile data has been
+applied. The plaintext password is never present in any field of this error
+or its `cause`.
+
+```typescript
+export class UserPasswordProvisioningError extends Error {
+  readonly username: string;
+  readonly realmName: string;
+  /** true when the preceding profile update/disabled user persists in Keycloak. */
+  readonly profileApplied: boolean;
+  /** true for the create/ensure-create path; false for updates of an existing user. */
+  readonly initialProvisioning: boolean;
+}
+```
+
+- On the **create / ensure-create** path, a password failure triggers a
+  best-effort deletion of the just-created disabled user. When that deletion
+  succeeds, `profileApplied` is `false` (no account left behind). When the
+  deletion also fails, `profileApplied` stays `false` and the disabled,
+  unusable account is left in Keycloak; the cleanup failure is annotated on
+  the password error's `cause`.
+- On the **update** path, the profile update has already committed and is not
+  rolled back. `profileApplied` is `true` and `initialProvisioning` is `false`.
 
 ---
 

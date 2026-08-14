@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
+import { UnmanagedAttributePolicy } from '@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata';
 import RealmHandle from '../src/realm';
 
 describe('Implementation Consistency: Realm', () => {
@@ -10,10 +11,7 @@ describe('Implementation Consistency: Realm', () => {
       users: { find: vi.fn().mockResolvedValue([]) },
       organizations: { find: vi.fn().mockResolvedValue([]) },
       workflows: {
-        find: vi.fn().mockResolvedValue([
-          { id: 'wf-1', name: 'approval' },
-          { id: 'wf-2', name: 'auto-approval' },
-        ]),
+        find: vi.fn().mockResolvedValue([{ id: 'wf-1', name: 'approval' }]),
       },
     } as any;
 
@@ -70,7 +68,13 @@ describe('Implementation Consistency: Realm', () => {
       max: 15,
     });
 
-    expect(core.workflows.find).toHaveBeenCalledWith({ realm: 'demo' });
+    expect(core.workflows.find).toHaveBeenCalledWith({
+      realm: 'demo',
+      search: 'approval',
+      exact: false,
+      first: 0,
+      max: 1,
+    });
   });
 
   test('realm event queries use offset-based pagination', async () => {
@@ -190,7 +194,7 @@ describe('Implementation Consistency: Realm', () => {
     await expect(
       realmHandle.updateUserProfile({
         groups: [{ name: 'personal-info' }],
-        unmanagedAttributePolicy: 'ADMIN_EDIT',
+        unmanagedAttributePolicy: UnmanagedAttributePolicy.AdminEdit,
       }),
     ).resolves.toEqual(updatedProfile);
     expect(core.users.getProfile).toHaveBeenCalledWith({ realm: 'demo' });

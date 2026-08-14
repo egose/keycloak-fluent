@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 import { RequiredActionAlias } from '@keycloak/keycloak-admin-client/lib/defs/requiredActionProviderRepresentation';
+import { UnmanagedAttributePolicy } from '@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata';
 import RealmHandle from '../src/realm';
 import GroupHandle from '../src/groups/group';
 
@@ -160,7 +161,7 @@ describe('Implementation Consistency: Regressions', () => {
         listOfflineSessions: vi.fn().mockResolvedValue([]),
       },
       clients: {
-        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'account-console' }]),
+        find: vi.fn().mockResolvedValue([{ id: 'client-uuid', clientId: 'account-console' }]),
       },
     } as any;
 
@@ -172,8 +173,28 @@ describe('Implementation Consistency: Regressions', () => {
     expect(core.users.listOfflineSessions).toHaveBeenCalledWith({
       realm: 'demo',
       id: 'user-1',
-      clientId: 'account-console',
+      clientId: 'client-uuid',
     });
+  });
+
+  test('user offline session listing fails when client has no internal id', async () => {
+    const core = {
+      users: {
+        find: vi.fn().mockResolvedValue([{ id: 'user-1', username: 'alice' }]),
+        listOfflineSessions: vi.fn().mockResolvedValue([]),
+      },
+      clients: {
+        find: vi.fn().mockResolvedValue([{ clientId: 'account-console' }]),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const userHandle = realmHandle.user('alice');
+
+    await expect(userHandle.listOfflineSessions(realmHandle.client('account-console'))).rejects.toThrow(
+      /Client "account-console" not found in realm "demo"/,
+    );
+    expect(core.users.listOfflineSessions).not.toHaveBeenCalled();
   });
 
   test('user session logout resolves the user lazily', async () => {
@@ -360,7 +381,7 @@ describe('Implementation Consistency: Regressions', () => {
       displayNameHtml: '<b>Updated realm</b>',
       userProfile: {
         groups: [{ name: 'personal-info' }],
-        unmanagedAttributePolicy: 'ADMIN_EDIT',
+        unmanagedAttributePolicy: UnmanagedAttributePolicy.AdminEdit,
       },
     });
 

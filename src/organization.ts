@@ -42,17 +42,35 @@ export const defaultOrganizationData = Object.freeze({
 export type OrganizationInputData = Omit<OrganizationRepresentation, 'id' | 'alias'>;
 
 export default class OrganizationHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public organizationAlias: string;
-  public organization?: OrganizationRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _organizationAlias: string;
+  private _organization?: OrganizationRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, organizationAlias: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.organizationAlias = organizationAlias;
+    this._organizationAlias = organizationAlias;
+  }
+
+  public get organizationAlias(): string {
+    return this._organizationAlias;
+  }
+
+  public get organization(): OrganizationRepresentation | null | undefined {
+    return this._organization;
+  }
+
+  /**
+   * Re-targets this handle to a different organization alias and clears the
+   * cached representation. Returns `this` for chaining.
+   */
+  public rebind(newOrganizationAlias: string): this {
+    this._organizationAlias = newOrganizationAlias;
+    this._organization = undefined;
+    return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
@@ -105,23 +123,23 @@ export default class OrganizationHandle {
   }
 
   public async getById(id: string) {
-    this.organization = await OrganizationHandle.getById(this.core, this.realmName, id);
+    this._organization = await OrganizationHandle.getById(this.core, this.realmName, id);
 
-    if (this.organization?.alias) {
-      this.organizationAlias = this.organization.alias;
+    if (this._organization?.alias) {
+      this._organizationAlias = this._organization.alias;
     }
 
-    return this.organization;
+    return this.organization ?? null;
   }
 
   public async get(): Promise<OrganizationRepresentation | null> {
-    this.organization = await OrganizationHandle.getByAlias(this.core, this.realmName, this.organizationAlias);
+    this._organization = await OrganizationHandle.getByAlias(this.core, this.realmName, this.organizationAlias);
 
-    if (this.organization?.alias) {
-      this.organizationAlias = this.organization.alias;
+    if (this._organization?.alias) {
+      this._organizationAlias = this._organization.alias;
     }
 
-    return this.organization;
+    return this.organization ?? null;
   }
 
   public async create(data: OrganizationInputData) {
@@ -169,7 +187,7 @@ export default class OrganizationHandle {
       }),
     );
 
-    this.organization = null;
+    this._organization = null;
     return this.organizationAlias;
   }
 
@@ -213,7 +231,7 @@ export default class OrganizationHandle {
           id: organizationId,
         }),
       );
-      this.organization = null;
+      this._organization = null;
     }
 
     return this.organizationAlias;

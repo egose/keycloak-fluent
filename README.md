@@ -338,6 +338,19 @@ npm run build
 npm test
 ```
 
+### Build, Type-check, And Release Verification
+
+- `npm run build`
+  Produces the publishable `dist/` from current source via `tsup` (ESM + CJS + `.d.ts`/`.d.cts`). The package `exports`/`main`/`module`/`types` entry points all point at `dist/index.{cjs,js,d.ts}`, so the bundle is the source of truth for the installed tarball.
+- `npm run typecheck`
+  Runs `tsc --noEmit` for project-wide type validation. This is the non-emitting type gate used by CI and pre-publish checks; it does not write `build/`.
+- `npm run pack:inspect`
+  Rebuilds `dist/`, runs `npm pack --dry-run --json`, and asserts the tarball contains only the intended files (`dist/index.*`, `README.md`, `LICENSE`, `CHANGELOG.md`, `package.json`) and no source maps. Useful as a guard against stale or accidental package-file drift.
+- `npm run pack:consumers`
+  Builds and packs the tarball, then installs it into isolated ESM, CJS, and TypeScript consumer projects under `.packed-consumers/` and exercises `simpleAuth()` validation plus representative handle creation in each. The TypeScript consumer additionally runs `tsc --noEmit` against the packed `.d.ts` with `skipLibCheck: false` to prove the published declarations compile in an external strict project.
+- `npm run publish:check`
+  Runs the full pre-publish chain: `lint:check` -> `typecheck` -> `test:unit` -> `build` -> `pack:inspect` -> `pack:consumers`. Publish only after this passes.
+
 ### Test Layers
 
 The repo intentionally has two different kinds of tests:
@@ -352,6 +365,39 @@ The repo intentionally has two different kinds of tests:
   Runs the full suite.
 
 The mocked tests are not meant to replace the live integration suite. They exist because some wrapper guarantees are easier and safer to assert at the admin-client call boundary than through a live server alone.
+
+### Integration Sandbox
+
+The live integration tests (`npm run test:integration`) target a Keycloak instance provisioned by the `sandbox/` Docker Compose stack:
+
+```bash
+make DAEMON=true up   # start Keycloak + Postgres in the background
+make logs             # tail sandbox service logs
+make down             # stop and remove sandbox containers
+make destroy          # down + remove volumes and images
+```
+
+The stack pins every image by immutable digest (`postgres:18.4-alpine3.22@sha256:...`, `quay.io/keycloak/keycloak:26.6.1@sha256:...`, and the `golang` mkcert build stage) and builds the local mkcert cert from the pinned `mkcert` release tag (`v1.4.4`, commit-pinned inside the Dockerfile), so a forced re-pull cannot silently advance the runtime to a different image than the one the tests were authored against.
+
+The integration tests read their target endpoint and credentials from environment variables so a non-default Keycloak instance can be targeted without editing the test sources. Defaults match the local sandbox:
+
+| Environment variable    | Default                 | Purpose                                    |
+| ----------------------- | ----------------------- | ------------------------------------------ |
+| `KEYCLOAK_BASE_URL`     | `http://localhost:8080` | Keycloak admin API base URL.               |
+| `KEYCLOAK_MASTER_REALM` | `master`                | Master realm name to authenticate against. |
+| `KEYCLOAK_USERNAME`     | `admin`                 | Admin username for `simpleAuth()`.         |
+| `KEYCLOAK_PASSWORD`     | `password`              | Admin password for `simpleAuth()`.         |
+
+For example, to run the integration suite against Keycloak on `https://kc.example:8443` with custom credentials:
+
+```bash
+KEYCLOAK_BASE_URL=https://kc.example:8443 \
+KEYCLOAK_USERNAME=ci-admin \
+KEYCLOAK_PASSWORD="$CI_ADMIN_PASSWORD" \
+  npm run test:integration
+```
+
+In CI, the `.github/actions/setup-sandbox` composite action installs Docker Compose v2 (its downloaded binary is checksum-verified against the pinned SHA before use), brings the sandbox up, waits for the master realm `openid-configuration` to be reachable, runs the provided script, and tears the services down via an `EXIT` trap that fires on success, failure, and job cancellation — so cleanup and diagnostic logs run even if the script is interrupted.
 
 ## License
 

@@ -50,7 +50,7 @@ export interface ClientQuery extends PaginationQuery {
   viewableOnly?: boolean;
 }
 
-export interface ClientScopeQuery {}
+export type ClientScopeQuery = Record<string, never>;
 
 export interface RoleQuery extends PaginationQuery, SearchQuery, BriefRepresentationQuery {}
 
@@ -136,25 +136,25 @@ export interface ClientSessionQuery extends PaginationQuery {
   client?: string;
 }
 
-export interface ClientInitialAccessQuery extends PaginationQuery {}
+export type ClientInitialAccessQuery = PaginationQuery;
 
-export interface ClientPolicyQuery extends PaginationQuery {}
+export type ClientPolicyQuery = PaginationQuery;
 
-export interface AttackDetectionQuery {}
+export type AttackDetectionQuery = Record<string, never>;
 
-export interface CacheQuery {}
+export type CacheQuery = Record<string, never>;
 
-export interface ServerInfoQuery {}
+export type ServerInfoQuery = Record<string, never>;
 
-export interface WhoAmIQuery {}
+export type WhoAmIQuery = Record<string, never>;
 
-export interface ClientRegistrationPolicyQuery {}
+export type ClientRegistrationPolicyQuery = Record<string, never>;
 
-export interface ClientAttributeCertificateQuery {}
+export type ClientAttributeCertificateQuery = Record<string, never>;
 
-export interface RequiredActionQuery {}
+export type RequiredActionQuery = Record<string, never>;
 
-export interface ClientProfilesQuery {}
+export type ClientProfilesQuery = Record<string, never>;
 
 export interface EventQuery extends PaginationQuery {
   type?: string[];
@@ -163,39 +163,39 @@ export interface EventQuery extends PaginationQuery {
   excludedEvents?: string[];
 }
 
-export interface EventConfigQuery {}
+export type EventConfigQuery = Record<string, never>;
 
-export interface KeyQuery {}
+export type KeyQuery = Record<string, never>;
 
-export interface KeysMetadataQuery {}
+export type KeysMetadataQuery = Record<string, never>;
 
-export interface ClientSessionStatQuery {}
+export type ClientSessionStatQuery = Record<string, never>;
 
 export interface UserConsentQuery extends PaginationQuery {
   client?: string;
 }
 
-export interface UserProfileQuery {}
+export type UserProfileQuery = Record<string, never>;
 
-export interface UserProfileMetadataQuery {}
+export type UserProfileMetadataQuery = Record<string, never>;
 
-export interface ClientScopeProtocolMapperQuery {}
+export type ClientScopeProtocolMapperQuery = Record<string, never>;
 
-export interface ClientProtocolMapperQuery {}
+export type ClientProtocolMapperQuery = Record<string, never>;
 
-export interface IdentityProviderMapperQuery {}
+export type IdentityProviderMapperQuery = Record<string, never>;
 
-export interface AuthenticationFlowQuery extends PaginationQuery {}
+export type AuthenticationFlowQuery = PaginationQuery;
 
 export interface AuthenticationExecutionInfoQuery {
   flowAlias: string;
 }
 
-export interface AuthenticatorConfigQuery {}
+export type AuthenticatorConfigQuery = Record<string, never>;
 
-export interface RequiredActionConfigQuery {}
+export type RequiredActionConfigQuery = Record<string, never>;
 
-export interface ProtocolMapperQuery {}
+export type ProtocolMapperQuery = Record<string, never>;
 
 export interface ResourceQuery extends PaginationQuery {
   id?: string;
@@ -227,13 +227,13 @@ export interface ScopeQuery extends PaginationQuery {
   scopeId?: string;
 }
 
-export interface ClientScopeMappingQuery {}
+export type ClientScopeMappingQuery = Record<string, never>;
 
-export interface RoleMappingQuery extends PaginationQuery {}
+export type RoleMappingQuery = PaginationQuery;
 
-export interface GroupRoleMappingQuery {}
+export type GroupRoleMappingQuery = Record<string, never>;
 
-export interface UserRoleMappingQuery {}
+export type UserRoleMappingQuery = Record<string, never>;
 
 export interface FederatedIdentityQuery {
   identityProvider: string;
@@ -248,17 +248,17 @@ export interface UserFederatedIdentityQuery {
   identityProvider: string;
 }
 
-export interface ClientCredentialQuery {}
+export type ClientCredentialQuery = Record<string, never>;
 
-export interface ClientScopeAttributeQuery {}
+export type ClientScopeAttributeQuery = Record<string, never>;
 
-export interface ComponentConfigQuery {}
+export type ComponentConfigQuery = Record<string, never>;
 
-export interface ClientPolicyExecutorQuery {}
+export type ClientPolicyExecutorQuery = Record<string, never>;
 
-export interface ClientPolicyConditionQuery {}
+export type ClientPolicyConditionQuery = Record<string, never>;
 
-export interface ClientPolicyProfileQuery {}
+export type ClientPolicyProfileQuery = Record<string, never>;
 
 export interface SubGroupQuery extends PaginationQuery, SearchQuery, ExactMatchQuery, BriefRepresentationQuery {
   q?: string;

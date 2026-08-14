@@ -1,0 +1,136 @@
+---
+sidebar_label: Handle Identity & Rebinding
+sidebar_position: 1
+---
+
+# Handle Identity, Caching, And Rebinding
+
+Fluent handles (`RealmHandle`, `ClientHandle`, `ClientScopeHandle`, `RoleHandle`,
+`UserHandle`, ...) carry two pieces of state:
+
+1. **Routing identity** — the realm name, client id, role name, scope name,
+   user name, alias, etc. that the handle targets.
+2. **Cached representation** — the most recently resolved upsert-able
+   representation (`client`, `role`, `group`, `user`, `flow`, `workflow`,
+   `organization`, `identityProvider`, `component`, ...).
+
+Both are **read-only from outside the handle**. This prevents callers from
+inadvertently redirecting a handle by mutating its identity, or from
+poisoning the cached representation in front of a destructive call. The
+only supported way to retarget a handle after construction is the public
+`rebind(newId)` method described below.
+
+## What This Means For You
+
+### Reads are unaffected
+
+All the public read access patterns keep working:
+
+```ts
+const role = await realm.role('manage-users').ensure({});
+
+role.realmName; // 'demo'
+role.roleName; // 'manage-users'
+role.role; // the resolved RoleRepresentation (or null/undefined before get())
+role.core; // the underlying KeycloakAdminClient (also reachable via kc.core)
+role.realmHandle; // the parent RealmHandle
+```
+
+### Writes that previously worked now fail at compile time
+
+```ts
+// These all fail to compile after the encapsulation contract landed:
+role.roleName = 'other'; // readonly getter
+role.role = undefined; // readonly getter
+client.clientId = 'other'; // readonly getter
+client.client = undefined; // readonly getter
+realm.realmName = 'other'; // readonly getter
+realm.realm = undefined; // readonly getter
+```
+
+`kc.core` and per-handle `.core` / `.realmHandle` remain **publicly readable**
+(documented as such in the [Client Fluent API](./keycloak-admin-client-fluent))
+and are declared `readonly` so they cannot be redirected after construction.
+
+## Re-Targeting A Handle: `rebind(newId)`
+
+Every parent handle exposes a `rebind(newId)` method that:
+
+- Updates the handle's routing identity to the new value.
+- Clears the cached representation so the next read resolves against the
+  new target.
+- Returns `this` for chaining.
+
+```ts
+const clientHandle = realm.client('app-a');
+
+await clientHandle.ensure({ description: 'A' });
+
+// Re-target the SAME handle at 'app-b'. Subsequent operations resolve B,
+// never a stale snapshot of A.
+clientHandle.rebind('app-b');
+await clientHandle.ensure({ description: 'B' });
+```
+
+### Child handles follow the parent automatically
+
+Per the parent-as-source-of-truth contract (HANDLE-01), child handles read
+the parent's identity live. Rebinding a parent re-targets every existing
+child on the child's next operation — there is no separate "invalidate"
+call you need to make.
+
+```ts
+const clientHandle = realm.client('app-a');
+const roleHandle = clientHandle.role('reader');
+
+await clientHandle.get(); // resolves app-a
+await roleHandle.get(); // resolves the reader role on app-a
+
+clientHandle.rebind('app-b');
+roleHandle.rebind(roleHandle.roleName); // clear child cache; same role name
+
+await roleHandle.get(); // now resolves the reader role on app-b
+```
+
+The same pattern applies to client-scope protocol mappers (`rebind` on the
+parent `ClientScopeHandle`, then `rebind` on the child mapper). Child handles
+without a meaningful identity of their own (group children) still expose
+`rebind(newGroupName)` to clear the cached group representation while
+changing the local group name.
+
+## Which Handles Support `rebind`?
+
+| Handle | `rebind(newId)` parameter |
+| --- | --- |
+| `RealmHandle` | new realm name |
+| `ClientHandle` (and confidential/public/service-account subclasses) | new client id |
+| `ClientScopeHandle` | new scope name |
+| `RoleHandle` | new role name |
+| `ClientRoleHandle` | new role name (parent client is followed live) |
+| `UserHandle` | new username |
+| `OrganizationHandle` | new organization alias |
+| `IdentityProviderHandle` | new alias |
+| `IdentityProviderMapperHandle` | new mapper name |
+| `AuthenticationFlowHandle` | new alias |
+| `WorkflowHandle` | new workflow name |
+| `ComponentHandle` | new component name |
+| `GroupHandle` / `ChildGroupHandle` / `NestedChildGroupHandle` | new group name |
+| `ProtocolMapperHandle` | new mapper name |
+| `ClientScopeProtocolMapperHandle` | new mapper name |
+| `AttackDetectionHandle` | new user id |
+
+`CacheHandle` and `ClientPoliciesHandle` have no per-handle identity beyond the
+realm, so they do not expose `rebind`; use `RealmHandle.rebind` to retarget
+their realm.
+
+## Contract Stability
+
+Re-targeting through `rebind` is the only intentional way to reuse a handle
+across identities. The fields previously exposed as `public` mutable
+(`clientId`, `scopeName`, `roleName`, `username`, `alias`, ... and the
+matching cached representations) are now backed by private storage accessed
+through `public readonly` getters. This is a **TypeScript compile-time**
+contract change — runtime code that read these fields continues to work,
+and the `rebind()` API replaces direct field mutation. The compile fixture
+in `tests/implementation-handle-visibility.spec.ts` enforces the visibility
+contract on every CI run so the encapsulation cannot regress silently.

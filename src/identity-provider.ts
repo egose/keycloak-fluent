@@ -74,17 +74,35 @@ const getIdentityProviderUpdateData = (
 ) => normalizeIdentityProviderData(mergeUpdateData(identityProvider, data));
 
 export default class IdentityProviderHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public alias: string;
-  public identityProvider?: IdentityProviderRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _alias: string;
+  private _identityProvider?: IdentityProviderRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.alias = alias;
+    this._alias = alias;
+  }
+
+  public get alias(): string {
+    return this._alias;
+  }
+
+  public get identityProvider(): IdentityProviderRepresentation | null | undefined {
+    return this._identityProvider;
+  }
+
+  /**
+   * Re-targets this handle to a different identity-provider alias and clears
+   * the cached representation. Returns `this` for chaining.
+   */
+  public rebind(newAlias: string): this {
+    this._alias = newAlias;
+    this._identityProvider = undefined;
+    return this;
   }
 
   private async requireIdentityProvider(): Promise<IdentityProviderRepresentation & { alias: string }> {
@@ -98,13 +116,13 @@ export default class IdentityProviderHandle {
 
   public async get(): Promise<IdentityProviderRepresentation | null> {
     const one = await this.core.identityProviders.findOne({ realm: this.realmName, alias: this.alias });
-    this.identityProvider = one ?? null;
+    this._identityProvider = one ?? null;
 
-    if (this.identityProvider) {
-      this.alias = this.identityProvider.alias!;
+    if (this._identityProvider) {
+      this._alias = this._identityProvider.alias!;
     }
 
-    return this.identityProvider;
+    return this.identityProvider ?? null;
   }
 
   public async create(data: IdentityProviderInputData) {
@@ -144,7 +162,7 @@ export default class IdentityProviderHandle {
 
     await this.core.identityProviders.del({ realm: this.realmName, alias: one.alias });
 
-    this.identityProvider = null;
+    this._identityProvider = null;
     return this.alias;
   }
 
@@ -176,7 +194,7 @@ export default class IdentityProviderHandle {
     const one = await this.get();
     if (one?.alias) {
       await this.core.identityProviders.del({ realm: this.realmName, alias: one.alias });
-      this.identityProvider = null;
+      this._identityProvider = null;
     }
 
     return this.alias;

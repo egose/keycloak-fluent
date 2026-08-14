@@ -13,21 +13,43 @@ function getClientRoleUpdateData(role: RoleRepresentation, data: ClientRoleInput
 }
 
 export default class ClientRoleHandle {
-  public core: KeycloakAdminClient;
-  public realmName: string;
-  public clientHandle: ClientHandle;
-  public clientId: string;
-  public client?: ClientRepresentation | null;
-  public roleName: string;
-  public role?: RoleRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmName: string;
+  public readonly clientHandle: ClientHandle;
+  private _roleName: string;
+  private _role?: RoleRepresentation | null;
 
   constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, roleName: string) {
     this.core = core;
     this.clientHandle = clientHandle;
-    this.clientId = clientHandle.clientId;
-    this.client = clientHandle.client ?? null;
     this.realmName = clientHandle.realmName;
-    this.roleName = roleName;
+    this._roleName = roleName;
+  }
+
+  public get roleName(): string {
+    return this._roleName;
+  }
+
+  public get role(): RoleRepresentation | null | undefined {
+    return this._role;
+  }
+
+  /**
+   * Re-targets this client-role handle to a different role name and clears
+   * the cached role representation. Returns `this` for chaining.
+   */
+  public rebind(newRoleName: string): this {
+    this._roleName = newRoleName;
+    this._role = undefined;
+    return this;
+  }
+
+  public get clientId(): string {
+    return this.clientHandle.client?.clientId ?? this.clientHandle.clientId;
+  }
+
+  public get client(): ClientRepresentation | null {
+    return this.clientHandle.client ?? null;
   }
 
   private getQuery(client: ClientRepresentation) {
@@ -51,8 +73,8 @@ export default class ClientRoleHandle {
   }
 
   private async resolveClient() {
-    if (this.client?.id) {
-      return this.client;
+    if (this.clientHandle.client?.id) {
+      return this.clientHandle.client;
     }
 
     const clientId = this.getCurrentClientId();
@@ -61,8 +83,7 @@ export default class ClientRoleHandle {
       throw new Error(`Client "${clientId}" not found in realm "${this.realmName}"`);
     }
 
-    this.client = client;
-    this.clientId = client.clientId ?? clientId;
+    this.clientHandle._setResolvedClient(client, client.clientId ?? clientId);
     return client;
   }
 
@@ -102,10 +123,10 @@ export default class ClientRoleHandle {
 
   public async get(): Promise<RoleRepresentation | null> {
     const client = await this.resolveClient();
-    this.role = await ClientRoleHandle.getByName(this.core, this.realmName, this.clientId, this.roleName, client);
+    this._role = await ClientRoleHandle.getByName(this.core, this.realmName, this.clientId, this.roleName, client);
 
-    if (this.role) {
-      this.roleName = this.role.name!;
+    if (this._role) {
+      this._roleName = this._role.name!;
     }
 
     return this.role ?? null;
@@ -142,7 +163,7 @@ export default class ClientRoleHandle {
 
     await this.core.clients.delRole(this.getQuery(client));
 
-    this.role = null;
+    this._role = null;
     return this.roleName;
   }
 
@@ -166,7 +187,7 @@ export default class ClientRoleHandle {
     const one = await this.get();
     if (one?.id) {
       await this.core.clients.delRole(this.getQuery(client));
-      this.role = null;
+      this._role = null;
     }
 
     return this.roleName;

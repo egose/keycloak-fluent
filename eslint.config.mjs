@@ -7,7 +7,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default defineConfig(
   {
-    ignores: ['**/build/**', '**/dist/**', '**/node_modules/**', '**/website/.docusaurus/**'],
+    ignores: ['**/build/**', '**/dist/**', '**/node_modules/**', '**/website/.docusaurus/**', '**/.packed-consumers/**'],
   },
   eslint.configs.recommended,
   tseslint.configs.recommended,

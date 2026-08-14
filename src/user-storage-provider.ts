@@ -10,17 +10,21 @@ export type UserStorageProviderNameResponse = {
 };
 
 export default class UserStorageProviderHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public providerId: string;
-  public providerName?: string;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  public readonly providerId: string;
+  private _providerName?: string;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, providerId: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
     this.providerId = providerId;
+  }
+
+  public get providerName(): string | undefined {
+    return this._providerName;
   }
 
   public async getName(): Promise<UserStorageProviderNameResponse> {
@@ -31,7 +35,7 @@ export default class UserStorageProviderHandle {
       }),
     );
 
-    this.providerName = result.name;
+    this._providerName = result.name;
     return result;
   }
 

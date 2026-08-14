@@ -28,21 +28,43 @@ function getProtocolMapperUpdateData(
 }
 
 export default class ProtocolMapperHandle {
-  public core: KeycloakAdminClient;
-  public realmName: string;
-  public clientHandle: ClientHandle;
-  public clientId: string;
-  public client?: ClientRepresentation | null;
-  public mapperName: string;
-  public clientProtocolMapper?: ProtocolMapperRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmName: string;
+  public readonly clientHandle: ClientHandle;
+  private _mapperName: string;
+  private _clientProtocolMapper?: ProtocolMapperRepresentation | null;
 
   constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, mapperName: string) {
     this.core = core;
     this.clientHandle = clientHandle;
-    this.clientId = clientHandle.clientId;
-    this.client = clientHandle.client ?? null;
     this.realmName = clientHandle.realmName;
-    this.mapperName = mapperName;
+    this._mapperName = mapperName;
+  }
+
+  public get mapperName(): string {
+    return this._mapperName;
+  }
+
+  public get clientProtocolMapper(): ProtocolMapperRepresentation | null | undefined {
+    return this._clientProtocolMapper;
+  }
+
+  /**
+   * Re-targets this mapper handle to a different mapper-name identity and
+   * clears the cached representation. Returns `this` for chaining.
+   */
+  public rebind(newMapperName: string): this {
+    this._mapperName = newMapperName;
+    this._clientProtocolMapper = undefined;
+    return this;
+  }
+
+  public get clientId(): string {
+    return this.clientHandle.client?.clientId ?? this.clientHandle.clientId;
+  }
+
+  public get client(): ClientRepresentation | null {
+    return this.clientHandle.client ?? null;
   }
 
   private getQuery(client: ClientRepresentation, mapperId: string) {
@@ -58,8 +80,8 @@ export default class ProtocolMapperHandle {
   }
 
   private async resolveClient() {
-    if (this.client?.id) {
-      return this.client;
+    if (this.clientHandle.client?.id) {
+      return this.clientHandle.client;
     }
 
     const clientId = this.getCurrentClientId();
@@ -68,8 +90,7 @@ export default class ProtocolMapperHandle {
       throw new Error(`Client "${clientId}" not found in realm "${this.realmName}"`);
     }
 
-    this.client = client;
-    this.clientId = client.clientId ?? clientId;
+    this.clientHandle._setResolvedClient(client, client.clientId ?? clientId);
     return client;
   }
 
@@ -80,13 +101,13 @@ export default class ProtocolMapperHandle {
       id: client.id!,
       mapperId: id,
     });
-    this.clientProtocolMapper = one ?? null;
+    this._clientProtocolMapper = one ?? null;
 
-    if (this.clientProtocolMapper) {
-      this.mapperName = this.clientProtocolMapper.name!;
+    if (this._clientProtocolMapper) {
+      this._mapperName = this._clientProtocolMapper.name!;
     }
 
-    return this.clientProtocolMapper;
+    return this.clientProtocolMapper ?? null;
   }
 
   public async get(): Promise<ProtocolMapperRepresentation | null> {
@@ -96,13 +117,13 @@ export default class ProtocolMapperHandle {
       id: client.id!,
       name: this.mapperName,
     });
-    this.clientProtocolMapper = one ?? null;
+    this._clientProtocolMapper = one ?? null;
 
-    if (this.clientProtocolMapper) {
-      this.mapperName = this.clientProtocolMapper.name!;
+    if (this._clientProtocolMapper) {
+      this._mapperName = this._clientProtocolMapper.name!;
     }
 
-    return this.clientProtocolMapper;
+    return this.clientProtocolMapper ?? null;
   }
 
   public async create(data: ProtocolMapperInputData) {
@@ -141,7 +162,7 @@ export default class ProtocolMapperHandle {
     }
 
     await this.core.clients.delProtocolMapper(this.getQuery(client, one.id));
-    this.clientProtocolMapper = null;
+    this._clientProtocolMapper = null;
     return this.mapperName;
   }
 
@@ -170,7 +191,7 @@ export default class ProtocolMapperHandle {
     const one = await this.get();
     if (one?.id) {
       await this.core.clients.delProtocolMapper(this.getQuery(client, one.id));
-      this.clientProtocolMapper = null;
+      this._clientProtocolMapper = null;
     }
 
     return this.mapperName;

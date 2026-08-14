@@ -105,24 +105,48 @@ function getRealmUpdateData(realm: RealmRepresentation, data: RealmInputData) {
 }
 
 export default class RealmHandle {
-  public core: KeycloakAdminClient;
-  public realmName: string;
-  public realm?: RealmRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  private _realmName: string;
+  private _realm?: RealmRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmName: string) {
     this.core = core;
-    this.realmName = realmName;
+    this._realmName = realmName;
+  }
+
+  public get realmName(): string {
+    return this._realmName;
+  }
+
+  public get realm(): RealmRepresentation | null | undefined {
+    return this._realm;
+  }
+
+  /**
+   * Re-targets this handle to a different realm identity and clears the
+   * cached representation. The next read (`get()`/`require*()`) resolves
+   * against the new realm. Children created from this handle
+   * (`client()`/`user()`/etc.) read `realmName` live, so they follow the
+   * rebind automatically (per HANDLE-02's parent-as-source-of-truth
+   * contract inherited from HANDLE-01).
+   *
+   * Returns `this` for chaining.
+   */
+  public rebind(newRealmName: string): this {
+    this._realmName = newRealmName;
+    this._realm = undefined;
+    return this;
   }
 
   public async get(): Promise<RealmRepresentation | null> {
-    const one = await retryTransientAdminError(() => this.core.realms.findOne({ realm: this.realmName }));
-    this.realm = one ?? null;
+    const one = await retryTransientAdminError(() => this.core.realms.findOne({ realm: this._realmName }));
+    this._realm = one ?? null;
 
-    if (this.realm?.realm) {
-      this.realmName = this.realm.realm;
+    if (this._realm?.realm) {
+      this._realmName = this._realm.realm;
     }
 
-    return this.realm;
+    return this._realm;
   }
 
   public async getUserProfile(): Promise<UserProfileConfig> {
@@ -170,7 +194,7 @@ export default class RealmHandle {
     }
 
     await this.core.realms.del({ realm: this.realmName });
-    this.realm = null;
+    this._realm = null;
     return this.realmName;
   }
 
@@ -196,7 +220,7 @@ export default class RealmHandle {
     const one = await this.get();
     if (one) {
       await this.core.realms.del({ realm: this.realmName });
-      this.realm = null;
+      this._realm = null;
     }
 
     return this.realmName;
@@ -672,19 +696,19 @@ export default class RealmHandle {
   public async searchWorkflows(
     keyword: string,
     options?: { page?: number; pageSize?: number; first?: number; max?: number },
-  ) {
-    const workflows = await retryTransientAdminError(
-      () => this.core.workflows.find({ realm: this.realmName }) as Promise<WorkflowRepresentation[]>,
-    );
-    const lowerkeyword = keyword.toLocaleLowerCase();
-    const filtered = workflows.filter((item) => {
-      if (!item.name) return false;
-
-      return item.name.toLocaleLowerCase().includes(lowerkeyword);
-    });
-
+  ): Promise<WorkflowRepresentation[]> {
     const { first, max } = getPaginationParams(options);
-    return filtered.slice(first, first + max);
+
+    return retryTransientAdminError(
+      () =>
+        this.core.workflows.find({
+          realm: this.realmName,
+          search: keyword,
+          exact: false,
+          first,
+          max,
+        }) as Promise<WorkflowRepresentation[]>,
+    );
   }
 
   public client(clientId: string) {

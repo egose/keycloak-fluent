@@ -37,39 +37,79 @@ function getClientScopeUpdateData(
 }
 
 export default class ClientScopeHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public scopeName: string;
-  public clientScope?: ClientScopeRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _scopeName: string;
+  private _clientScope?: ClientScopeRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, scopeName: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.scopeName = scopeName;
+    this._scopeName = scopeName;
+  }
+
+  public get scopeName(): string {
+    return this._scopeName;
+  }
+
+  public get clientScope(): ClientScopeRepresentation | null | undefined {
+    return this._clientScope;
+  }
+
+  /**
+   * @internal Write-back used by child handles
+   * (`ClientScopeProtocolMapperHandle`) to populate this parent's cached
+   * representation after a resolution, so subsequent operations do not
+   * duplicate lookups (per HANDLE-01). Not part of the public contract; do
+   * not call from application code. Identity changes belong to
+   * {@link rebind}.
+   */
+  public _setResolvedClientScope(rep: ClientScopeRepresentation, canonicalScopeName?: string): void {
+    this._clientScope = rep;
+    if (canonicalScopeName !== undefined) {
+      this._scopeName = canonicalScopeName;
+    }
+  }
+
+  /**
+   * Re-targets this handle to a different client-scope identity and clears
+   * the cached representation. The next read (`get()`/`require*()` or any
+   * dependent operation) resolves against the new scope. Existing child
+   * handles created from this one (e.g.
+   * `clientScope.protocolMapper('y')`) read `scopeName`/`clientScope`
+   * live from this parent per HANDLE-01, so they follow the rebind on
+   * their next operation.
+   *
+   * Returns `this` for chaining.
+   */
+  public rebind(newScopeName: string): this {
+    this._scopeName = newScopeName;
+    this._clientScope = undefined;
+    return this;
   }
 
   public async getById(id: string) {
     const one = await retryTransientAdminError(() => this.core.clientScopes.findOne({ realm: this.realmName, id }));
-    this.clientScope = one ?? null;
+    this._clientScope = one ?? null;
 
-    if (this.clientScope) {
-      this.scopeName = this.clientScope.name!;
+    if (this._clientScope) {
+      this._scopeName = this._clientScope.name!;
     }
 
-    return this.clientScope;
+    return this.clientScope ?? null;
   }
 
   public async get(): Promise<ClientScopeRepresentation | null> {
     const all = await retryTransientAdminError(() => this.core.clientScopes.find({ realm: this.realmName }));
-    this.clientScope = all.find((c) => c.name === this.scopeName) ?? null;
+    this._clientScope = all.find((c) => c.name === this.scopeName) ?? null;
 
-    if (this.clientScope) {
-      this.scopeName = this.clientScope.name!;
+    if (this._clientScope) {
+      this._scopeName = this._clientScope.name!;
     }
 
-    return this.clientScope;
+    return this.clientScope ?? null;
   }
 
   public async create(data: ClientScopeInputData) {
@@ -110,7 +150,7 @@ export default class ClientScopeHandle {
     const clientScopeId = one.id;
 
     await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: clientScopeId }));
-    this.clientScope = null;
+    this._clientScope = null;
     return this.scopeName;
   }
 
@@ -147,7 +187,7 @@ export default class ClientScopeHandle {
       const clientScopeId = one.id;
 
       await retryTransientAdminError(() => this.core.clientScopes.del({ realm: this.realmName, id: clientScopeId }));
-      this.clientScope = null;
+      this._clientScope = null;
     }
 
     return this.scopeName;

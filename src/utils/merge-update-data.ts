@@ -8,6 +8,12 @@ function replaceArrays(_objValue: unknown, srcValue: unknown) {
   return undefined;
 }
 
-export function mergeUpdateData(...sources: unknown[]) {
+type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
+
+type NonNullableSource<T> = T extends null | undefined ? never : T;
+
+export function mergeUpdateData<Sources extends readonly object[]>(
+  ...sources: Sources
+): UnionToIntersection<NonNullableSource<Sources[number]>> & object {
   return _mergeWith({}, ...sources, replaceArrays);
 }
