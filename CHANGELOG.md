@@ -1,3 +1,9 @@
+## [0.11.0](https://github.com/egose/keycloak-fluent/compare/v0.10.2...v0.11.0) (2026-08-14)
+
+### Features
+
+* **website:** add release verification and handle rebinding support ([aacde61](https://github.com/egose/keycloak-fluent/commit/aacde619d129d61f7280766d653451c778c3261d))
+
 ## [0.10.2](https://github.com/egose/keycloak-fluent/compare/v0.10.1...v0.10.2) (2026-07-08)
 
 ## [0.10.1](https://github.com/egose/keycloak-fluent/compare/v0.10.0...v0.10.1) (2026-07-06)
