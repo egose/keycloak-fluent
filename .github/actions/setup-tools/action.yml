@@ -9,7 +9,7 @@ runs:
     with:
       plugins: |
         picotools=https://github.com/egose/picotools.git
-        database-tools=https://github.com/egose/asdf-database-tools.git
+        docker-compose=https://github.com/egose/asdf-docker-compose.git
 
   - name: Install python tools
     run: |
