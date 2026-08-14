@@ -26,32 +26,20 @@ VOLUME_CLEAN = docker volume rm sandbox_kc_fluent_postgres_data || true
 IMAGE_PRUNE = docker image prune -f
 
 up:
-	docker compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(UP_FLAGS)
+	docker-compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(UP_FLAGS)
 
 down:
-	docker compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(DOWN_FLAGS)
+	docker-compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(DOWN_FLAGS)
 
 destroy:
-	docker compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(DESTROY_FLAGS)
+	docker-compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(DESTROY_FLAGS)
 	$(VOLUME_CLEAN)
 	$(IMAGE_PRUNE)
 
 reset: destroy up
 
 logs:
-	docker compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(LOGS_FALGS)
+	docker-compose $(COMPOSE_FILES) --env-file $(ENV_FILE) $(LOGS_FALGS)
 
 format:
 	black .
-
-asdf-install:
-	cat .tool-versions | cut -f 1 -d ' ' | xargs -n 1 asdf plugin add || true
-	asdf plugin update --all
-	@while IFS= read -r line; do \
-		if [ -n "$$line" ] && [ "$${line#\#}" != "$$line" ]; then continue; fi; \
-		tool=$$(echo $$line | awk '{print $$1}'); \
-		version=$$(echo $$line | awk '{print $$2}'); \
-		echo "Installing $$tool $$version..."; \
-		asdf install $$tool $$version; \
-	done < .tool-versions
-	asdf reshim

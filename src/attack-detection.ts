@@ -3,16 +3,29 @@ import RealmHandle from './realm';
 import { retryTransientAdminError } from './utils/retry';
 
 export default class AttackDetectionHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public userId?: string;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _userId?: string;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, userId?: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.userId = userId;
+    this._userId = userId;
+  }
+
+  public get userId(): string | undefined {
+    return this._userId;
+  }
+
+  /**
+   * Re-targets this handle to a different user id and clears any cached
+   * state. Returns `this` for chaining.
+   */
+  public rebind(newUserId: string): this {
+    this._userId = newUserId;
+    return this;
   }
 
   private requireUserId(userId?: string) {

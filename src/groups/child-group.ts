@@ -12,13 +12,17 @@ function getChildGroupUpdateData(group: GroupRepresentation, data: ChildGroupInp
 }
 
 export default class ChildGroupHandle extends AbstractGroupHandle {
-  public parentGroupHandle: GroupHandle;
-  public parentGroupName: string;
+  public readonly parentGroupHandle: GroupHandle;
+  private _parentGroupName: string;
 
   constructor(core: KeycloakAdminClient, parentGroupHandle: GroupHandle, groupName: string) {
     super(core, parentGroupHandle.realmName, groupName);
     this.parentGroupHandle = parentGroupHandle;
-    this.parentGroupName = parentGroupHandle.groupName;
+    this._parentGroupName = parentGroupHandle.groupName;
+  }
+
+  public get parentGroupName(): string {
+    return this._parentGroupName;
   }
 
   static async getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string) {
@@ -31,34 +35,28 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
       return null;
     }
 
-    this.parentGroupName = parentGroup.name;
+    this._parentGroupName = parentGroup.name;
     return parentGroup as GroupRepresentation & { id: string; name: string };
   }
 
   public async getById(id: string) {
-    this.group = await getGroupById(this.core, this.realmName, id);
+    const group = await getGroupById(this.core, this.realmName, id);
+    this._setResolvedGroup(group, group?.name);
 
-    if (this.group) {
-      this.groupName = this.group.name!;
-    }
-
-    return this.group;
+    return this.group ?? null;
   }
 
   public async get(): Promise<GroupRepresentation | null> {
     const parentGroup = await this.resolveParentGroup();
     if (!parentGroup?.id) {
-      this.group = null;
-      return this.group;
+      this._setResolvedGroup(null);
+      return this.group ?? null;
     }
 
-    this.group = await getChildGroupByParentId(this.core, this.realmName, parentGroup.id, this.groupName);
+    const group = await getChildGroupByParentId(this.core, this.realmName, parentGroup.id, this.groupName);
+    this._setResolvedGroup(group, group?.name);
 
-    if (this.group) {
-      this.groupName = this.group.name!;
-    }
-
-    return this.group;
+    return this.group ?? null;
   }
 
   public async create(data: ChildGroupInputData) {
@@ -109,7 +107,7 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
 
     await this.core.groups.del({ realm: this.realmName, id: one.id });
 
-    this.group = null;
+    this._setResolvedGroup(null);
     return this.groupName;
   }
 
@@ -146,7 +144,7 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
     const one = await this.get();
     if (one?.id) {
       await this.core.groups.del({ realm: this.realmName, id: one.id });
-      this.group = null;
+      this._setResolvedGroup(null);
     }
 
     return this.groupName;

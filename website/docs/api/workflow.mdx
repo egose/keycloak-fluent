@@ -5,7 +5,10 @@ sidebar_position: 15
 
 # Workflow API
 
-`WorkflowHandle` manages realm workflows.
+`WorkflowHandle` manages realm workflows. Workflows are server-side resources
+exposed at `/admin/realms/{realm}/workflows`; this handle forwards server-side
+search and pagination parameters instead of loading every workflow into
+memory.
 
 ## Access
 
@@ -15,13 +18,36 @@ const workflow = realm.workflow('approval');
 
 ## Core Methods
 
-- `get()` and `getById(id)`
-- `create(data)`
-- `update(data)`
-- `delete()`
-- `ensure(data)`
-- `discard()`
-- `list({ page?, pageSize? })`
+- `get()` — exact-name lookup via server-side `search`+`exact:true`. Returns the
+  single match, `null` if none, and throws `DuplicateWorkflowNameError` if more
+  than one workflow shares the exact name.
+- `getById(id)` — direct lookup by internal workflow id via
+  `/admin/realms/{realm}/workflows/{id}`. Returns `null` if the id does not
+  exist.
+- `create(data)` / `update(data)` / `delete()` / `discard()` / `ensure(data)`
+- `list({ page?, pageSize?, first?, max? })` — a single server-side page
+  (`first`/`max`). Does not slice the result; returns the page the server
+  produced.
+- `listAll({ pageSize?, first?, maxPages?, signal? })` — iterates the full
+  collection via `fetchAll`, advancing by the page length Keycloak returned.
+  Validates `pageSize`/`first`/`maxPages`, bounds the loop with
+  `RangeError`, and supports an `AbortSignal`.
+- `listAllStream({ pageSize?, first?, maxPages?, signal? })` — async iterator
+  yielding one workflow page at a time, with the same bounded-loop guarantees
+  as `listAll` plus reference-identity repeated-page protection.
+
+## Errors
+
+- `WorkflowNotFoundError` — raised by `update`/`delete`/`discard` (via
+  `requireWorkflow`) when the named workflow cannot be resolved in the realm.
+  Carries `realmName` and `workflowName` so callers can distinguish it from a
+  transient HTTP error without string-matching the message.
+- `DuplicateWorkflowNameError` — raised by `get` (and the static `getByName`)
+  when more than one workflow matches the exact name. The previous silent
+  "first match wins" behavior could let a duplicate collision masquerade as a
+  successful single-workflow provision; this handle now fails loudly so
+  `ensure()`/`create()` callers can react. Callers that intentionally want all
+  matches should use `list`/`listAll`/`listAllStream`.
 
 ## Example
 
@@ -34,13 +60,32 @@ await workflow.update({
   enabled: false,
 });
 
-const pageTwo = await workflow.list({ page: 2, pageSize: 10 });
+// Request only the second page (server-side pagination):
+const pageTwo = await realm.workflow('approval').list({ page: 2, pageSize: 10 });
+
+// Iterate every workflow in the realm without buffering everything:
+for await (const page of realm.workflow('approval').listAllStream({ pageSize: 100 })) {
+  for (const w of page) {
+    console.log(w.id, w.name);
+  }
+}
+
+// Or collect the full collection (validated, bounded, cancellable):
+const all = await realm
+  .workflow('approval')
+  .listAll({ pageSize: 100, maxPages: 50, signal: controller.signal });
 ```
 
 ## Important Behavior
 
-`WorkflowHandle` now follows the same lifecycle contract as the other mutable resource handles in this library.
+`WorkflowHandle` now follows the same lifecycle contract as the other mutable
+resource handles in this library.
 
 - `update(...)` updates an existing workflow.
-- `ensure(...)` creates the workflow if it does not exist, or updates it if it already exists.
-- The update path preserves unspecified fields by merging your partial input into the current workflow representation before sending the admin update call.
+- `ensure(...)` creates the workflow if it does not exist, or updates it if it
+  already exists.
+- The update path preserves unspecified fields by merging your partial input
+  into the current workflow representation before sending the admin update call.
+- `get()`/`getById()` cache the resolved representation on the handle; a second
+  call returns the cache without re-fetching. Use a fresh handle instance to
+  force a re-read.

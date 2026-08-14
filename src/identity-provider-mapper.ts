@@ -20,21 +20,47 @@ function getIdentityProviderMapperUpdateData(
 }
 
 export default class IdentityProviderMapperHandle {
-  public core: KeycloakAdminClient;
-  public identityProviderHandle: IdentityProviderHandle;
-  public realmName: string;
-  public alias: string;
-  public identityProvider?: IdentityProviderRepresentation | null;
-  public mapperName: string;
-  public identityProviderMapper?: IdentityProviderMapperRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly identityProviderHandle: IdentityProviderHandle;
+  public readonly realmName: string;
+  private _alias: string;
+  private _identityProvider?: IdentityProviderRepresentation | null;
+  private _mapperName: string;
+  private _identityProviderMapper?: IdentityProviderMapperRepresentation | null;
 
   constructor(core: KeycloakAdminClient, identityProviderHandle: IdentityProviderHandle, mapperName: string) {
     this.core = core;
     this.identityProviderHandle = identityProviderHandle;
     this.realmName = identityProviderHandle.realmName;
-    this.alias = identityProviderHandle.alias;
-    this.identityProvider = identityProviderHandle.identityProvider ?? null;
-    this.mapperName = mapperName;
+    this._alias = identityProviderHandle.alias;
+    this._identityProvider = identityProviderHandle.identityProvider ?? null;
+    this._mapperName = mapperName;
+  }
+
+  public get alias(): string {
+    return this._alias;
+  }
+
+  public get identityProvider(): IdentityProviderRepresentation | null | undefined {
+    return this._identityProvider;
+  }
+
+  public get mapperName(): string {
+    return this._mapperName;
+  }
+
+  public get identityProviderMapper(): IdentityProviderMapperRepresentation | null | undefined {
+    return this._identityProviderMapper;
+  }
+
+  /**
+   * Re-targets this mapper handle to a different mapper-name identity and
+   * clears the cached mapper representation. Returns `this` for chaining.
+   */
+  public rebind(newMapperName: string): this {
+    this._mapperName = newMapperName;
+    this._identityProviderMapper = undefined;
+    return this;
   }
 
   private getCurrentAlias() {
@@ -43,13 +69,13 @@ export default class IdentityProviderMapperHandle {
 
   private async resolveIdentityProvider() {
     const identityProvider = this.identityProviderHandle.identityProvider ?? (await this.identityProviderHandle.get());
-    this.alias = this.getCurrentAlias();
+    this._alias = this.getCurrentAlias();
     if (!identityProvider?.alias) {
       throw new Error(`Identity Provider "${this.alias}" not found in realm "${this.realmName}"`);
     }
 
-    this.identityProvider = identityProvider;
-    this.alias = identityProvider.alias;
+    this._identityProvider = identityProvider;
+    this._alias = identityProvider.alias;
     return identityProvider as IdentityProviderRepresentation & { alias: string };
   }
 
@@ -75,13 +101,13 @@ export default class IdentityProviderMapperHandle {
       alias: identityProvider.alias,
       id,
     });
-    this.identityProviderMapper = one ?? null;
+    this._identityProviderMapper = one ?? null;
 
-    if (this.identityProviderMapper?.name) {
-      this.mapperName = this.identityProviderMapper.name;
+    if (this._identityProviderMapper?.name) {
+      this._mapperName = this._identityProviderMapper.name;
     }
 
-    return this.identityProviderMapper;
+    return this.identityProviderMapper ?? null;
   }
 
   public async get(): Promise<IdentityProviderMapperRepresentation | null> {
@@ -90,13 +116,13 @@ export default class IdentityProviderMapperHandle {
       realm: this.realmName,
       alias: identityProvider.alias,
     });
-    this.identityProviderMapper = mappers.find((mapper) => mapper.name === this.mapperName) ?? null;
+    this._identityProviderMapper = mappers.find((mapper) => mapper.name === this.mapperName) ?? null;
 
-    if (this.identityProviderMapper?.name) {
-      this.mapperName = this.identityProviderMapper.name;
+    if (this._identityProviderMapper?.name) {
+      this._mapperName = this._identityProviderMapper.name;
     }
 
-    return this.identityProviderMapper;
+    return this.identityProviderMapper ?? null;
   }
 
   public async create(data: IdentityProviderMapperInputData) {
@@ -153,7 +179,7 @@ export default class IdentityProviderMapperHandle {
       id: one.id,
     });
 
-    this.identityProviderMapper = null;
+    this._identityProviderMapper = null;
     return this.mapperName;
   }
 
@@ -191,7 +217,7 @@ export default class IdentityProviderMapperHandle {
         alias: identityProvider.alias,
         id: one.id,
       });
-      this.identityProviderMapper = null;
+      this._identityProviderMapper = null;
     }
 
     return this.mapperName;

@@ -12,7 +12,7 @@ test('Client Roles', async () => {
 
     expect(roleHandle).toBeTruthy();
     expect(roleHandle?.realmName).toBe(realm);
-    expect(roleHandle?.client.clientId).toBe(clientId);
+    expect(roleHandle?.client?.clientId).toBe(clientId);
     expect(roleHandle?.role?.name).toBe(roleName);
     expect(roleHandle?.role?.description).toBe(roleDescription);
 

@@ -59,7 +59,7 @@ function getSimpleAuthErrorMessage(error: unknown) {
 }
 
 export default class KeycloakAdminClientFluent {
-  public core: KeycloakAdminClient;
+  public readonly core: KeycloakAdminClient;
 
   constructor(connectionConfig?: ConnectionConfig) {
     this.core = new KeycloakAdminClient(connectionConfig);

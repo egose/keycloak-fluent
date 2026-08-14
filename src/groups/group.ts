@@ -12,7 +12,7 @@ function getGroupUpdateData(group: GroupRepresentation, data: GroupInputData, gr
 }
 
 export default class GroupHandle extends AbstractGroupHandle {
-  public realmHandle: RealmHandle;
+  public readonly realmHandle: RealmHandle;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, groupName: string) {
     super(core, realmHandle.realmName, groupName);
@@ -36,23 +36,17 @@ export default class GroupHandle extends AbstractGroupHandle {
   }
 
   public async getById(id: string) {
-    this.group = await GroupHandle.getById(this.core, this.realmName, id);
+    const group = await GroupHandle.getById(this.core, this.realmName, id);
+    this._setResolvedGroup(group, group?.name);
 
-    if (this.group) {
-      this.groupName = this.group.name!;
-    }
-
-    return this.group;
+    return this.group ?? null;
   }
 
   public async get(): Promise<GroupRepresentation | null> {
-    this.group = await GroupHandle.getByName(this.core, this.realmName, this.groupName);
+    const group = await GroupHandle.getByName(this.core, this.realmName, this.groupName);
+    this._setResolvedGroup(group, group?.name);
 
-    if (this.group) {
-      this.groupName = this.group.name!;
-    }
-
-    return this.group;
+    return this.group ?? null;
   }
 
   public async create(data: GroupInputData) {
@@ -83,7 +77,7 @@ export default class GroupHandle extends AbstractGroupHandle {
 
     await this.core.groups.del({ realm: this.realmName, id: one.id });
 
-    this.group = null;
+    this._setResolvedGroup(null);
     return this.groupName;
   }
 
@@ -107,7 +101,7 @@ export default class GroupHandle extends AbstractGroupHandle {
     const one = await this.get();
     if (one?.id) {
       await this.core.groups.del({ realm: this.realmName, id: one.id });
-      this.group = null;
+      this._setResolvedGroup(null);
     }
 
     return this.groupName;

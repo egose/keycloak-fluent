@@ -30,6 +30,30 @@ export type AuthenticationExecutionsQuery = {
   flowAlias?: string;
 };
 
+/**
+ * Raised by {@link AuthenticationFlowHandle.updateExecution} when the
+ * `flowAlias` query target cannot be resolved in the realm before mutation.
+ * Carrying `realmName` and `alias` lets callers distinguish a not-found
+ * target from a transient HTTP error without string-matching the message.
+ *
+ * The handle still uses {@link requireFlow} (which throws a generic `Error`
+ * with a stable message) for the handle's own alias; this typed error is
+ * dedicated to the cross-flow `updateExecution(execution, { flowAlias })`
+ * path that the FLOW-01 finding flagged.
+ */
+export class AuthenticationFlowNotFoundError extends Error {
+  public readonly realmName: string;
+  public readonly alias: string;
+
+  constructor(realmName: string, alias: string) {
+    super(`Authentication Flow "${alias}" not found in realm "${realmName}"`);
+    this.name = 'AuthenticationFlowNotFoundError';
+    this.realmName = realmName;
+    this.alias = alias;
+    Object.setPrototypeOf(this, AuthenticationFlowNotFoundError.prototype);
+  }
+}
+
 function getAuthenticationFlowUpdateData(
   flow: AuthenticationFlowRepresentation,
   data: AuthenticationFlowInputData,
@@ -39,17 +63,35 @@ function getAuthenticationFlowUpdateData(
 }
 
 export default class AuthenticationFlowHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public alias: string;
-  public flow?: AuthenticationFlowRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _alias: string;
+  private _flow?: AuthenticationFlowRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.alias = alias;
+    this._alias = alias;
+  }
+
+  public get alias(): string {
+    return this._alias;
+  }
+
+  public get flow(): AuthenticationFlowRepresentation | null | undefined {
+    return this._flow;
+  }
+
+  /**
+   * Re-targets this handle to a different flow alias and clears the cached
+   * representation. Returns `this` for chaining.
+   */
+  public rebind(newAlias: string): this {
+    this._alias = newAlias;
+    this._flow = undefined;
+    return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
@@ -72,23 +114,23 @@ export default class AuthenticationFlowHandle {
   }
 
   public async getById(id: string) {
-    this.flow = await AuthenticationFlowHandle.getById(this.core, this.realmName, id);
+    this._flow = await AuthenticationFlowHandle.getById(this.core, this.realmName, id);
 
-    if (this.flow?.alias) {
-      this.alias = this.flow.alias;
+    if (this._flow?.alias) {
+      this._alias = this._flow.alias;
     }
 
-    return this.flow;
+    return this.flow ?? null;
   }
 
   public async get(): Promise<AuthenticationFlowRepresentation | null> {
-    this.flow = await AuthenticationFlowHandle.getByAlias(this.core, this.realmName, this.alias);
+    this._flow = await AuthenticationFlowHandle.getByAlias(this.core, this.realmName, this.alias);
 
-    if (this.flow?.alias) {
-      this.alias = this.flow.alias;
+    if (this._flow?.alias) {
+      this._alias = this._flow.alias;
     }
 
-    return this.flow;
+    return this.flow ?? null;
   }
 
   public async create(data: AuthenticationFlowInputData) {
@@ -133,7 +175,7 @@ export default class AuthenticationFlowHandle {
       }),
     );
 
-    this.flow = null;
+    this._flow = null;
     return this.alias;
   }
 
@@ -174,7 +216,7 @@ export default class AuthenticationFlowHandle {
           flowId: existingFlow.id,
         }),
       );
-      this.flow = null;
+      this._flow = null;
     }
 
     return this.alias;
@@ -195,9 +237,9 @@ export default class AuthenticationFlowHandle {
     return this.realmHandle.authenticationFlow(newAlias).get();
   }
 
-  public async listExecutions(): Promise<AuthenticationExecutionInfoRepresentation[]> {
+  public async listExecutions(flowAliasOverride?: string): Promise<AuthenticationExecutionInfoRepresentation[]> {
     const flow = await this.requireFlow();
-    const flowAlias = flow.alias;
+    const flowAlias = flowAliasOverride ?? flow.alias;
 
     return retryTransientAdminError(() =>
       this.core.authenticationManagement.getExecutions({
@@ -240,19 +282,30 @@ export default class AuthenticationFlowHandle {
     execution: AuthenticationExecutionInfoRepresentation,
     query?: AuthenticationExecutionsQuery,
   ) {
-    const flowAlias = query?.flowAlias ?? this.alias;
+    const targetAlias = query?.flowAlias ?? this.alias;
+
+    const target =
+      targetAlias === this.alias
+        ? await this.requireFlow()
+        : await AuthenticationFlowHandle.getByAlias(this.core, this.realmName, targetAlias);
+
+    if (!target?.alias) {
+      throw new AuthenticationFlowNotFoundError(this.realmName, targetAlias);
+    }
+
+    const resolvedAlias = target.alias;
 
     await retryTransientAdminError(() =>
       this.core.authenticationManagement.updateExecution(
         {
           realm: this.realmName,
-          flow: flowAlias,
+          flow: resolvedAlias,
         },
         execution,
       ),
     );
 
-    return this.listExecutions();
+    return this.listExecutions(resolvedAlias);
   }
 
   public async deleteExecution(id: string) {

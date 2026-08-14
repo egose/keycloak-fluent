@@ -10,11 +10,10 @@ function getNestedChildGroupUpdateData(group: GroupRepresentation, data: NestedC
 }
 
 export default class NestedChildGroupHandle extends AbstractGroupHandle {
-  public parentGroupPath: string;
+  public readonly parentGroupPath: string;
 
   constructor(core: KeycloakAdminClient, realmName: string, parentGroupPath: string, groupName: string) {
     super(core, realmName, groupName);
-    this.core = core;
     this.parentGroupPath = parentGroupPath;
   }
 
@@ -24,18 +23,15 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
   }
 
   public async get(): Promise<GroupRepresentation | null> {
-    this.group = await NestedChildGroupHandle.getByName(
+    const group = await NestedChildGroupHandle.getByName(
       this.core,
       this.realmName,
       this.parentGroupPath,
       this.groupName,
     );
+    this._setResolvedGroup(group, group?.name);
 
-    if (this.group) {
-      this.groupName = this.group.name!;
-    }
-
-    return this.group;
+    return this.group ?? null;
   }
 
   public async create(data: NestedChildGroupInputData) {
@@ -86,7 +82,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
 
     await this.core.groups.del({ realm: this.realmName, id: one.id });
 
-    this.group = null;
+    this._setResolvedGroup(null);
     return this.groupName;
   }
 
@@ -123,7 +119,7 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
     const one = await this.get();
     if (one?.id) {
       await this.core.groups.del({ realm: this.realmName, id: one.id });
-      this.group = null;
+      this._setResolvedGroup(null);
     }
 
     return this.groupName;

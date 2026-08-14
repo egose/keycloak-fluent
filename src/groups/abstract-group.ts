@@ -9,20 +9,56 @@ import type ClientHandle from '../clients/client';
 import type ClientRoleHandle from '../client-role';
 import { getClientByClientId } from '../clients/client-lookup';
 import { retryTransientAdminError } from '../utils/retry';
+import { fetchAll } from '../utils/fetch-all';
+import { assertClientRoleMappingOwnership, assertRealmRoleMappingOwnership } from '../utils/role-ownership';
 
 const groupMembersPageSize = 1000;
 
 export abstract class AbstractGroupHandle {
-  public core: KeycloakAdminClient;
-  public realmName: string;
-  public groupName: string;
-  public group?: GroupRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmName: string;
+  private _groupName: string;
+  private _group?: GroupRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmName: string, groupName: string) {
     this.core = core;
     this.realmName = realmName;
-    this.groupName = groupName;
-    this.group = null;
+    this._groupName = groupName;
+    this._group = null;
+  }
+
+  public get groupName(): string {
+    return this._groupName;
+  }
+
+  public get group(): GroupRepresentation | null | undefined {
+    return this._group;
+  }
+
+  /**
+   * @internal Write-back used by `getById()`/`get()`/`resolveParentGroup()` to
+   * populate this handle's cached representation after a resolution and to
+   * canonicalize the group name from the server (Keycloak may return a
+   * different name casing). Not part of the public contract; do not call
+   * from application code. Identity changes belong to {@link rebind}.
+   */
+  protected _setResolvedGroup(rep: GroupRepresentation | null, canonicalGroupName?: string): void {
+    this._group = rep;
+    if (canonicalGroupName !== undefined) {
+      this._groupName = canonicalGroupName;
+    }
+  }
+
+  /**
+   * Re-targets this handle to a different group name and clears the cached
+   * representation. Subclasses inherit this; child group handles that hold
+   * a parent handle rebind their own name only (per HANDLE-01 the parent is
+   * the source of truth for parent identity). Returns `this` for chaining.
+   */
+  public rebind(newGroupName: string): this {
+    this._groupName = newGroupName;
+    this._group = undefined;
+    return this;
   }
 
   public abstract get(): Promise<GroupRepresentation | null>;
@@ -82,28 +118,24 @@ export abstract class AbstractGroupHandle {
 
   public async listAssignedUsers(options?: { briefRepresentation?: boolean }) {
     const one = await this.requireGroup();
-    const result: UserRepresentation[] = [];
 
-    for (let first = 0; ; first += groupMembersPageSize) {
-      const page = await retryTransientAdminError(() =>
-        this.core.groups.listMembers({
-          realm: this.realmName,
-          id: one.id,
-          first,
-          max: groupMembersPageSize,
-          briefRepresentation: options?.briefRepresentation ?? false,
-        }),
-      );
-
-      result.push(...page);
-
-      if (page.length < groupMembersPageSize) {
-        return result;
-      }
-    }
+    return fetchAll(
+      (first, max) =>
+        retryTransientAdminError(() =>
+          this.core.groups.listMembers({
+            realm: this.realmName,
+            id: one.id,
+            first,
+            max,
+            briefRepresentation: options?.briefRepresentation ?? false,
+          }),
+        ),
+      { pageSize: groupMembersPageSize },
+    );
   }
 
   public async assignRole(roleHandle: RoleHandle) {
+    assertRealmRoleMappingOwnership(this.core, this.realmName, roleHandle, `group "${this.groupName}"`);
     const group = await this.requireGroup();
     const role = await this.resolveRealmRole(roleHandle);
     const groupId = group.id;
@@ -118,6 +150,7 @@ export abstract class AbstractGroupHandle {
   }
 
   public async unassignRole(roleHandle: RoleHandle) {
+    assertRealmRoleMappingOwnership(this.core, this.realmName, roleHandle, `group "${this.groupName}"`);
     const group = await this.requireGroup();
     const role = await this.resolveRealmRole(roleHandle);
     const groupId = group.id;
@@ -144,6 +177,13 @@ export abstract class AbstractGroupHandle {
   }
 
   public async assignClientRole(clientRoleHandle: ClientRoleHandle) {
+    assertClientRoleMappingOwnership(
+      this.core,
+      this.realmName,
+      clientRoleHandle.clientHandle,
+      clientRoleHandle,
+      `group "${this.groupName}"`,
+    );
     const group = await this.requireGroup();
     const { client, role } = await this.resolveClientRole(clientRoleHandle);
     const groupId = group.id;
@@ -160,6 +200,13 @@ export abstract class AbstractGroupHandle {
   }
 
   public async unassignClientRole(clientRoleHandle: ClientRoleHandle) {
+    assertClientRoleMappingOwnership(
+      this.core,
+      this.realmName,
+      clientRoleHandle.clientHandle,
+      clientRoleHandle,
+      `group "${this.groupName}"`,
+    );
     const group = await this.requireGroup();
     const { client, role } = await this.resolveClientRole(clientRoleHandle);
     const groupId = group.id;

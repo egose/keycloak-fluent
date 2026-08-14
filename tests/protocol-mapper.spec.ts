@@ -14,7 +14,7 @@ test('Protocol Mappers', async () => {
 
     expect(userAttributeMapperHandle).toBeTruthy();
     expect(userAttributeMapperHandle?.realmName).toBe(realm);
-    expect(userAttributeMapperHandle?.client.clientId).toBe(clientId);
+    expect(userAttributeMapperHandle?.client?.clientId).toBe(clientId);
     expect(userAttributeMapperHandle?.clientProtocolMapper?.name).toBe(userattributemapperName);
     expect(userAttributeMapperHandle?.clientProtocolMapper?.config?.['user.attribute']).toBe('username');
     expect(userAttributeMapperHandle?.clientProtocolMapper?.config?.['claim.name']).toBe('UzerName');
@@ -26,7 +26,7 @@ test('Protocol Mappers', async () => {
 
     expect(hardcodedClaimMapperHandle).toBeTruthy();
     expect(hardcodedClaimMapperHandle?.realmName).toBe(realm);
-    expect(hardcodedClaimMapperHandle?.client.clientId).toBe(clientId);
+    expect(hardcodedClaimMapperHandle?.client?.clientId).toBe(clientId);
     expect(hardcodedClaimMapperHandle?.clientProtocolMapper?.name).toBe(hardcodedclaimmappername);
     expect(hardcodedClaimMapperHandle?.clientProtocolMapper?.config?.['claim.name']).toBe('mygroup');
     expect(hardcodedClaimMapperHandle?.clientProtocolMapper?.config?.['claim.value']).toBe('fluent');
@@ -38,7 +38,7 @@ test('Protocol Mappers', async () => {
 
     expect(audienceMapperHandle).toBeTruthy();
     expect(audienceMapperHandle?.realmName).toBe(realm);
-    expect(audienceMapperHandle?.client.clientId).toBe(clientId);
+    expect(audienceMapperHandle?.client?.clientId).toBe(clientId);
     expect(audienceMapperHandle?.clientProtocolMapper?.name).toBe(audienceMappername);
     expect(audienceMapperHandle?.clientProtocolMapper?.config?.['included.custom.audience']).toBe('myaudience');
   });

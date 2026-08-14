@@ -15,21 +15,43 @@ function getClientScopeProtocolMapperUpdateData(
 }
 
 export default class ClientScopeProtocolMapperHandle {
-  public core: KeycloakAdminClient;
-  public realmName: string;
-  public clientScopeHandle: ClientScopeHandle;
-  public scopeName: string;
-  public clientScope?: ClientScopeRepresentation | null;
-  public mapperName: string;
-  public clientScopeProtocolMapper?: ProtocolMapperRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmName: string;
+  public readonly clientScopeHandle: ClientScopeHandle;
+  private _mapperName: string;
+  private _clientScopeProtocolMapper?: ProtocolMapperRepresentation | null;
 
   constructor(core: KeycloakAdminClient, clientScopeHandle: ClientScopeHandle, mapperName: string) {
     this.core = core;
     this.clientScopeHandle = clientScopeHandle;
-    this.scopeName = clientScopeHandle.scopeName;
-    this.clientScope = clientScopeHandle.clientScope ?? null;
     this.realmName = clientScopeHandle.realmName;
-    this.mapperName = mapperName;
+    this._mapperName = mapperName;
+  }
+
+  public get mapperName(): string {
+    return this._mapperName;
+  }
+
+  public get clientScopeProtocolMapper(): ProtocolMapperRepresentation | null | undefined {
+    return this._clientScopeProtocolMapper;
+  }
+
+  /**
+   * Re-targets this mapper handle to a different mapper-name identity and
+   * clears the cached representation. Returns `this` for chaining.
+   */
+  public rebind(newMapperName: string): this {
+    this._mapperName = newMapperName;
+    this._clientScopeProtocolMapper = undefined;
+    return this;
+  }
+
+  public get scopeName(): string {
+    return this.clientScopeHandle.clientScope?.name ?? this.clientScopeHandle.scopeName;
+  }
+
+  public get clientScope(): ClientScopeRepresentation | null {
+    return this.clientScopeHandle.clientScope ?? null;
   }
 
   private getCurrentScopeName() {
@@ -45,18 +67,17 @@ export default class ClientScopeProtocolMapperHandle {
   }
 
   private async resolveClientScope() {
-    if (this.clientScope?.id) {
-      return this.clientScope;
+    if (this.clientScopeHandle.clientScope?.id) {
+      return this.clientScopeHandle.clientScope;
     }
 
     const clientScope = this.clientScopeHandle.clientScope ?? (await this.clientScopeHandle.get());
-    this.scopeName = this.getCurrentScopeName();
+    const scopeName = this.getCurrentScopeName();
     if (!clientScope?.id) {
-      throw new Error(`Client Scope "${this.scopeName}" not found in realm "${this.realmName}"`);
+      throw new Error(`Client Scope "${scopeName}" not found in realm "${this.realmName}"`);
     }
 
-    this.clientScope = clientScope;
-    this.scopeName = clientScope.name ?? this.scopeName;
+    this.clientScopeHandle._setResolvedClientScope(clientScope, clientScope.name ?? this.clientScopeHandle.scopeName);
     return clientScope;
   }
 
@@ -67,13 +88,13 @@ export default class ClientScopeProtocolMapperHandle {
       id: clientScope.id!,
       mapperId: id,
     });
-    this.clientScopeProtocolMapper = one ?? null;
+    this._clientScopeProtocolMapper = one ?? null;
 
-    if (this.clientScopeProtocolMapper) {
-      this.mapperName = this.clientScopeProtocolMapper.name!;
+    if (this._clientScopeProtocolMapper) {
+      this._mapperName = this._clientScopeProtocolMapper.name!;
     }
 
-    return this.clientScopeProtocolMapper;
+    return this.clientScopeProtocolMapper ?? null;
   }
 
   public async get(): Promise<ProtocolMapperRepresentation | null> {
@@ -83,13 +104,13 @@ export default class ClientScopeProtocolMapperHandle {
       id: clientScope.id!,
       name: this.mapperName,
     });
-    this.clientScopeProtocolMapper = one ?? null;
+    this._clientScopeProtocolMapper = one ?? null;
 
-    if (this.clientScopeProtocolMapper) {
-      this.mapperName = this.clientScopeProtocolMapper.name!;
+    if (this._clientScopeProtocolMapper) {
+      this._mapperName = this._clientScopeProtocolMapper.name!;
     }
 
-    return this.clientScopeProtocolMapper;
+    return this.clientScopeProtocolMapper ?? null;
   }
 
   public async create(data: ProtocolMapperInputData) {
@@ -128,7 +149,7 @@ export default class ClientScopeProtocolMapperHandle {
     }
 
     await this.core.clientScopes.delProtocolMapper(this.getQuery(clientScope, one.id));
-    this.clientScopeProtocolMapper = null;
+    this._clientScopeProtocolMapper = null;
     return this.mapperName;
   }
 
@@ -157,7 +178,7 @@ export default class ClientScopeProtocolMapperHandle {
     const one = await this.get();
     if (one?.id) {
       await this.core.clientScopes.delProtocolMapper(this.getQuery(clientScope, one.id));
-      this.clientScopeProtocolMapper = null;
+      this._clientScopeProtocolMapper = null;
     }
 
     return this.mapperName;

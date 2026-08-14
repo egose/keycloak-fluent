@@ -1,11 +1,18 @@
 import KeycloakAdminClient from './keycloak-admin-client';
 import RealmHandle from './realm';
-import { retryTransientAdminError } from './utils/retry';
+import { retry } from './utils/retry';
+
+/**
+ * Cache clearing operations are idempotent side effects: the target cache is
+ * invalidated on the server regardless of how many times the request is
+ * replayed, so a retry after an ambiguous response cannot corrupt state.
+ */
+const cacheClearRetryOptions = { idempotent: true };
 
 export default class CacheHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle) {
     this.core = core;
@@ -14,18 +21,18 @@ export default class CacheHandle {
   }
 
   public async clearUserCache() {
-    await retryTransientAdminError(() => this.core.cache.clearUserCache({ realm: this.realmName }));
+    await retry(() => this.core.cache.clearUserCache({ realm: this.realmName }), cacheClearRetryOptions);
   }
 
   public async clearKeysCache() {
-    await retryTransientAdminError(() => this.core.cache.clearKeysCache({ realm: this.realmName }));
+    await retry(() => this.core.cache.clearKeysCache({ realm: this.realmName }), cacheClearRetryOptions);
   }
 
   public async clearCrlCache() {
-    await retryTransientAdminError(() => this.core.cache.clearCrlCache({ realm: this.realmName }));
+    await retry(() => this.core.cache.clearCrlCache({ realm: this.realmName }), cacheClearRetryOptions);
   }
 
   public async clearRealmCache() {
-    await retryTransientAdminError(() => this.core.cache.clearRealmCache({ realm: this.realmName }));
+    await retry(() => this.core.cache.clearRealmCache({ realm: this.realmName }), cacheClearRetryOptions);
   }
 }

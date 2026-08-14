@@ -28,8 +28,9 @@ import UserAttributeProtocolMapperHandle from '../protocol-mappers/user-attribut
 import HardcodedClaimProtocolMapperHandle from '../protocol-mappers/hardcoded-claim-protocol-mapper';
 import AudienceProtocolMapperHandle from '../protocol-mappers/audience-protocol-mapper';
 import { retryTransientAdminError } from '../utils/retry';
-import { fetchAll } from '../utils/fetch-all';
+import { fetchAll, fetchAllStream, type FetchAllOptions } from '../utils/fetch-all';
 import { mergeUpdateData } from '../utils/merge-update-data';
+import { assertClientRoleMappingOwnership, assertRealmRoleMappingOwnership } from '../utils/role-ownership';
 
 function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
   if (options?.first !== undefined || options?.max !== undefined) {
@@ -54,7 +55,6 @@ function getClientUpdateData(client: ClientRepresentation, data: ClientInputData
 
 export type ClientInputData = Omit<ClientRepresentation, 'realm' | 'clientId' | 'id'>;
 export type AuthorizationResourceQuery = {
-  id?: string;
   name?: string;
   type?: string;
   owner?: string;
@@ -78,8 +78,6 @@ export type AuthorizationPolicyQuery = {
 export type AuthorizationScopeQuery = {
   name?: string;
   deep?: boolean;
-  policyId?: string;
-  resource?: string;
   page?: number;
   pageSize?: number;
 };
@@ -91,18 +89,69 @@ export type AuthorizationPermissionQuery = {
   pageSize?: number;
 };
 
+export type AuthorizationResourceListAllOptions = FetchAllOptions & {
+  name?: string;
+  type?: string;
+  owner?: string;
+  uri?: string;
+  deep?: boolean;
+};
+
+export type AuthorizationScopeListAllOptions = FetchAllOptions & {
+  name?: string;
+  deep?: boolean;
+};
+
 export default class ClientHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public clientId: string;
-  public client?: ClientRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _clientId: string;
+  private _client?: ClientRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, clientId: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.clientId = clientId;
+    this._clientId = clientId;
+  }
+
+  public get clientId(): string {
+    return this._clientId;
+  }
+
+  public get client(): ClientRepresentation | null | undefined {
+    return this._client;
+  }
+
+  /**
+   * @internal Write-back used by child handles (`ClientRoleHandle`,
+   * `ProtocolMapperHandle`) to populate this parent's cached representation
+   * after a resolution, so subsequent operations do not duplicate lookups
+   * (per HANDLE-01). Not part of the public contract; do not call from
+   * application code. Identity changes belong to {@link rebind}.
+   */
+  public _setResolvedClient(rep: ClientRepresentation, canonicalClientId?: string): void {
+    this._client = rep;
+    if (canonicalClientId !== undefined) {
+      this._clientId = canonicalClientId;
+    }
+  }
+
+  /**
+   * Re-targets this handle to a different client identity and clears the
+   * cached representation. The next read (`get()`/`requireClient()` or any
+   * dependent operation) resolves against the new client. Existing child
+   * handles created from this one (e.g. `client.role('x')`,
+   * `client.protocolMapper('y')`) read `clientId`/`client` live from this
+   * parent per HANDLE-01, so they follow the rebind on their next operation.
+   *
+   * Returns `this` for chaining.
+   */
+  public rebind(newClientId: string): this {
+    this._clientId = newClientId;
+    this._client = undefined;
+    return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
@@ -149,24 +198,38 @@ export default class ClientHandle {
     return role as RoleRepresentation & { id: string; name: string };
   }
 
-  public async getById(id: string) {
-    this.client = await ClientHandle.getById(this.core, this.realmName, id);
+  private assertRealmScopeRoleOwnership(roleHandle: RoleHandle) {
+    assertRealmRoleMappingOwnership(this.core, this.realmName, roleHandle, `client "${this.clientId}"`);
+  }
 
-    if (this.client) {
-      this.clientId = this.client.clientId!;
+  private assertClientScopeRoleOwnership(targetClientHandle: ClientHandle, roleHandle: ClientRoleHandle) {
+    assertClientRoleMappingOwnership(
+      this.core,
+      this.realmName,
+      targetClientHandle,
+      roleHandle,
+      `client "${this.clientId}"`,
+    );
+  }
+
+  public async getById(id: string) {
+    this._client = await ClientHandle.getById(this.core, this.realmName, id);
+
+    if (this._client) {
+      this._clientId = this._client.clientId!;
     }
 
-    return this.client;
+    return this.client ?? null;
   }
 
   public async get(): Promise<ClientRepresentation | null> {
-    this.client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
+    this._client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
 
-    if (this.client) {
-      this.clientId = this.client.clientId!;
+    if (this._client) {
+      this._clientId = this._client.clientId!;
     }
 
-    return this.client;
+    return this.client ?? null;
   }
 
   public async create(data: ClientInputData) {
@@ -205,7 +268,7 @@ export default class ClientHandle {
     const clientInternalId = one.id;
 
     await retryTransientAdminError(() => this.core.clients.del({ realm: this.realmName, id: clientInternalId }));
-    this.client = null;
+    this._client = null;
     return this.clientId;
   }
 
@@ -235,7 +298,7 @@ export default class ClientHandle {
       const clientInternalId = one.id;
 
       await retryTransientAdminError(() => this.core.clients.del({ realm: this.realmName, id: clientInternalId }));
-      this.client = null;
+      this._client = null;
     }
 
     return this.clientId;
@@ -440,7 +503,10 @@ export default class ClientHandle {
     );
   }
 
-  public async addRealmScopeMappings(roleHandles: Array<RoleHandle | ClientRoleHandle>) {
+  public async addRealmScopeMappings(roleHandles: RoleHandle[]) {
+    for (const roleHandle of roleHandles) {
+      this.assertRealmScopeRoleOwnership(roleHandle);
+    }
     const client = await this.requireClient();
     const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRoleMapping(roleHandle)));
     const clientInternalId = client.id;
@@ -458,7 +524,10 @@ export default class ClientHandle {
     return this;
   }
 
-  public async removeRealmScopeMappings(roleHandles: Array<RoleHandle | ClientRoleHandle>) {
+  public async removeRealmScopeMappings(roleHandles: RoleHandle[]) {
+    for (const roleHandle of roleHandles) {
+      this.assertRealmScopeRoleOwnership(roleHandle);
+    }
     const client = await this.requireClient();
     const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRoleMapping(roleHandle)));
     const clientInternalId = client.id;
@@ -512,10 +581,10 @@ export default class ClientHandle {
     );
   }
 
-  public async addClientScopeMappings(
-    targetClientHandle: ClientHandle,
-    roleHandles: Array<RoleHandle | ClientRoleHandle>,
-  ) {
+  public async addClientScopeMappings(targetClientHandle: ClientHandle, roleHandles: ClientRoleHandle[]) {
+    for (const roleHandle of roleHandles) {
+      this.assertClientScopeRoleOwnership(targetClientHandle, roleHandle);
+    }
     const client = await this.requireClient();
     const targetClient = await this.resolveTargetClient(targetClientHandle);
     const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRoleMapping(roleHandle)));
@@ -536,10 +605,10 @@ export default class ClientHandle {
     return this;
   }
 
-  public async removeClientScopeMappings(
-    targetClientHandle: ClientHandle,
-    roleHandles: Array<RoleHandle | ClientRoleHandle>,
-  ) {
+  public async removeClientScopeMappings(targetClientHandle: ClientHandle, roleHandles: ClientRoleHandle[]) {
+    for (const roleHandle of roleHandles) {
+      this.assertClientScopeRoleOwnership(targetClientHandle, roleHandle);
+    }
     const client = await this.requireClient();
     const targetClient = await this.resolveTargetClient(targetClientHandle);
     const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRoleMapping(roleHandle)));
@@ -994,6 +1063,37 @@ export default class ClientHandle {
     );
   }
 
+  /**
+   * Iterates every authorization resource on the client using
+   * {@link fetchAll}, advancing by the page length Keycloak actually returns.
+   * Forwards the declared filters (`name`, `type`, `owner`, `uri`, `deep`)
+   * unchanged and validates `first`/`pageSize`/`maxPages` per PAGE-01.
+   * Returned array preserves the order returned by the server.
+   */
+  public async listResourcesAll(options?: AuthorizationResourceListAllOptions): Promise<ResourceRepresentation[]> {
+    const client = await this.requireClient();
+    const clientInternalId = client.id;
+    const opts = options ?? {};
+
+    return fetchAll<ResourceRepresentation>(
+      (first, max) =>
+        retryTransientAdminError(() =>
+          this.core.clients.listResources({
+            realm: this.realmName,
+            id: clientInternalId,
+            first,
+            max,
+            name: opts.name,
+            type: opts.type,
+            owner: opts.owner,
+            uri: opts.uri,
+            deep: opts.deep,
+          }),
+        ),
+      opts,
+    );
+  }
+
   public async getResource(resourceId: string): Promise<ResourceRepresentation> {
     const client = await this.requireClient();
     const clientInternalId = client.id;
@@ -1192,6 +1292,34 @@ export default class ClientHandle {
         first,
         max,
       }),
+    );
+  }
+
+  /**
+   * Iterates every authorization scope on the client using
+   * {@link fetchAll}, advancing by the page length Keycloak actually returns.
+   * Forwards the declared filters (`name`, `deep`) unchanged and validates
+   * `first`/`pageSize`/`maxPages` per PAGE-01. Returned array preserves the
+   * order returned by the server.
+   */
+  public async listAuthorizationScopesAll(options?: AuthorizationScopeListAllOptions): Promise<ScopeRepresentation[]> {
+    const client = await this.requireClient();
+    const clientInternalId = client.id;
+    const opts = options ?? {};
+
+    return fetchAll<ScopeRepresentation>(
+      (first, max) =>
+        retryTransientAdminError(() =>
+          this.core.clients.listAllScopes({
+            realm: this.realmName,
+            id: clientInternalId,
+            name: opts.name,
+            deep: opts.deep,
+            first,
+            max,
+          }),
+        ),
+      opts,
     );
   }
 

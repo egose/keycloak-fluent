@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 import RealmHandle from '../src/realm';
+import type { AuthorizationResourceQuery, AuthorizationScopeQuery } from '../src/clients/client';
 
 describe('Implementation Consistency: Clients', () => {
   test('client getById forwards the provided internal id', async () => {
@@ -75,7 +76,10 @@ describe('Implementation Consistency: Clients', () => {
     await roleHandle.get();
     await mapperHandle.get();
 
-    expect(core.clients.find).toHaveBeenCalledWith({ realm: 'demo', clientId: 'resolved-client' });
+    // After getById resolved the parent, children reuse the parent snapshot
+    // (HANDLE-01: parent is the single source of truth, no duplicate lookups).
+    expect(core.clients.findOne).toHaveBeenCalledWith({ realm: 'demo', id: 'client-1' });
+    expect(core.clients.find).not.toHaveBeenCalled();
     expect(core.clients.findRole).toHaveBeenCalledWith({
       realm: 'demo',
       id: 'client-1',
@@ -214,6 +218,7 @@ describe('Implementation Consistency: Clients', () => {
           { id: 'client-1', clientId: 'app-client' },
           { id: 'client-2', clientId: 'account' },
         ]),
+        findRole: vi.fn().mockResolvedValue({ id: 'role-1', name: 'manage-account' }),
         addRealmScopeMappings: vi.fn().mockResolvedValue(undefined),
         delRealmScopeMappings: vi.fn().mockResolvedValue(undefined),
         listRealmScopeMappings: vi.fn().mockResolvedValue([{ id: 'role-1', name: 'manage-users' }]),
@@ -235,6 +240,7 @@ describe('Implementation Consistency: Clients', () => {
     const clientHandle = realmHandle.client('app-client');
     const targetClientHandle = realmHandle.client('account');
     const roleHandle = realmHandle.role('manage-users');
+    const clientRoleHandle = targetClientHandle.role('manage-account');
 
     await clientHandle.addRealmScopeMappings([roleHandle]);
     await clientHandle.removeRealmScopeMappings([roleHandle]);
@@ -248,8 +254,8 @@ describe('Implementation Consistency: Clients', () => {
     await expect(clientHandle.listCompositeRealmScopeMappings()).resolves.toEqual([
       { id: 'role-3', name: 'realm-admin' },
     ]);
-    await clientHandle.addClientScopeMappings(targetClientHandle, [roleHandle]);
-    await clientHandle.removeClientScopeMappings(targetClientHandle, [roleHandle]);
+    await clientHandle.addClientScopeMappings(targetClientHandle, [clientRoleHandle]);
+    await clientHandle.removeClientScopeMappings(targetClientHandle, [clientRoleHandle]);
     await expect(clientHandle.listClientScopeMappings(targetClientHandle)).resolves.toEqual([
       { id: 'role-4', name: 'manage-account' },
     ]);
@@ -265,7 +271,7 @@ describe('Implementation Consistency: Clients', () => {
     ]);
     expect(core.clients.addClientScopeMappings).toHaveBeenCalledWith(
       { realm: 'demo', id: 'client-1', client: 'client-2' },
-      [{ id: 'role-1', name: 'manage-users' }],
+      [{ id: 'role-1', name: 'manage-account' }],
     );
     expect(core.clients.listClientScopeMappings).toHaveBeenCalledWith({
       realm: 'demo',
@@ -591,5 +597,130 @@ describe('Implementation Consistency: Clients', () => {
       type: 'scope',
       permissionId: 'perm-1',
     });
+  });
+
+  test('listResources and listAuthorizationScopes forward every supported declared filter', async () => {
+    const core = {
+      clients: {
+        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
+        listResources: vi.fn().mockResolvedValue([{ _id: 'resource-1' }]),
+        listAllScopes: vi.fn().mockResolvedValue([{ id: 'scope-1' }]),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const clientHandle = realmHandle.client('app-client');
+
+    await clientHandle.listResources({
+      name: 'filter-name',
+      type: 'filter-type',
+      owner: 'filter-owner',
+      uri: 'filter-uri',
+      deep: true,
+    });
+
+    expect(core.clients.listResources).toHaveBeenCalledWith({
+      realm: 'demo',
+      id: 'client-1',
+      first: 0,
+      max: 100,
+      name: 'filter-name',
+      type: 'filter-type',
+      owner: 'filter-owner',
+      uri: 'filter-uri',
+      deep: true,
+    });
+
+    await clientHandle.listAuthorizationScopes({
+      name: 'filter-scope',
+      deep: true,
+    });
+
+    expect(core.clients.listAllScopes).toHaveBeenCalledWith({
+      realm: 'demo',
+      id: 'client-1',
+      name: 'filter-scope',
+      deep: true,
+      first: 0,
+      max: 100,
+    });
+  });
+
+  test('listResourcesAll and listAuthorizationScopesAll iterate with fetchAll and forward supported filters', async () => {
+    const core = {
+      clients: {
+        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
+        listResources: vi.fn().mockImplementation(async (payload) => {
+          return payload.first === 0 ? [{ _id: `resource-${payload.first}` }] : [];
+        }),
+        listAllScopes: vi.fn().mockImplementation(async (payload) => {
+          return payload.first === 0 ? [{ id: `scope-${payload.first}` }] : [];
+        }),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const clientHandle = realmHandle.client('app-client');
+
+    await expect(
+      clientHandle.listResourcesAll({ name: 'filter-name', type: 'filter-type', pageSize: 1 }),
+    ).resolves.toEqual([{ _id: 'resource-0' }]);
+
+    expect(core.clients.listResources).toHaveBeenCalledWith({
+      realm: 'demo',
+      id: 'client-1',
+      first: 0,
+      max: 1,
+      name: 'filter-name',
+      type: 'filter-type',
+      owner: undefined,
+      uri: undefined,
+      deep: undefined,
+    });
+
+    await expect(
+      clientHandle.listAuthorizationScopesAll({ name: 'filter-scope', deep: true, pageSize: 1 }),
+    ).resolves.toEqual([{ id: 'scope-0' }]);
+
+    expect(core.clients.listAllScopes).toHaveBeenCalledWith({
+      realm: 'demo',
+      id: 'client-1',
+      name: 'filter-scope',
+      deep: true,
+      first: 0,
+      max: 1,
+    });
+  });
+
+  test('listResourcesAll rejects invalid fetchAll bounds per PAGE-01', async () => {
+    const core = {
+      clients: {
+        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
+        listResources: vi.fn(),
+      },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const clientHandle = realmHandle.client('app-client');
+
+    await expect(clientHandle.listResourcesAll({ pageSize: 0 })).rejects.toThrow(RangeError);
+    await expect(clientHandle.listResourcesAll({ first: -1 })).rejects.toThrow(RangeError);
+    expect(core.clients.listResources).not.toHaveBeenCalled();
+  });
+
+  test('unsupported authorization filters are not advertised by public query types', () => {
+    // `AuthorizationResourceQuery.id` cannot be forwarded: the upstream
+    // `listResources` path is `{id}/authz/...`, so any `id` payload collides
+    // with the client URL param. `AuthorizationScopeQuery.policyId` and
+    // `.resource` are not declared by the upstream `listAllScopes` payload,
+    // so advertising them would silently widen result sets.
+    // These compile-time assertions fail to typecheck if the fields return.
+    const resourceQuery: AuthorizationResourceQuery = { name: 'ok' };
+    const scopeQuery: AuthorizationScopeQuery = { name: 'ok' };
+
+    expect((resourceQuery as Record<string, unknown>).id).toBeUndefined();
+    expect((resourceQuery as Record<string, unknown>).policyId).toBeUndefined();
+    expect((scopeQuery as Record<string, unknown>).policyId).toBeUndefined();
+    expect((scopeQuery as Record<string, unknown>).resource).toBeUndefined();
   });
 });

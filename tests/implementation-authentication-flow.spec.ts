@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 import RealmHandle from '../src/realm';
+import { AuthenticationFlowNotFoundError } from '../src/authentication-flow';
 
 describe('Implementation Consistency: Authentication Flows', () => {
   test('authentication flow execution addition resolves the flow lazily', async () => {
@@ -156,5 +157,80 @@ describe('Implementation Consistency: Authentication Flows', () => {
       realm: 'demo',
       alias: 'UPDATE_PASSWORD',
     });
+  });
+
+  test('updateExecution with a cross-flow alias updates and reads back the target alias', async () => {
+    const flowsByAlias = {
+      'flow-A': { id: 'flow-A-id', alias: 'flow-A' },
+      'flow-B': { id: 'flow-B-id', alias: 'flow-B' },
+    };
+    const executionsByFlow: Record<string, { id: string; providerId: string }[]> = {
+      'flow-A': [{ id: 'exec-A1', providerId: 'auth-cookie' }],
+      'flow-B': [{ id: 'exec-B1', providerId: 'identity-provider' }],
+    };
+    const getFlows = vi.fn(async () => Object.values(flowsByAlias));
+    const getExecutions = vi.fn(async ({ flow }: { realm: string; flow: string }) => [
+      ...(executionsByFlow[flow] ?? []),
+    ]);
+    const updateExecution = vi.fn().mockResolvedValue(undefined);
+    const core = {
+      authenticationManagement: { getFlows, getExecutions, updateExecution },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const flowHandle = realmHandle.authenticationFlow('flow-A');
+
+    const result = await flowHandle.updateExecution(
+      { id: 'exec-B1', requirement: 'REQUIRED' },
+      { flowAlias: 'flow-B' },
+    );
+
+    expect(updateExecution).toHaveBeenCalledWith(
+      { realm: 'demo', flow: 'flow-B' },
+      { id: 'exec-B1', requirement: 'REQUIRED' },
+    );
+    expect(getExecutions).toHaveBeenCalledWith({ realm: 'demo', flow: 'flow-B' });
+    expect(result).toEqual([{ id: 'exec-B1', providerId: 'identity-provider' }]);
+    expect(result.every((e) => e.id !== 'exec-A1')).toBe(true);
+  });
+
+  test('updateExecution with a missing cross-flow alias raises AuthenticationFlowNotFoundError and does not mutate', async () => {
+    const getFlows = vi.fn().mockResolvedValue([{ id: 'flow-A-id', alias: 'flow-A' }]);
+    const getExecutions = vi.fn().mockResolvedValue([{ id: 'exec-A1', providerId: 'auth-cookie' }]);
+    const updateExecution = vi.fn().mockResolvedValue(undefined);
+    const core = {
+      authenticationManagement: { getFlows, getExecutions, updateExecution },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const flowHandle = realmHandle.authenticationFlow('flow-A');
+
+    await expect(
+      flowHandle.updateExecution({ id: 'exec-X1', requirement: 'REQUIRED' }, { flowAlias: 'missing-flow' }),
+    ).rejects.toBeInstanceOf(AuthenticationFlowNotFoundError);
+
+    expect(updateExecution).not.toHaveBeenCalled();
+    expect(getExecutions).not.toHaveBeenCalled();
+  });
+
+  test('updateExecution with an explicit alias equal to the handle alias resolves the handle flow without a list fetch', async () => {
+    const getFlows = vi.fn().mockResolvedValue([{ id: 'flow-A-id', alias: 'flow-A' }]);
+    const getExecutions = vi.fn().mockResolvedValue([{ id: 'exec-A1', providerId: 'auth-cookie' }]);
+    const updateExecution = vi.fn().mockResolvedValue(undefined);
+    const core = {
+      authenticationManagement: { getFlows, getExecutions, updateExecution },
+    } as any;
+
+    const realmHandle = new RealmHandle(core, 'demo');
+    const flowHandle = realmHandle.authenticationFlow('flow-A');
+
+    await flowHandle.updateExecution({ id: 'exec-A1', requirement: 'REQUIRED' }, { flowAlias: 'flow-A' });
+
+    expect(updateExecution).toHaveBeenCalledWith(
+      { realm: 'demo', flow: 'flow-A' },
+      { id: 'exec-A1', requirement: 'REQUIRED' },
+    );
+    expect(getExecutions).toHaveBeenCalledWith({ realm: 'demo', flow: 'flow-A' });
+    expect(getFlows).toHaveBeenCalledTimes(1);
   });
 });

@@ -14,17 +14,37 @@ function getRoleUpdateData(role: RoleRepresentation, data: RoleInputData, roleNa
 }
 
 export default class RoleHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public roleName: string;
-  public role?: RoleRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _roleName: string;
+  private _role?: RoleRepresentation | null;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, roleName: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.roleName = roleName;
+    this._roleName = roleName;
+  }
+
+  public get roleName(): string {
+    return this._roleName;
+  }
+
+  public get role(): RoleRepresentation | null | undefined {
+    return this._role;
+  }
+
+  /**
+   * Re-targets this handle to a different role identity and clears the
+   * cached representation. The next read (`get()`/`requireRole()` or any
+   * dependent operation) resolves against the new role name. Returns `this`
+   * for chaining.
+   */
+  public rebind(newRoleName: string): this {
+    this._roleName = newRoleName;
+    this._role = undefined;
+    return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
@@ -56,23 +76,23 @@ export default class RoleHandle {
   }
 
   public async getById(id: string) {
-    this.role = await RoleHandle.getById(this.core, this.realmName, id);
+    this._role = await RoleHandle.getById(this.core, this.realmName, id);
 
-    if (this.role) {
-      this.roleName = this.role.name!;
+    if (this._role) {
+      this._roleName = this._role.name!;
     }
 
-    return this.role;
+    return this.role ?? null;
   }
 
   public async get(): Promise<RoleRepresentation | null> {
-    this.role = await RoleHandle.getByName(this.core, this.realmName, this.roleName);
+    this._role = await RoleHandle.getByName(this.core, this.realmName, this.roleName);
 
-    if (this.role) {
-      this.roleName = this.role.name!;
+    if (this._role) {
+      this._roleName = this._role.name!;
     }
 
-    return this.role;
+    return this.role ?? null;
   }
 
   public async create(data: RoleInputData) {
@@ -106,7 +126,7 @@ export default class RoleHandle {
 
     await this.core.roles.delById({ realm: this.realmName, id: one.id });
 
-    this.role = null;
+    this._role = null;
     return this.roleName;
   }
 
@@ -130,7 +150,7 @@ export default class RoleHandle {
     const one = await this.get();
     if (one?.id) {
       await this.core.roles.delById({ realm: this.realmName, id: one.id });
-      this.role = null;
+      this._role = null;
     }
 
     return this.roleName;

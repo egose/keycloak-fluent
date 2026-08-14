@@ -1,4 +1,5 @@
 import type { default as KeycloakAdminClient, GroupRepresentation } from '../keycloak-admin-client';
+import { fetchAll } from '../utils/fetch-all';
 
 const groupLookupPageSize = 1000;
 
@@ -75,37 +76,33 @@ export async function getGroupByName(core: KeycloakAdminClient, realm: string, g
 }
 
 export async function listSubGroups(core: KeycloakAdminClient, realm: string, parentId: string, attempts = 3) {
-  const subGroups: GroupRepresentation[] = [];
+  return fetchAll(
+    async (first, max) => {
+      let page: GroupRepresentation[] | null = null;
 
-  for (let first = 0; ; first += groupLookupPageSize) {
-    let page: GroupRepresentation[] | null = null;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+          page = await core.groups.listSubGroups({
+            realm,
+            parentId,
+            briefRepresentation: false,
+            first,
+            max,
+          });
+          break;
+        } catch (error) {
+          if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
+            throw error;
+          }
 
-    for (let attempt = 0; attempt < attempts; attempt++) {
-      try {
-        page = await core.groups.listSubGroups({
-          realm,
-          parentId,
-          briefRepresentation: false,
-          first,
-          max: groupLookupPageSize,
-        });
-        break;
-      } catch (error) {
-        if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
-          throw error;
+          await sleep(50 * (attempt + 1));
         }
-
-        await sleep(50 * (attempt + 1));
       }
-    }
 
-    const resolvedPage = page ?? [];
-    subGroups.push(...resolvedPage);
-
-    if (resolvedPage.length < groupLookupPageSize) {
-      return subGroups;
-    }
-  }
+      return page ?? [];
+    },
+    { pageSize: groupLookupPageSize },
+  );
 }
 
 export async function getChildGroupByParentId(

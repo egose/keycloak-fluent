@@ -67,6 +67,15 @@ Available helpers:
 - `raiseExecutionPriority(id)`
 - `lowerExecutionPriority(id)`
 
+### Cross-flow `updateExecution`
+
+When `flowAlias` differs from the handle's own alias, the handle resolves
+and verifies that target flow before mutation. A missing target raises an
+`AuthenticationFlowNotFoundError` (with `realmName` and `alias` fields) and
+leaves the target untouched. The returned execution list is read back from
+the resolved target alias — never from the handle's own flow — so the
+result matches the flow that was actually updated.
+
 ## Provider Discovery
 
 These methods expose the underlying provider metadata endpoints:

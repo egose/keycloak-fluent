@@ -22,12 +22,12 @@ function getComponentCreateData(componentLookup: ComponentLookupData, data: Comp
 }
 
 export default class ComponentHandle {
-  public core: KeycloakAdminClient;
-  public realmHandle: RealmHandle;
-  public realmName: string;
-  public componentName: string;
-  public componentLookup: ComponentLookupData;
-  public component?: ComponentRepresentation | null;
+  public readonly core: KeycloakAdminClient;
+  public readonly realmHandle: RealmHandle;
+  public readonly realmName: string;
+  private _componentName: string;
+  public readonly componentLookup: ComponentLookupData;
+  private _component?: ComponentRepresentation | null;
 
   constructor(
     core: KeycloakAdminClient,
@@ -38,8 +38,26 @@ export default class ComponentHandle {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
-    this.componentName = componentName;
+    this._componentName = componentName;
     this.componentLookup = componentLookup ?? {};
+  }
+
+  public get componentName(): string {
+    return this._componentName;
+  }
+
+  public get component(): ComponentRepresentation | null | undefined {
+    return this._component;
+  }
+
+  /**
+   * Re-targets this handle to a different component-name identity and clears
+   * the cached representation. Returns `this` for chaining.
+   */
+  public rebind(newComponentName: string): this {
+    this._componentName = newComponentName;
+    this._component = undefined;
+    return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
@@ -95,13 +113,13 @@ export default class ComponentHandle {
   }
 
   public async getById(id: string) {
-    this.component = await ComponentHandle.getById(this.core, this.realmName, id);
+    this._component = await ComponentHandle.getById(this.core, this.realmName, id);
 
-    if (this.component?.name) {
-      this.componentName = this.component.name;
+    if (this._component?.name) {
+      this._componentName = this._component.name;
     }
 
-    return this.component;
+    return this.component ?? null;
   }
 
   public async get(): Promise<ComponentRepresentation | null> {
@@ -114,13 +132,13 @@ export default class ComponentHandle {
       }),
     );
 
-    this.component = this.resolveUniqueComponent(components);
+    this._component = this.resolveUniqueComponent(components);
 
-    if (this.component?.name) {
-      this.componentName = this.component.name;
+    if (this._component?.name) {
+      this._componentName = this._component.name;
     }
 
-    return this.component;
+    return this.component ?? null;
   }
 
   public async create(data: ComponentInputData) {
@@ -162,7 +180,7 @@ export default class ComponentHandle {
 
     await retryTransientAdminError(() => this.core.components.del({ realm: this.realmName, id: componentId }));
 
-    this.component = null;
+    this._component = null;
     return this.componentName;
   }
 
@@ -200,7 +218,7 @@ export default class ComponentHandle {
       await retryTransientAdminError(() =>
         this.core.components.del({ realm: this.realmName, id: existingComponent.id }),
       );
-      this.component = null;
+      this._component = null;
     }
 
     return this.componentName;
