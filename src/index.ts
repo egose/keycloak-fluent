@@ -81,14 +81,17 @@ export default class KeycloakAdminClientFluent {
     const grantType = getSimpleAuthGrantType({ password, refreshToken });
 
     try {
-      await this.auth({
+      const credentials: Credentials = {
         grantType,
         clientId,
-        clientSecret,
-        username,
-        password,
-        refreshToken,
-      });
+      };
+
+      if (clientSecret !== undefined) credentials.clientSecret = clientSecret;
+      if (username !== undefined) credentials.username = username;
+      if (password !== undefined) credentials.password = password;
+      if (refreshToken !== undefined) credentials.refreshToken = refreshToken;
+
+      await this.auth(credentials);
     } catch (error) {
       throw new Error(`Keycloak authentication failed: ${getSimpleAuthErrorMessage(error)}`, {
         cause: error instanceof Error ? error : undefined,
