@@ -2,6 +2,7 @@ import KeycloakAdminClient, { type ConnectionConfig, type Credentials, type Gran
 import RealmHandle from './realm';
 import ServerInfoHandle from './server-info';
 import WhoAmIHandle from './who-am-i';
+import { createManagedKeycloakClientWith, type ManagedKeycloakClientOptions } from './managed-client';
 
 type SimpleAuthOptions = {
   username?: string;
@@ -121,3 +122,16 @@ export default class KeycloakAdminClientFluent {
     });
   }
 }
+
+export function createManagedKeycloakClient(options: ManagedKeycloakClientOptions): KeycloakAdminClientFluent {
+  return createManagedKeycloakClientWith(KeycloakAdminClientFluent, options);
+}
+
+export type {
+  ManagedKeycloakClientCredentialsOptions,
+  ManagedKeycloakClientOptions,
+  ManagedKeycloakCredential,
+  ManagedKeycloakUserCredentialsOptions,
+} from './managed-client';
+
+export type { ReconcileRealmRolesOptions, ReconcileUserAttributesOptions, UserInputData } from './user';
