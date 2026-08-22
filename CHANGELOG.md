@@ -1,3 +1,13 @@
+## [0.12.1](https://github.com/egose/keycloak-fluent/compare/v0.12.0...v0.12.1) (2026-08-22)
+
+### Bug Fixes
+
+* omit undefined auth credentials ([5808946](https://github.com/egose/keycloak-fluent/commit/58089464120e57257504ee36ae82983eea90b0d8))
+
+### Documentation
+
+* **website:** fix relative link to client fluent api ([a842f30](https://github.com/egose/keycloak-fluent/commit/a842f3005162b198c51180f10102bc6d9d4ff426))
+
 ## [0.12.0](https://github.com/egose/keycloak-fluent/compare/v0.11.0...v0.12.0) (2026-08-22)
 
 ### Features
