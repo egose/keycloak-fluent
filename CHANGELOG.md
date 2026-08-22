@@ -1,3 +1,9 @@
+## [0.12.0](https://github.com/egose/keycloak-fluent/compare/v0.11.0...v0.12.0) (2026-08-22)
+
+### Features
+
+* add managed client and user management helpers ([b8fbf38](https://github.com/egose/keycloak-fluent/commit/b8fbf38da3b7cc58491aaa2044b842d3b06f5d0f))
+
 ## [0.11.0](https://github.com/egose/keycloak-fluent/compare/v0.10.2...v0.11.0) (2026-08-14)
 
 ### Features
