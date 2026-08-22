@@ -40,12 +40,48 @@ export const defaultUserData = Object.freeze({
 
 export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {
   password?: string;
+  /** Whether a supplied password must be changed on first login. Defaults to false. */
+  passwordTemporary?: boolean;
 };
 
 export type UserRequiredAction = RequiredActionAlias | string;
 export type FederatedIdentityInputData = Omit<FederatedIdentityRepresentation, 'identityProvider'>;
+export type ReconcileRealmRolesOptions = {
+  /** Create desired roles that do not exist. Defaults to true. */
+  ensureMissing?: boolean;
+  /** Only roles in this set can be removed. Without it reconciliation is additive-only. */
+  managedRoleNames?: readonly string[];
+  /** Maximum number of desired roles accepted. Defaults to 100. */
+  maxRoles?: number;
+};
+export type ReconcileUserAttributesOptions = {
+  /** Only keys in this set can be removed. Without it reconciliation is additive-only. */
+  managedKeys?: readonly string[];
+};
 
-function getUserUpdateData(user: UserRepresentation, data: Omit<UserInputData, 'password'>, username: string) {
+function normalizeNames(values: readonly string[], name: string) {
+  const normalized = values.map((value, index) => {
+    if (typeof value !== 'string' || !value.trim()) {
+      throw new Error(`${name}[${index}] must be a non-empty string`);
+    }
+    return value.trim();
+  });
+
+  return [...new Set(normalized)];
+}
+
+function assertSafeAttributeKey(key: string) {
+  if (!key.trim()) throw new Error('User attribute keys must be non-empty strings');
+  if (key === '__proto__' || key === 'prototype' || key === 'constructor') {
+    throw new Error(`User attribute key "${key}" is not supported`);
+  }
+}
+
+function getUserUpdateData(
+  user: UserRepresentation,
+  data: Omit<UserInputData, 'password' | 'passwordTemporary'>,
+  username: string,
+) {
   return mergeUpdateData(user, data, { username });
 }
 
@@ -98,13 +134,15 @@ export default class UserHandle {
   public readonly realmHandle: RealmHandle;
   public readonly realmName: string;
   private _username: string;
+  private _userId?: string;
   private _user?: UserRepresentation | null;
 
-  constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, username: string) {
+  constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, username: string, userId?: string) {
     this.core = core;
     this.realmHandle = realmHandle;
     this.realmName = realmHandle.realmName;
     this._username = username;
+    this._userId = userId;
   }
 
   public get username(): string {
@@ -123,13 +161,16 @@ export default class UserHandle {
    */
   public rebind(newUsername: string): this {
     this._username = newUsername;
+    this._userId = undefined;
     this._user = undefined;
     return this;
   }
 
   public async getById(id: string) {
+    if (!id.trim()) throw new Error('Keycloak user ID must be a non-empty string');
     const one = await this.core.users.findOne({ realm: this.realmName, id, userProfileMetadata: true });
     this._user = one ?? null;
+    this._userId = id;
 
     if (this._user) {
       this._username = this._user.username!;
@@ -139,6 +180,8 @@ export default class UserHandle {
   }
 
   public async get(): Promise<UserRepresentation | null> {
+    if (this._userId) return this.getById(this._userId);
+
     const ones = await this.core.users.find({ realm: this.realmName, username: this.username, exact: true });
     this._user = ones.find((v) => v.username === this.username) ?? null;
 
@@ -150,11 +193,14 @@ export default class UserHandle {
   }
 
   public async create(data: UserInputData) {
+    if (this._userId) {
+      throw new Error(`Cannot create user from ID handle "${this._userId}" in realm "${this.realmName}"`);
+    }
     if (await this.get()) {
       throw new Error(`User "${this.username}" already exists in realm "${this.realmName}"`);
     }
 
-    const { password, ...rest } = data;
+    const { password, passwordTemporary = false, ...rest } = data;
     const desiredEnabled = rest.enabled ?? true;
 
     // When a password is being provisioned, create the user disabled so a
@@ -174,7 +220,7 @@ export default class UserHandle {
     }
 
     try {
-      await this.resetPassword(id, password);
+      await this.resetPasswordById(id, password, { temporary: passwordTemporary });
     } catch (passwordError) {
       // Best-effort rollback: delete the just-created disabled user so that a
       // retry starts clean. If deletion also fails, keep the disabled account
@@ -207,7 +253,7 @@ export default class UserHandle {
       throw new Error(`User "${this.username}" not found in realm "${this.realmName}"`);
     }
 
-    const { password, ...rest } = data;
+    const { password, passwordTemporary = false, ...rest } = data;
     await this.core.users.update({ realm: this.realmName, id: one.id }, getUserUpdateData(one, rest, this.username));
 
     if (!password) {
@@ -215,7 +261,7 @@ export default class UserHandle {
     }
 
     try {
-      await this.resetPassword(one.id, password);
+      await this.resetPasswordById(one.id, password, { temporary: passwordTemporary });
     } catch (passwordError) {
       // The profile update above already committed. We do not pretend it was
       // rolled back; surface a partial-success error to the caller so they
@@ -248,13 +294,13 @@ export default class UserHandle {
 
   public async ensure(data: UserInputData) {
     const one = await this.get();
-    const { password, ...rest } = data;
+    const { password, passwordTemporary = false, ...rest } = data;
 
     if (one?.id) {
       await this.core.users.update({ realm: this.realmName, id: one.id }, getUserUpdateData(one, rest, this.username));
       if (password) {
         try {
-          await this.resetPassword(one.id, password);
+          await this.resetPasswordById(one.id, password, { temporary: passwordTemporary });
         } catch (passwordError) {
           throw new UserPasswordProvisioningError({
             message: `Profile for user "${this.username}" in realm "${this.realmName}" was updated but the password reset failed. The profile update is committed and is not rolled back.`,
@@ -278,7 +324,7 @@ export default class UserHandle {
 
       if (password) {
         try {
-          await this.resetPassword(id, password);
+          await this.resetPasswordById(id, password, { temporary: passwordTemporary });
         } catch (passwordError) {
           await this.attemptCleanup(id, passwordError);
           throw new UserPasswordProvisioningError({
@@ -311,16 +357,23 @@ export default class UserHandle {
     return this.username;
   }
 
-  private async resetPassword(userId: string, password: string) {
+  private async resetPasswordById(userId: string, password: string, options?: { temporary?: boolean }) {
     await this.core.users.resetPassword({
       realm: this.realmName,
       id: userId,
       credential: {
-        temporary: false,
+        temporary: options?.temporary ?? false,
         type: 'password',
         value: password,
       },
     });
+  }
+
+  public async resetPassword(password: string, options?: { temporary?: boolean }) {
+    const user = await this.requireUser();
+    await this.resetPasswordById(user.id, password, options);
+    await this.get();
+    return this;
   }
 
   /**
@@ -394,42 +447,135 @@ export default class UserHandle {
     return client as ClientRepresentation & { id: string };
   }
 
-  public async assignRole(roleHandle: RoleHandle) {
+  private async resolveRealmRole(roleHandle: RoleHandle) {
     assertRealmRoleMappingOwnership(this.core, this.realmName, roleHandle, `user "${this.username}"`);
-    const user = await this.requireUser();
-    let role: RoleRepresentation | null = roleHandle.role ?? null;
-    if (!role) {
-      role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
-    }
-
-    if (!role) {
+    const role = roleHandle.role ?? (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName));
+    if (!role?.id) {
       throw new Error(`Role "${roleHandle.roleName}" not found in realm "${this.realmName}"`);
     }
 
-    await this.core.users.addRealmRoleMappings({
-      realm: this.realmName,
-      id: user.id,
-      roles: [role] as never as RoleMappingPayload[],
-    });
+    return role;
+  }
+
+  public async listAssignedRealmRoles() {
+    const user = await this.requireUser();
+    return this.core.users.listRealmRoleMappings({ realm: this.realmName, id: user.id });
+  }
+
+  public async assignRealmRoles(roleHandles: readonly RoleHandle[]) {
+    const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRealmRole(roleHandle)));
+    const user = await this.requireUser();
+    if (roles.length) {
+      await this.core.users.addRealmRoleMappings({
+        realm: this.realmName,
+        id: user.id,
+        roles: roles as never as RoleMappingPayload[],
+      });
+    }
+    return this;
+  }
+
+  public async unassignRealmRoles(roleHandles: readonly RoleHandle[]) {
+    const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRealmRole(roleHandle)));
+    const user = await this.requireUser();
+    if (roles.length) {
+      await this.core.users.delRealmRoleMappings({
+        realm: this.realmName,
+        id: user.id,
+        roles: roles as never as RoleMappingPayload[],
+      });
+    }
+    return this;
+  }
+
+  public async reconcileRealmRoles(desiredRoleNames: readonly string[], options: ReconcileRealmRolesOptions = {}) {
+    const maxRoles = options.maxRoles ?? 100;
+    if (!Number.isSafeInteger(maxRoles) || maxRoles <= 0) {
+      throw new Error('reconcileRealmRoles maxRoles must be a positive safe integer');
+    }
+
+    const desiredNames = normalizeNames(desiredRoleNames, 'desiredRoleNames');
+    if (desiredNames.length > maxRoles) {
+      throw new Error(`reconcileRealmRoles supports at most ${maxRoles} desired roles`);
+    }
+
+    const managedNames = options.managedRoleNames
+      ? new Set(normalizeNames(options.managedRoleNames, 'managedRoleNames'))
+      : null;
+    const effectiveDesiredNames = managedNames ? desiredNames.filter((name) => managedNames.has(name)) : desiredNames;
+    const desiredRoles: RoleRepresentation[] = [];
+
+    for (const roleName of effectiveDesiredNames) {
+      const roleHandle = this.realmHandle.role(roleName);
+      if (options.ensureMissing !== false) await roleHandle.ensure({});
+      const role = roleHandle.role ?? (await roleHandle.get());
+      if (!role?.id) throw new Error(`Role "${roleName}" not found in realm "${this.realmName}"`);
+      desiredRoles.push(role);
+    }
+
+    const user = await this.requireUser();
+    const assignedRoles = await this.listAssignedRealmRoles();
+    const assignedNames = new Set(
+      assignedRoles.map((role) => role.name).filter((name): name is string => typeof name === 'string'),
+    );
+    const desiredNameSet = new Set(effectiveDesiredNames);
+    const toAdd = desiredRoles.filter((role) => role.name && !assignedNames.has(role.name));
+    const toRemove = managedNames
+      ? assignedRoles.filter((role) => role.name && managedNames.has(role.name) && !desiredNameSet.has(role.name))
+      : [];
+
+    if (toAdd.length) {
+      await this.core.users.addRealmRoleMappings({
+        realm: this.realmName,
+        id: user.id,
+        roles: toAdd as never as RoleMappingPayload[],
+      });
+    }
+    if (toRemove.length) {
+      await this.core.users.delRealmRoleMappings({
+        realm: this.realmName,
+        id: user.id,
+        roles: toRemove as never as RoleMappingPayload[],
+      });
+    }
+
+    return { added: toAdd, removed: toRemove };
+  }
+
+  public async reconcileAttributes(
+    desiredAttributes: Readonly<Record<string, readonly string[]>>,
+    options: ReconcileUserAttributesOptions = {},
+  ) {
+    const user = await this.requireUser();
+    const attributes: Record<string, string[]> = Object.assign(Object.create(null), user.attributes ?? {});
+    const managedKeys = options.managedKeys ? normalizeNames(options.managedKeys, 'managedKeys') : [];
+
+    for (const key of managedKeys) {
+      assertSafeAttributeKey(key);
+      delete attributes[key];
+    }
+    for (const [key, values] of Object.entries(desiredAttributes)) {
+      assertSafeAttributeKey(key);
+      if (!Array.isArray(values) || values.some((value) => typeof value !== 'string')) {
+        throw new Error(`User attribute "${key}" must be an array of strings`);
+      }
+      attributes[key] = [...values];
+    }
+
+    await this.core.users.update(
+      { realm: this.realmName, id: user.id },
+      { ...getUserUpdateData(user, {}, this.username), attributes },
+    );
+    await this.get();
+    return this;
+  }
+
+  public async assignRole(roleHandle: RoleHandle) {
+    await this.assignRealmRoles([roleHandle]);
   }
 
   public async unassignRole(roleHandle: RoleHandle) {
-    assertRealmRoleMappingOwnership(this.core, this.realmName, roleHandle, `user "${this.username}"`);
-    const user = await this.requireUser();
-    let role: RoleRepresentation | null = roleHandle.role ?? null;
-    if (!role) {
-      role = (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName)) ?? null;
-    }
-
-    if (!role) {
-      throw new Error(`Role "${roleHandle.roleName}" not found in realm "${this.realmName}"`);
-    }
-
-    await this.core.users.delRealmRoleMappings({
-      realm: this.realmName,
-      id: user.id,
-      roles: [role] as never as RoleMappingPayload[],
-    });
+    await this.unassignRealmRoles([roleHandle]);
   }
 
   public async assignClientRole(clientRoleHandle: ClientRoleHandle) {
@@ -631,6 +777,12 @@ export default class UserHandle {
       lifespan: options?.lifespan,
       redirectUri: options?.redirectUri,
     });
+  }
+
+  public async sendVerifyEmail() {
+    const user = await this.requireUser();
+    await this.core.users.sendVerifyEmail({ realm: this.realmName, id: user.id });
+    return this;
   }
 
   public async listFederatedIdentities() {

@@ -739,6 +739,12 @@ export default class RealmHandle {
     return new UserHandle(this.core, this, username);
   }
 
+  /** Creates a user handle targeted by immutable Keycloak user ID. */
+  public userById(id: string) {
+    if (typeof id !== 'string' || !id.trim()) throw new Error('Keycloak user ID must be a non-empty string');
+    return new UserHandle(this.core, this, id, id);
+  }
+
   public identityProvider(alias: string) {
     return new IdentityProviderHandle(this.core, this, alias);
   }

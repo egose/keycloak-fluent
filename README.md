@@ -161,6 +161,38 @@ await kc.auth({
 });
 ```
 
+### Managed clients
+
+`createManagedKeycloakClient(...)` authenticates on demand, refreshes expired tokens without timers, and shares one authentication attempt across concurrent requests. Credential resolver functions are called again whenever authentication is required, allowing secret rotation.
+
+Service-account authentication uses `client_credentials` and is the default mode:
+
+```ts
+import { createManagedKeycloakClient } from '@egose/keycloak-fluent';
+
+const kc = createManagedKeycloakClient({
+  baseUrl: 'http://localhost:8080',
+  authRealm: 'master',
+  clientId: 'provisioning-service',
+  clientSecret: () => secretStore.get('keycloak-client-secret'),
+});
+```
+
+Direct user authentication uses the OAuth password grant. The client must have Direct Access Grants enabled:
+
+```ts
+const kc = createManagedKeycloakClient({
+  baseUrl: 'http://localhost:8080',
+  authRealm: 'master',
+  authMode: 'user_credentials',
+  clientId: 'admin-cli',
+  username: () => secretStore.get('keycloak-admin-username'),
+  password: () => secretStore.get('keycloak-admin-password'),
+});
+```
+
+Service accounts are recommended for background automation because their permissions and lifecycle are independent of a human administrator.
+
 ## Example Flows
 
 ### Realm and User Provisioning
@@ -174,6 +206,30 @@ await realm.user('john.doe').ensure({
   firstName: 'John',
   lastName: 'Doe',
   email: 'john.doe@example.com',
+});
+```
+
+Users can also be targeted by immutable Keycloak ID. User handles expose temporary password reset, verification email, managed realm-role reconciliation, and managed attribute reconciliation:
+
+```ts
+const user = kc.realm('my-realm').userById(userId);
+
+await user.resetPassword(generatedPassword, { temporary: true });
+await user.sendVerifyEmail();
+await user.reconcileRealmRoles(['application-user'], {
+  managedRoleNames: ['application-user', 'application-admin'],
+  ensureMissing: true,
+});
+await user.reconcileAttributes({ tenantId: ['tenant-42'] }, { managedKeys: ['tenantId'] });
+```
+
+Supplying `passwordTemporary` during creation or ensure uses the same disabled-create and cleanup guarantees as ordinary password provisioning:
+
+```ts
+await kc.realm('my-realm').user('new-user').create({
+  enabled: true,
+  password: generatedPassword,
+  passwordTemporary: true,
 });
 ```
 
