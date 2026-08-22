@@ -56,9 +56,17 @@ const toc = [{
   "id": "createdata-userinputdata",
   "level": 4
 }, {
+  "value": "Password provisioning failure semantics",
+  "id": "password-provisioning-failure-semantics",
+  "level": 5
+}, {
   "value": "<code>update(data: UserInputData)</code>",
   "id": "updatedata-userinputdata",
   "level": 4
+}, {
+  "value": "Partial-success semantics",
+  "id": "partial-success-semantics",
+  "level": 5
 }, {
   "value": "<code>delete()</code>",
   "id": "delete",
@@ -119,6 +127,10 @@ const toc = [{
   "value": "<code>UserInputData</code>",
   "id": "userinputdata",
   "level": 4
+}, {
+  "value": "<code>UserPasswordProvisioningError</code>",
+  "id": "userpasswordprovisioningerror",
+  "level": 4
 }];
 function _createMdxContent(props) {
   const _components = {
@@ -127,6 +139,7 @@ function _createMdxContent(props) {
     h2: "h2",
     h3: "h3",
     h4: "h4",
+    h5: "h5",
     header: "header",
     hr: "hr",
     li: "li",
@@ -233,6 +246,27 @@ function _createMdxContent(props) {
           children: "Throws"
         }), ": An error if the user already exists."]
       }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.h5, {
+      id: "password-provisioning-failure-semantics",
+      children: "Password provisioning failure semantics"
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["When ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "data.password"
+      }), " is provided, the user is created with ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "enabled: false"
+      }), "\nfirst, the password is reset against the disabled account, and only then is\nthe user enabled (unless ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "data.enabled"
+      }), " is explicitly ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "false"
+      }), ", in which case\nthe account stays disabled after a successful password setup). This means a\npassword-reset failure can never leave an enabled, usable account."]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["On a password failure during creation, the just-created disabled user is\ndeleted best-effort so retrying starts clean. If the deletion also fails, the\ndisabled account is left behind (it is unusable) and the original password\nerror is rethrown as a ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "UserPasswordProvisioningError"
+      }), " with the cleanup\nfailure annotated on ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "cause"
+      }), ". The plaintext password is never included in the\nerror, its ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "cause"
+      }), ", or any serialized form."]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "updatedata-userinputdata",
       children: (0,jsx_runtime.jsx)(_components.code, {
@@ -261,6 +295,23 @@ function _createMdxContent(props) {
           children: "Throws"
         }), ": An error if the user does not exist."]
       }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.h5, {
+      id: "partial-success-semantics",
+      children: "Partial-success semantics"
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["If a ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "password"
+      }), " is supplied, the profile update is applied first and the\npassword reset runs second. A password-reset failure does ", (0,jsx_runtime.jsx)(_components.strong, {
+        children: "not"
+      }), " roll back\nthe preceding profile update (it has already been committed in Keycloak).\nInstead a ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "UserPasswordProvisioningError"
+      }), " is thrown with ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "profileApplied: true"
+      }), "\nand ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "initialProvisioning: false"
+      }), "; the caller can retry the password step\nexplicitly or otherwise remediate. The plaintext password is never included in\nthe error or its ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "cause"
+      }), "."]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "delete",
       children: (0,jsx_runtime.jsx)(_components.code, {
@@ -303,6 +354,14 @@ function _createMdxContent(props) {
           }), "\n"]
         }), "\n"]
       }), "\n"]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["On the create branch, ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "ensure"
+      }), " uses the same disabled-until-password-success\nsemantics as ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "create"
+      }), ". On the update branch, it uses the same partial-success\nsemantics as ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "update"
+      }), "."]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "discard",
       children: (0,jsx_runtime.jsx)(_components.code, {
@@ -565,6 +624,48 @@ function _createMdxContent(props) {
         className: "language-typescript",
         children: "export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {\n  password?: string;\n};\n"
       })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
+      id: "userpasswordprovisioningerror",
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        children: "UserPasswordProvisioningError"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["Error thrown when password setup fails after user profile data has been\napplied. The plaintext password is never present in any field of this error\nor its ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "cause"
+      }), "."]
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export class UserPasswordProvisioningError extends Error {\n  readonly username: string;\n  readonly realmName: string;\n  /** true when the preceding profile update/disabled user persists in Keycloak. */\n  readonly profileApplied: boolean;\n  /** true for the create/ensure-create path; false for updates of an existing user. */\n  readonly initialProvisioning: boolean;\n}\n"
+      })
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: ["On the ", (0,jsx_runtime.jsx)(_components.strong, {
+          children: "create / ensure-create"
+        }), " path, a password failure triggers a\nbest-effort deletion of the just-created disabled user. When that deletion\nsucceeds, ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "profileApplied"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "false"
+        }), " (no account left behind). When the\ndeletion also fails, ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "profileApplied"
+        }), " stays ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "false"
+        }), " and the disabled,\nunusable account is left in Keycloak; the cleanup failure is annotated on\nthe password error's ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "cause"
+        }), "."]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: ["On the ", (0,jsx_runtime.jsx)(_components.strong, {
+          children: "update"
+        }), " path, the profile update has already committed and is not\nrolled back. ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "profileApplied"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "true"
+        }), " and ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "initialProvisioning"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "false"
+        }), "."]
+      }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
       children: "This API provides a comprehensive interface for managing Keycloak users and their associated roles, groups, and attributes."
     })]

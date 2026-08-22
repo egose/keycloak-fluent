@@ -68,6 +68,10 @@ const toc = [{
   "id": "executions",
   "level": 2
 }, {
+  "value": "Cross-flow <code>updateExecution</code>",
+  "id": "cross-flow-updateexecution",
+  "level": 3
+}, {
   "value": "Provider Discovery",
   "id": "provider-discovery",
   "level": 2
@@ -205,6 +209,21 @@ function _createMdxContent(props) {
           children: "lowerExecutionPriority(id)"
         })
       }), "\n"]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.h3, {
+      id: "cross-flow-updateexecution",
+      children: ["Cross-flow ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "updateExecution"
+      })]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["When ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "flowAlias"
+      }), " differs from the handle's own alias, the handle resolves\nand verifies that target flow before mutation. A missing target raises an\n", (0,jsx_runtime.jsx)(_components.code, {
+        children: "AuthenticationFlowNotFoundError"
+      }), " (with ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "realmName"
+      }), " and ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "alias"
+      }), " fields) and\nleaves the target untouched. The returned execution list is read back from\nthe resolved target alias — never from the handle's own flow — so the\nresult matches the flow that was actually updated."]
     }), "\n", (0,jsx_runtime.jsx)(_components.h2, {
       id: "provider-discovery",
       children: "Provider Discovery"
