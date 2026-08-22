@@ -29,26 +29,18 @@ describe('Implementation Consistency: Root Client', () => {
     expect(auth).toHaveBeenNthCalledWith(1, {
       grantType: 'password',
       clientId: 'admin-cli',
-      clientSecret: undefined,
       username: 'admin',
       password: 'secret', // pragma: allowlist secret
-      refreshToken: undefined,
     });
     expect(auth).toHaveBeenNthCalledWith(2, {
       grantType: 'refresh_token',
       clientId: 'admin-cli',
-      clientSecret: undefined,
-      username: undefined,
-      password: undefined,
       refreshToken: 'refresh-token',
     });
     expect(auth).toHaveBeenNthCalledWith(3, {
       grantType: 'client_credentials',
       clientId: 'service-account',
       clientSecret: 'secret', // pragma: allowlist secret
-      username: undefined,
-      password: undefined,
-      refreshToken: undefined,
     });
   });
 
