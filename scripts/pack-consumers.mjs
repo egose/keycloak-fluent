@@ -140,7 +140,7 @@ function withTokenServer(fn) {
       requests.push({ method: req.method, url: req.url, body });
       if (req.url === '/realms/master/protocol/openid-connect/token') {
         res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ access_token: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTkwMDAwMDAwMH0.', expires_in: 60, token_type: 'Bearer' })); # pragma: allowlist secret
+        res.end(JSON.stringify({ access_token: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTkwMDAwMDAwMH0.', expires_in: 60, token_type: 'Bearer' })); // pragma: allowlist secret
         return;
       }
       res.writeHead(404, { 'content-type': 'application/json' });
@@ -328,7 +328,7 @@ function withTokenServer(fn: (baseUrl: string, requests: Array<{ method: string 
       requests.push({ method: req.method, url: req.url, body });
       if (req.url === '/realms/master/protocol/openid-connect/token') {
         res.writeHead(200, { 'content-type': 'application/json' });
-        res.end(JSON.stringify({ access_token: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTkwMDAwMDAwMH0.', expires_in: 60, token_type: 'Bearer' })); # pragma: allowlist secret
+        res.end(JSON.stringify({ access_token: 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTkwMDAwMDAwMH0.', expires_in: 60, token_type: 'Bearer' })); // pragma: allowlist secret
         return;
       }
       res.writeHead(404, { 'content-type': 'application/json' });
