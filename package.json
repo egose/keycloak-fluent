@@ -1,6 +1,6 @@
 {
   "name": "@egose/keycloak-fluent",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "description": "Fluent TypeScript wrapper for the Keycloak Admin API with idempotent provisioning for realms, users, clients, flows, organizations, and admin operations.",
   "keywords": [
     "keycloak",

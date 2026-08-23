@@ -1,3 +1,9 @@
+## [0.13.0](https://github.com/egose/keycloak-fluent/compare/v0.12.1...v0.13.0) (2026-08-23)
+
+### Features
+
+* support client credentials token exchange in simple auth ([9104e1e](https://github.com/egose/keycloak-fluent/commit/9104e1eb2c93bb179c0eb96c162a5f65040b1f7f))
+
 ## [0.12.1](https://github.com/egose/keycloak-fluent/compare/v0.12.0...v0.12.1) (2026-08-22)
 
 ### Bug Fixes
