@@ -1,3 +1,13 @@
+## [0.14.0](https://github.com/egose/keycloak-fluent/compare/v0.13.1...v0.14.0) (2026-08-23)
+
+### Features
+
+* **website:** refresh website API surface and release workflow ([ba8a76c](https://github.com/egose/keycloak-fluent/commit/ba8a76c7ae798c654366878bfa3a975c358d20e3))
+
+### Bug Fixes
+
+* replace invalid pragma comments in token server fixture ([34060e0](https://github.com/egose/keycloak-fluent/commit/34060e04ac2268f5e9a232293be579b4cdb99f05))
+
 ## [0.13.1](https://github.com/egose/keycloak-fluent/compare/v0.13.0...v0.13.1) (2026-08-23)
 
 ### Bug Fixes
