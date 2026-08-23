@@ -1,3 +1,9 @@
+## [0.13.1](https://github.com/egose/keycloak-fluent/compare/v0.13.0...v0.13.1) (2026-08-23)
+
+### Bug Fixes
+
+* use explicit auth.js import path ([1e26b22](https://github.com/egose/keycloak-fluent/commit/1e26b2276d0e28f577904a7b81981f5cc1a96e74))
+
 ## [0.13.0](https://github.com/egose/keycloak-fluent/compare/v0.12.1...v0.13.0) (2026-08-23)
 
 ### Features
