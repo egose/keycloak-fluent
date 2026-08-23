@@ -1,4 +1,5 @@
 import KeycloakAdminClient, { type ConnectionConfig, type Credentials, type GrantTypes } from './keycloak-admin-client';
+import { getToken } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 import RealmHandle from './realm';
 import ServerInfoHandle from './server-info';
 import WhoAmIHandle from './who-am-i';
@@ -90,6 +91,21 @@ export default class KeycloakAdminClientFluent {
       if (username !== undefined) credentials.username = username;
       if (password !== undefined) credentials.password = password;
       if (refreshToken !== undefined) credentials.refreshToken = refreshToken;
+
+      if (grantType === 'client_credentials') {
+        const { accessToken } = await getToken({
+          baseUrl: this.core.baseUrl,
+          realmName: this.core.realmName,
+          scope: this.core.scope,
+          credentials,
+          requestOptions: {
+            ...this.core.getRequestOptions(),
+            ...(this.core.timeout ? { signal: AbortSignal.timeout(this.core.timeout) } : {}),
+          },
+        });
+        this.core.setAccessToken(accessToken);
+        return;
+      }
 
       await this.auth(credentials);
     } catch (error) {
