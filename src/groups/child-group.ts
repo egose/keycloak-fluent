@@ -13,16 +13,18 @@ function getChildGroupUpdateData(group: GroupRepresentation, data: ChildGroupInp
 
 export default class ChildGroupHandle extends AbstractGroupHandle {
   public readonly parentGroupHandle: GroupHandle;
-  private _parentGroupName: string;
 
   constructor(core: KeycloakAdminClient, parentGroupHandle: GroupHandle, groupName: string) {
-    super(core, parentGroupHandle.realmName, groupName);
+    super(core, () => parentGroupHandle.realmName, groupName, parentGroupHandle);
     this.parentGroupHandle = parentGroupHandle;
-    this._parentGroupName = parentGroupHandle.groupName;
   }
 
   public get parentGroupName(): string {
-    return this._parentGroupName;
+    return this.parentGroupHandle.groupName;
+  }
+
+  public override get groupPath(): string {
+    return `${this.parentGroupHandle.groupPath}/${this.groupName}`;
   }
 
   static async getByName(core: KeycloakAdminClient, realm: string, parentGroupName: string, groupName: string) {
@@ -35,7 +37,6 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
       return null;
     }
 
-    this._parentGroupName = parentGroup.name;
     return parentGroup as GroupRepresentation & { id: string; name: string };
   }
 
@@ -151,11 +152,6 @@ export default class ChildGroupHandle extends AbstractGroupHandle {
   }
 
   public childGroup(groupName: string) {
-    return new NestedChildGroupHandle(
-      this.core,
-      this.realmName,
-      `/${this.parentGroupName}/${this.groupName}`,
-      groupName,
-    );
+    return new NestedChildGroupHandle(this.core, this.realmName, this.groupPath, groupName, this);
   }
 }

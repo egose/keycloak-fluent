@@ -2,6 +2,13 @@ import type KeycloakAdminClient from '../keycloak-admin-client';
 import type RoleHandle from '../role';
 import type ClientRoleHandle from '../client-role';
 import type ClientHandle from '../clients/client';
+import {
+  assertClientRoleOwnedByClient,
+  assertOwnedHandle,
+  assertResourceKind,
+  assertSameResourceOwner,
+  describeResourceHandle,
+} from './resource-ownership';
 
 /**
  * Shared ownership validation for role mapping endpoints.
@@ -22,8 +29,7 @@ import type ClientHandle from '../clients/client';
 type OwnableRoleHandle = RoleHandle | ClientRoleHandle;
 
 function describeHandle(roleHandle: OwnableRoleHandle): string {
-  const roleKind = isClientRoleHandle(roleHandle) ? 'client role' : 'realm role';
-  return `${roleKind} "${roleHandle.roleName}"`;
+  return describeResourceHandle(roleHandle);
 }
 
 function isClientRoleHandle(handle: OwnableRoleHandle): handle is ClientRoleHandle {
@@ -42,11 +48,13 @@ export function assertSameCore(
   roleHandle: OwnableRoleHandle,
   ownerLabel: string,
 ) {
-  if (ownerCore !== roleCore) {
-    throw new Error(
-      `${describeHandle(roleHandle)} belongs to a different Keycloak admin client than ${ownerLabel}; refusing cross-core role mapping`,
-    );
-  }
+  assertSameResourceOwner(
+    { core: ownerCore },
+    { core: roleCore },
+    describeHandle(roleHandle),
+    ownerLabel,
+    'cross-core role mapping',
+  );
 }
 
 /**
@@ -60,11 +68,13 @@ export function assertSameRealm(
   roleHandle: OwnableRoleHandle,
   ownerLabel: string,
 ) {
-  if (ownerRealm !== roleRealm) {
-    throw new Error(
-      `${describeHandle(roleHandle)} belongs to realm "${roleRealm}", which differs from ${ownerLabel} realm "${ownerRealm}"; refusing cross-realm role mapping`,
-    );
-  }
+  assertSameResourceOwner(
+    { core: roleHandle.core, realmName: ownerRealm },
+    { core: roleHandle.core, realmName: roleRealm },
+    describeHandle(roleHandle),
+    ownerLabel,
+    'cross-realm role mapping',
+  );
 }
 
 /**
@@ -73,11 +83,7 @@ export function assertSameRealm(
  * scope mapping of the target client even within the same realm.
  */
 export function assertClientRoleOwnedBy(targetClient: ClientHandle, roleHandle: ClientRoleHandle, ownerLabel: string) {
-  if (roleHandle.clientId !== targetClient.clientId) {
-    throw new Error(
-      `${describeHandle(roleHandle)} belongs to client "${roleHandle.clientId}", which differs from ${ownerLabel} target client "${targetClient.clientId}"; refusing cross-client scope mapping`,
-    );
-  }
+  assertClientRoleOwnedByClient(targetClient, roleHandle, ownerLabel, 'cross-client scope mapping');
 }
 
 /**
@@ -86,11 +92,7 @@ export function assertClientRoleOwnedBy(targetClient: ClientHandle, roleHandle: 
  * must be rejected by kind rather than trusted as compatible payloads.
  */
 export function assertRealmRoleForScopeMapping(roleHandle: OwnableRoleHandle, ownerLabel: string) {
-  if (isClientRoleHandle(roleHandle)) {
-    throw new Error(
-      `${describeHandle(roleHandle)} is a client role; ${ownerLabel} realm-scope mappings only accept realm roles`,
-    );
-  }
+  assertResourceKind(roleHandle, 'realm role', ownerLabel, 'use non-realm roles for realm-scope mappings');
 }
 
 /**
@@ -104,9 +106,13 @@ export function assertRealmRoleMappingOwnership(
   roleHandle: RoleHandle,
   ownerLabel: string,
 ) {
-  assertRealmRoleForScopeMapping(roleHandle, ownerLabel);
-  assertSameCore(ownerCore, roleHandle.core, roleHandle, ownerLabel);
-  assertSameRealm(ownerRealm, roleHandle.realmName, roleHandle, ownerLabel);
+  assertOwnedHandle(
+    { core: ownerCore, realmName: ownerRealm },
+    roleHandle,
+    'realm role',
+    ownerLabel,
+    'cross-realm role mapping',
+  );
 }
 
 /**
@@ -124,5 +130,12 @@ export function assertClientRoleMappingOwnership(
 ) {
   assertSameCore(ownerCore, roleHandle.core, roleHandle, ownerLabel);
   assertSameRealm(ownerRealm, roleHandle.realmName, roleHandle, ownerLabel);
+  assertOwnedHandle(
+    { core: ownerCore, realmName: ownerRealm },
+    targetClient,
+    'client',
+    ownerLabel,
+    'cross-client scope mapping',
+  );
   assertClientRoleOwnedBy(targetClient, roleHandle, ownerLabel);
 }

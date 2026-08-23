@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { getErrorStatus, isRetryableTransportError, retry, retryTransientAdminError } from '../src/utils/retry';
+import {
+  getErrorStatus,
+  isRetryableTransportError,
+  retry,
+  retryTransientAdminError,
+  retryTransientAdminReadError,
+} from '../src/utils/retry';
 
 function transportError(status: number, message = `HTTP ${status}`) {
   return Object.assign(new Error(message), {
@@ -226,18 +232,33 @@ describe('Implementation Consistency: Retry', () => {
     expect(operation).toHaveBeenCalledTimes(2);
   });
 
-  test('legacy retryTransientAdminError retries mutations by default for backward compatibility', async () => {
+  test('retryTransientAdminError does not replay ambiguous mutations by default', async () => {
+    const operation = vi.fn().mockRejectedValue(transportError(503));
+
+    await expect(retryTransientAdminError(operation, 3)).rejects.toThrow('HTTP 503');
+    expect(operation).toHaveBeenCalledTimes(1);
+  });
+
+  test('retryTransientAdminReadError retries explicitly classified reads', async () => {
     const operation = vi.fn().mockRejectedValueOnce(transportError(503)).mockResolvedValueOnce('done');
 
-    await expect(retryTransientAdminError(operation, 3)).resolves.toBe('done');
+    await expect(retryTransientAdminReadError(operation, 3)).resolves.toBe('done');
     expect(operation).toHaveBeenCalledTimes(2);
   });
 
-  test('legacy retryTransientAdminError accepts RetryOptions objects', async () => {
+  test('retryTransientAdminError accepts RetryOptions objects without implicit idempotency', async () => {
     const operation = vi.fn().mockRejectedValue(transportError(503));
     await expect(retryTransientAdminError(operation, { attempts: 2, baseDelay: 0, maxDelay: 0 })).rejects.toThrow(
       'HTTP 503',
     );
+    expect(operation).toHaveBeenCalledTimes(1);
+  });
+
+  test('retryTransientAdminError only retries when idempotency is explicit', async () => {
+    const operation = vi.fn().mockRejectedValue(transportError(503));
+    await expect(
+      retryTransientAdminError(operation, { idempotent: true, attempts: 2, baseDelay: 0, maxDelay: 0 }),
+    ).rejects.toThrow('HTTP 503');
     expect(operation).toHaveBeenCalledTimes(2);
   });
 });

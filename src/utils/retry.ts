@@ -271,11 +271,10 @@ export async function retry<T>(operation: () => Promise<T>, options: RetryOption
 }
 
 /**
- * Legacy entry point preserved for existing callers across the codebase. It
- * retries any operation (read or mutation) up to `attempts` times, retrying
- * on transport-level transient HTTP statuses only. Mutations are retried by
- * this wrapper for backward compatibility; new mutations should use
- * {@link retry} with an explicit {@link RetryOptions.idempotent} rationale.
+ * Entry point for admin operations that are not explicitly classified as
+ * replay-safe. It preserves retry's structured classifier and option handling,
+ * but defaults to one effective attempt so mutating requests are not replayed
+ * after an ambiguous transient response.
  *
  * Accepts either a legacy `attempts` count or a full {@link RetryOptions}
  * object to ease migration.
@@ -287,5 +286,20 @@ export async function retryTransientAdminError<T>(
   const options: RetryOptions =
     typeof attemptsOrOptions === 'number' ? { attempts: attemptsOrOptions } : attemptsOrOptions;
 
-  return retry(operation, { ...options, idempotent: options.idempotent ?? true });
+  return retry(operation, { ...options, idempotent: options.idempotent ?? false });
+}
+
+/**
+ * Retry a read-only admin operation. Use this only for side-effect-free reads;
+ * mutating requests must stay on {@link retryTransientAdminError} unless an
+ * endpoint-level idempotency rationale is documented and tested.
+ */
+export async function retryTransientAdminReadError<T>(
+  operation: () => Promise<T>,
+  attemptsOrOptions: number | RetryOptions = 3,
+): Promise<T> {
+  const options: RetryOptions =
+    typeof attemptsOrOptions === 'number' ? { attempts: attemptsOrOptions } : attemptsOrOptions;
+
+  return retry(operation, { ...options, idempotent: true });
 }

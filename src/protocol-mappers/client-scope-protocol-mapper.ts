@@ -5,6 +5,7 @@ import KeycloakAdminClient, {
 } from '../keycloak-admin-client';
 import ClientScopeHandle from '../client-scope';
 import { defaultProtocolMapperData, type ProtocolMapperInputData } from './protocol-mapper';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from '../utils/handle-identity';
 
 function getClientScopeProtocolMapperUpdateData(
   mapper: ProtocolMapperRepresentation,
@@ -16,16 +17,32 @@ function getClientScopeProtocolMapperUpdateData(
 
 export default class ClientScopeProtocolMapperHandle {
   public readonly core: KeycloakAdminClient;
-  public readonly realmName: string;
   public readonly clientScopeHandle: ClientScopeHandle;
   private _mapperName: string;
   private _clientScopeProtocolMapper?: ProtocolMapperRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, clientScopeHandle: ClientScopeHandle, mapperName: string) {
     this.core = core;
     this.clientScopeHandle = clientScopeHandle;
-    this.realmName = clientScopeHandle.realmName;
     this._mapperName = mapperName;
+    this.parentIdentity = new ParentIdentityTracker(clientScopeHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._clientScopeProtocolMapper = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.clientScopeHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.clientScopeHandle);
   }
 
   public get mapperName(): string {
@@ -33,6 +50,7 @@ export default class ClientScopeProtocolMapperHandle {
   }
 
   public get clientScopeProtocolMapper(): ProtocolMapperRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._clientScopeProtocolMapper;
   }
 
@@ -41,8 +59,10 @@ export default class ClientScopeProtocolMapperHandle {
    * clears the cached representation. Returns `this` for chaining.
    */
   public rebind(newMapperName: string): this {
+    if (newMapperName === this._mapperName) return this;
     this._mapperName = newMapperName;
     this._clientScopeProtocolMapper = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -82,6 +102,7 @@ export default class ClientScopeProtocolMapperHandle {
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     const clientScope = await this.resolveClientScope();
     const one = await this.core.clientScopes.findProtocolMapper({
       realm: this.realmName,
@@ -91,6 +112,7 @@ export default class ClientScopeProtocolMapperHandle {
     this._clientScopeProtocolMapper = one ?? null;
 
     if (this._clientScopeProtocolMapper) {
+      if (this._mapperName !== this._clientScopeProtocolMapper.name) this._identityGeneration++;
       this._mapperName = this._clientScopeProtocolMapper.name!;
     }
 
@@ -98,6 +120,7 @@ export default class ClientScopeProtocolMapperHandle {
   }
 
   public async get(): Promise<ProtocolMapperRepresentation | null> {
+    this.invalidateParentCache();
     const clientScope = await this.resolveClientScope();
     const one = await this.core.clientScopes.findProtocolMapperByName({
       realm: this.realmName,
@@ -107,6 +130,7 @@ export default class ClientScopeProtocolMapperHandle {
     this._clientScopeProtocolMapper = one ?? null;
 
     if (this._clientScopeProtocolMapper) {
+      if (this._mapperName !== this._clientScopeProtocolMapper.name) this._identityGeneration++;
       this._mapperName = this._clientScopeProtocolMapper.name!;
     }
 

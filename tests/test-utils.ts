@@ -1,6 +1,31 @@
 import { randomUUID } from 'node:crypto';
+import type { getToken } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 import KeycloakAdminClientFluent from '../src/index';
+import type KeycloakAdminClient from '../src/keycloak-admin-client';
 import type RealmHandle from '../src/realm';
+
+export type MockAdminResource<
+  ResourceName extends keyof KeycloakAdminClient,
+  MethodName extends keyof KeycloakAdminClient[ResourceName],
+> = Pick<KeycloakAdminClient[ResourceName], MethodName>;
+
+type MockAdminClientInput = {
+  [ResourceName in keyof KeycloakAdminClient]?: KeycloakAdminClient[ResourceName] extends object
+    ? Partial<KeycloakAdminClient[ResourceName]>
+    : KeycloakAdminClient[ResourceName];
+};
+
+export function createMockAdminClient<const T extends MockAdminClientInput>(resources: T): T & KeycloakAdminClient {
+  return resources as T & KeycloakAdminClient;
+}
+
+export function createTestFluentClient(adminClient: KeycloakAdminClient, tokenAcquirer?: typeof getToken) {
+  return new KeycloakAdminClientFluent(undefined, { adminClient, tokenAcquirer });
+}
+
+export function exactCallArgs<Fn extends (...args: never[]) => unknown>(...args: Parameters<Fn>): Parameters<Fn> {
+  return args;
+}
 
 type MasterRealmContext = {
   kcMaster: KeycloakAdminClientFluent;

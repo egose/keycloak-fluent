@@ -32,9 +32,12 @@ import ConfidentialBrowserLoginClientHandle from './clients/confidential-browser
 import PublicBrowserLoginClientHandle from './clients/public-browser-login-client';
 import ServiceAccountHandle from './clients/service-account';
 import RealmAdminServiceAccountHandle from './clients/realm-admin-service-account';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
 import { fetchAll } from './utils/fetch-all';
 import { mergeUpdateData } from './utils/merge-update-data';
+import { assertOwnedHandle } from './utils/resource-ownership';
+import { makeHandleIdentityVersion } from './utils/handle-identity';
+import { toSinglePageQuery } from './utils/single-page-query';
 
 export const defaultRealmData = Object.freeze({
   enabled: true,
@@ -83,23 +86,6 @@ export type RealmAdminEventsQuery = {
 
 export type RealmUserSearchAttribute = 'username' | 'firstName' | 'lastName' | 'email';
 
-function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
-  if (options?.first !== undefined || options?.max !== undefined) {
-    return {
-      first: options.first ?? 0,
-      max: options.max ?? 100,
-    };
-  }
-
-  const page = Math.max(1, options?.page ?? 1);
-  const pageSize = Math.max(1, options?.pageSize ?? 100);
-
-  return {
-    first: (page - 1) * pageSize,
-    max: pageSize,
-  };
-}
-
 function getRealmUpdateData(realm: RealmRepresentation, data: RealmInputData) {
   return mergeUpdateData(realm, data);
 }
@@ -108,6 +94,7 @@ export default class RealmHandle {
   public readonly core: KeycloakAdminClient;
   private _realmName: string;
   private _realm?: RealmRepresentation | null;
+  private _identityGeneration = 0;
 
   constructor(core: KeycloakAdminClient, realmName: string) {
     this.core = core;
@@ -122,6 +109,10 @@ export default class RealmHandle {
     return this._realm;
   }
 
+  public get identityVersion(): string {
+    return makeHandleIdentityVersion(this._identityGeneration);
+  }
+
   /**
    * Re-targets this handle to a different realm identity and clears the
    * cached representation. The next read (`get()`/`require*()`) resolves
@@ -133,16 +124,19 @@ export default class RealmHandle {
    * Returns `this` for chaining.
    */
   public rebind(newRealmName: string): this {
+    if (newRealmName === this._realmName) return this;
     this._realmName = newRealmName;
     this._realm = undefined;
+    this._identityGeneration++;
     return this;
   }
 
   public async get(): Promise<RealmRepresentation | null> {
-    const one = await retryTransientAdminError(() => this.core.realms.findOne({ realm: this._realmName }));
+    const one = await retryTransientAdminReadError(() => this.core.realms.findOne({ realm: this._realmName }));
     this._realm = one ?? null;
 
     if (this._realm?.realm) {
+      if (this._realmName !== this._realm.realm) this._identityGeneration++;
       this._realmName = this._realm.realm;
     }
 
@@ -150,11 +144,11 @@ export default class RealmHandle {
   }
 
   public async getUserProfile(): Promise<UserProfileConfig> {
-    return retryTransientAdminError(() => this.core.users.getProfile({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.users.getProfile({ realm: this.realmName }));
   }
 
   public async getUserProfileMetadata(): Promise<UserProfileMetadata> {
-    return retryTransientAdminError(() => this.core.users.getProfileMetadata({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.users.getProfileMetadata({ realm: this.realmName }));
   }
 
   public async updateUserProfile(data: UserProfileConfig): Promise<UserProfileConfig> {
@@ -236,7 +230,7 @@ export default class RealmHandle {
   }
 
   public async export(options?: RealmExportOptions): Promise<RealmRepresentation> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.realms.export({
         realm: this.realmName,
         exportClients: options?.exportClients,
@@ -246,10 +240,11 @@ export default class RealmHandle {
   }
 
   public async listDefaultGroups() {
-    return retryTransientAdminError(() => this.core.realms.getDefaultGroups({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.realms.getDefaultGroups({ realm: this.realmName }));
   }
 
   public async addDefaultGroup(groupHandle: GroupHandle) {
+    assertOwnedHandle(this, groupHandle, 'group', `realm "${this.realmName}"`, 'default-group update');
     const group = groupHandle.group ?? (await groupHandle.get());
     if (!group?.id) {
       throw new Error(`Group "${groupHandle.groupName}" not found in realm "${this.realmName}"`);
@@ -262,6 +257,7 @@ export default class RealmHandle {
   }
 
   public async removeDefaultGroup(groupHandle: GroupHandle) {
+    assertOwnedHandle(this, groupHandle, 'group', `realm "${this.realmName}"`, 'default-group update');
     const group = groupHandle.group ?? (await groupHandle.get());
     if (!group?.id) {
       throw new Error(`Group "${groupHandle.groupName}" not found in realm "${this.realmName}"`);
@@ -274,7 +270,7 @@ export default class RealmHandle {
   }
 
   public async getEventsConfig(): Promise<RealmEventsConfigRepresentation> {
-    return retryTransientAdminError(() => this.core.realms.getConfigEvents({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.realms.getConfigEvents({ realm: this.realmName }));
   }
 
   public async updateEventsConfig(data: RealmEventsConfigInputData) {
@@ -283,9 +279,9 @@ export default class RealmHandle {
   }
 
   public async findEvents(query?: RealmEventsQuery): Promise<EventRepresentation[]> {
-    const { first, max } = getPaginationParams(query);
+    const { first, max } = toSinglePageQuery(query, 'RealmHandle.findEvents');
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.realms.findEvents({
         realm: this.realmName,
         client: query?.client,
@@ -305,9 +301,9 @@ export default class RealmHandle {
   }
 
   public async findAdminEvents(query?: RealmAdminEventsQuery): Promise<AdminEventRepresentation[]> {
-    const { first, max } = getPaginationParams(query);
+    const { first, max } = toSinglePageQuery(query, 'RealmHandle.findAdminEvents');
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.realms.findAdminEvents({
         realm: this.realmName,
         authClient: query?.authClient,
@@ -330,7 +326,7 @@ export default class RealmHandle {
   }
 
   public async listClientsInitialAccess(): Promise<ClientInitialAccessPresentation[]> {
-    return retryTransientAdminError(() => this.core.realms.getClientsInitialAccess({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.realms.getClientsInitialAccess({ realm: this.realmName }));
   }
 
   public async createClientsInitialAccess(data: RealmClientsInitialAccessInputData = {}) {
@@ -342,7 +338,9 @@ export default class RealmHandle {
   }
 
   public async getUsersManagementPermissions(): Promise<ManagementPermissionReference> {
-    return retryTransientAdminError(() => this.core.realms.getUsersManagementPermissions({ realm: this.realmName }));
+    return retryTransientAdminReadError(() =>
+      this.core.realms.getUsersManagementPermissions({ realm: this.realmName }),
+    );
   }
 
   public async updateUsersManagementPermissions(enabled: boolean): Promise<ManagementPermissionReference> {
@@ -355,7 +353,7 @@ export default class RealmHandle {
   }
 
   public async getClientSessionStats(): Promise<ClientSessionStat[]> {
-    return retryTransientAdminError(() => this.core.realms.getClientSessionStats({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.realms.getClientSessionStats({ realm: this.realmName }));
   }
 
   public async logoutAllSessions() {
@@ -381,17 +379,17 @@ export default class RealmHandle {
   }
 
   public async getKeys(): Promise<KeysMetadataRepresentation> {
-    return retryTransientAdminError(() => this.core.realms.getKeys({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.realms.getKeys({ realm: this.realmName }));
   }
 
   public async listLocales() {
-    return retryTransientAdminError(() => this.core.realms.getRealmSpecificLocales({ realm: this.realmName }));
+    return retryTransientAdminReadError(() => this.core.realms.getRealmSpecificLocales({ realm: this.realmName }));
   }
 
   public async getLocalizationTexts(selectedLocale: string, options?: RealmLocalizationQuery) {
-    const { first, max } = getPaginationParams(options);
+    const { first, max } = toSinglePageQuery(options, 'RealmHandle.getLocalizationTexts');
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.realms.getRealmLocalizationTexts({
         realm: this.realmName,
         selectedLocale,
@@ -437,7 +435,7 @@ export default class RealmHandle {
       viewableOnly?: boolean;
     },
   ) {
-    const { first, max } = getPaginationParams(options);
+    const { first, max } = toSinglePageQuery(options, 'RealmHandle.searchClients');
     const result = await this.core.clients.find({
       realm: this.realmName,
       first,
@@ -481,7 +479,7 @@ export default class RealmHandle {
     keyword: string,
     options?: { page?: number; pageSize?: number; first?: number; max?: number; briefRepresentation?: boolean },
   ) {
-    const { first, max } = getPaginationParams(options);
+    const { first, max } = toSinglePageQuery(options, 'RealmHandle.searchRoles');
 
     const result = await this.core.roles.find({
       realm: this.realmName,
@@ -517,7 +515,7 @@ export default class RealmHandle {
       briefRepresentation?: boolean;
     },
   ) {
-    const { first, max } = getPaginationParams(options);
+    const { first, max } = toSinglePageQuery(options, 'RealmHandle.searchGroups');
 
     const result = await this.core.groups.find({
       realm: this.realmName,
@@ -558,7 +556,7 @@ export default class RealmHandle {
     },
   ) {
     const { attribute = 'username' } = options ?? {};
-    const { first, max } = getPaginationParams(options);
+    const { first, max } = toSinglePageQuery(options, 'RealmHandle.searchUsers');
     const searchQuery: {
       realm: string;
       first: number;
@@ -651,9 +649,9 @@ export default class RealmHandle {
       briefRepresentation?: boolean;
     },
   ) {
-    const { first, max } = getPaginationParams(options);
+    const { first, max } = toSinglePageQuery(options, 'RealmHandle.searchOrganizations');
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.organizations.find({
         realm: this.realmName,
         search: keyword,
@@ -667,7 +665,7 @@ export default class RealmHandle {
 
   public async searchOrganizationsAll(keyword: string, options?: { exact?: boolean; briefRepresentation?: boolean }) {
     return fetchAll((first, max) =>
-      retryTransientAdminError(() =>
+      retryTransientAdminReadError(() =>
         this.core.organizations.find({
           realm: this.realmName,
           search: keyword,
@@ -681,7 +679,7 @@ export default class RealmHandle {
   }
 
   public async searchAuthenticationFlows(keyword: string) {
-    const flows = await retryTransientAdminError(() =>
+    const flows = await retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getFlows({ realm: this.realmName }),
     );
     const lowerkeyword = keyword.toLocaleLowerCase();
@@ -697,9 +695,9 @@ export default class RealmHandle {
     keyword: string,
     options?: { page?: number; pageSize?: number; first?: number; max?: number },
   ): Promise<WorkflowRepresentation[]> {
-    const { first, max } = getPaginationParams(options);
+    const { first, max } = toSinglePageQuery(options, 'RealmHandle.searchWorkflows');
 
-    return retryTransientAdminError(
+    return retryTransientAdminReadError(
       () =>
         this.core.workflows.find({
           realm: this.realmName,

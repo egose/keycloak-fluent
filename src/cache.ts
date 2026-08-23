@@ -12,12 +12,14 @@ const cacheClearRetryOptions = { idempotent: true };
 export default class CacheHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
   }
 
   public async clearUserCache() {

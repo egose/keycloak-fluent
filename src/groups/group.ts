@@ -15,7 +15,7 @@ export default class GroupHandle extends AbstractGroupHandle {
   public readonly realmHandle: RealmHandle;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, groupName: string) {
-    super(core, realmHandle.realmName, groupName);
+    super(core, () => realmHandle.realmName, groupName, realmHandle);
     this.realmHandle = realmHandle;
   }
 

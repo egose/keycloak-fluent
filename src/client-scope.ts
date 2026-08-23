@@ -5,7 +5,8 @@ import ClientScopeProtocolMapperHandle from './protocol-mappers/client-scope-pro
 import ClientScopeUserAttributeProtocolMapperHandle from './protocol-mappers/client-scope-user-attribute-protocol-mapper';
 import ClientScopeHardcodedClaimProtocolMapperHandle from './protocol-mappers/client-scope-hardcoded-claim-protocol-mapper';
 import ClientScopeAudienceProtocolMapperHandle from './protocol-mappers/client-scope-audience-protocol-mapper';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
 
 export type ClientScopeType = 'none' | 'default' | 'optional';
 export type ClientScopeProtocol = 'openid-connect' | 'saml';
@@ -39,15 +40,31 @@ function getClientScopeUpdateData(
 export default class ClientScopeHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _scopeName: string;
   private _clientScope?: ClientScopeRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, scopeName: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._scopeName = scopeName;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._clientScope = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get scopeName(): string {
@@ -55,6 +72,7 @@ export default class ClientScopeHandle {
   }
 
   public get clientScope(): ClientScopeRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._clientScope;
   }
 
@@ -68,8 +86,9 @@ export default class ClientScopeHandle {
    */
   public _setResolvedClientScope(rep: ClientScopeRepresentation, canonicalScopeName?: string): void {
     this._clientScope = rep;
-    if (canonicalScopeName !== undefined) {
+    if (canonicalScopeName !== undefined && canonicalScopeName !== this._scopeName) {
       this._scopeName = canonicalScopeName;
+      this._identityGeneration++;
     }
   }
 
@@ -85,16 +104,20 @@ export default class ClientScopeHandle {
    * Returns `this` for chaining.
    */
   public rebind(newScopeName: string): this {
+    if (newScopeName === this._scopeName) return this;
     this._scopeName = newScopeName;
     this._clientScope = undefined;
+    this._identityGeneration++;
     return this;
   }
 
   public async getById(id: string) {
-    const one = await retryTransientAdminError(() => this.core.clientScopes.findOne({ realm: this.realmName, id }));
+    this.invalidateParentCache();
+    const one = await retryTransientAdminReadError(() => this.core.clientScopes.findOne({ realm: this.realmName, id }));
     this._clientScope = one ?? null;
 
     if (this._clientScope) {
+      if (this._scopeName !== this._clientScope.name) this._identityGeneration++;
       this._scopeName = this._clientScope.name!;
     }
 
@@ -102,10 +125,12 @@ export default class ClientScopeHandle {
   }
 
   public async get(): Promise<ClientScopeRepresentation | null> {
-    const all = await retryTransientAdminError(() => this.core.clientScopes.find({ realm: this.realmName }));
+    this.invalidateParentCache();
+    const all = await retryTransientAdminReadError(() => this.core.clientScopes.find({ realm: this.realmName }));
     this._clientScope = all.find((c) => c.name === this.scopeName) ?? null;
 
     if (this._clientScope) {
+      if (this._scopeName !== this._clientScope.name) this._identityGeneration++;
       this._scopeName = this._clientScope.name!;
     }
 

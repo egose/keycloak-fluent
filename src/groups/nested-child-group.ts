@@ -10,11 +10,27 @@ function getNestedChildGroupUpdateData(group: GroupRepresentation, data: NestedC
 }
 
 export default class NestedChildGroupHandle extends AbstractGroupHandle {
-  public readonly parentGroupPath: string;
+  private readonly fallbackParentGroupPath: string;
+  private readonly parentGroupHandle?: AbstractGroupHandle;
 
-  constructor(core: KeycloakAdminClient, realmName: string, parentGroupPath: string, groupName: string) {
-    super(core, realmName, groupName);
-    this.parentGroupPath = parentGroupPath;
+  constructor(
+    core: KeycloakAdminClient,
+    realmName: string,
+    parentGroupPath: string,
+    groupName: string,
+    parentGroupHandle?: AbstractGroupHandle,
+  ) {
+    super(core, parentGroupHandle ? () => parentGroupHandle.realmName : realmName, groupName, parentGroupHandle);
+    this.fallbackParentGroupPath = parentGroupPath;
+    this.parentGroupHandle = parentGroupHandle;
+  }
+
+  public get parentGroupPath(): string {
+    return this.parentGroupHandle?.groupPath ?? this.fallbackParentGroupPath;
+  }
+
+  public override get groupPath(): string {
+    return `${this.parentGroupPath}/${this.groupName}`;
   }
 
   static async getByName(core: KeycloakAdminClient, realm: string, parentGroupPath: string, groupName: string) {
@@ -126,11 +142,6 @@ export default class NestedChildGroupHandle extends AbstractGroupHandle {
   }
 
   public childGroup(groupName: string) {
-    return new NestedChildGroupHandle(
-      this.core,
-      this.realmName,
-      `${this.parentGroupPath}/${this.groupName}`,
-      groupName,
-    );
+    return new NestedChildGroupHandle(this.core, this.realmName, this.groupPath, groupName, this);
   }
 }

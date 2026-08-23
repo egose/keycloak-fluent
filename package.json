@@ -30,7 +30,9 @@
     "test": "vitest run --no-cache",
     "pack:inspect": "node scripts/pack-inspect.mjs",
     "pack:consumers": "node scripts/pack-consumers.mjs",
-    "publish:check": "pnpm lint:check && pnpm typecheck && pnpm test:unit && pnpm build && pnpm pack:inspect && pnpm pack:consumers",
+    "docs:check": "node scripts/check-docs.mjs",
+    "release:workflow:check": "node scripts/verify-release-workflow.mjs",
+    "publish:check": "pnpm lint:check && pnpm typecheck && pnpm typecheck:tests && pnpm test:unit && pnpm build && pnpm pack:inspect && pnpm pack:consumers",
     "release": "release-it",
     "changelog": "repo-toolkit-changelog"
   },

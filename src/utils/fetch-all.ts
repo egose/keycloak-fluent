@@ -10,11 +10,11 @@
  * - Iteration advances by the *endpoint's actual* contract: the next offset
  *   is `previous offset + returned page length`, never `previous offset +
  *   requested max`. A server-side cap below the requested page size therefore
- *   terminates the loop rather than silently truncating or skipping results.
- * - An endpoint that ignores `first` and repeatedly returns a full page cannot
- *   loop forever: a per-call `maxPages` guard caps iteration, and a repeated
- *   page heuristic aborts when the same non-empty page is observed twice in a
- *   row (detected by reference identity of the returned array).
+ *   keeps paging without silently truncating or skipping results.
+ * - An endpoint that ignores `first` and repeatedly returns a page cannot loop
+ *   forever: per-call `maxPages`/`maxItems` guards cap iteration, and a
+ *   repeated page heuristic aborts when the same non-empty page is observed
+ *   twice in a row.
  * - `AbortSignal` support lets streaming consumers cancel mid-collection.
  *
  * The array-returning {@link fetchAll} preserves the existing `*All()` array
@@ -24,6 +24,7 @@
 
 const defaultPageSize = 100;
 const defaultMaxPages = 1000;
+const defaultMaxItems = 100000;
 
 export type FetchAllOptions = {
   /** Requested page size. Must be a finite integer >= 1. Defaults to 100. */
@@ -40,6 +41,11 @@ export type FetchAllOptions = {
    * returns a full page.
    */
   maxPages?: number;
+  /**
+   * Upper bound on buffered or yielded rows before the loop aborts with a
+   * `RangeError`. Must be a finite integer >= 0. Defaults to 100000.
+   */
+  maxItems?: number;
   /**
    * When provided, iteration aborts as soon as the signal is aborted. The
    * rethrown `AbortError` carries the abort reason on `cause`.
@@ -58,7 +64,7 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
   }
 }
 
-function validateBounds(first: number, pageSize: number, maxPages: number): void {
+function validateBounds(first: number, pageSize: number, maxPages: number, maxItems: number): void {
   if (!Number.isInteger(first) || first < 0) {
     throw new RangeError(`FetchAllOptions.first must be a finite integer >= 0 (received ${String(first)})`);
   }
@@ -70,47 +76,103 @@ function validateBounds(first: number, pageSize: number, maxPages: number): void
   if (!Number.isInteger(maxPages) || maxPages < 1) {
     throw new RangeError(`FetchAllOptions.maxPages must be a finite integer >= 1 (received ${String(maxPages)})`);
   }
+
+  if (!Number.isInteger(maxItems) || maxItems < 0) {
+    throw new RangeError(`FetchAllOptions.maxItems must be a finite integer >= 0 (received ${String(maxItems)})`);
+  }
+}
+
+function getRepeatedPageError(kind: 'fetchAll' | 'fetchAllStream'): RangeError {
+  return new RangeError(
+    `${kind} received the same non-empty page twice in a row; the endpoint may be ignoring the "first" offset`,
+  );
+}
+
+function getMaxItemsError(kind: 'fetchAll' | 'fetchAllStream', maxItems: number): RangeError {
+  return new RangeError(
+    `${kind} exceeded maxItems (${maxItems}) before reaching an empty page or explicit completion signal`,
+  );
+}
+
+function getPageSignature<T>(rows: T[]): string | undefined {
+  try {
+    return JSON.stringify(rows);
+  } catch {
+    return undefined;
+  }
+}
+
+function isRepeatedPage<T>(rows: T[], previousRows: T[] | null, previousSignature: string | undefined): boolean {
+  if (!previousRows || rows.length === 0) {
+    return false;
+  }
+
+  if (previousRows === rows) {
+    return true;
+  }
+
+  const signature = getPageSignature(rows);
+  return signature !== undefined && signature === previousSignature;
 }
 
 /**
  * Pages through `fetcher(first, max)` until completion, returning all rows in a
  * single array. Iteration advances by the number of rows actually returned
- * (not by the requested `max`), so server-side caps that shorten pages
- * terminate the loop instead of truncating or skipping rows.
+ * (not by the requested `max`), so server-side caps that shorten pages do not
+ * truncate or skip rows.
  */
 export async function fetchAll<T>(
-  fetcher: (first: number, max: number) => Promise<T[]>,
+  fetcher: (first: number, max: number) => Promise<FetchPageResult<T>>,
   options: FetchAllOptions = {},
 ): Promise<T[]> {
   const pageSize = options.pageSize ?? defaultPageSize;
   const first = options.first ?? 0;
   const maxPages = options.maxPages ?? defaultMaxPages;
+  const maxItems = options.maxItems ?? defaultMaxItems;
   const { signal } = options;
 
-  validateBounds(first, pageSize, maxPages);
+  validateBounds(first, pageSize, maxPages, maxItems);
   throwIfAborted(signal);
 
   const all: T[] = [];
   let offset = first;
+  let previousRows: T[] | null = null;
+  let previousSignature: string | undefined;
+
+  if (maxItems === 0) {
+    return all;
+  }
 
   for (let page = 0; page < maxPages; page++) {
     throwIfAborted(signal);
-    const rows = await fetcher(offset, pageSize);
+    const { rows, done } = toRows(await fetcher(offset, pageSize));
+    throwIfAborted(signal);
 
     if (!rows || rows.length === 0) {
       return all;
     }
 
-    all.push(...rows);
-    offset += rows.length;
+    if (isRepeatedPage(rows, previousRows, previousSignature)) {
+      throw getRepeatedPageError('fetchAll');
+    }
 
-    if (rows.length < pageSize) {
+    if (all.length + rows.length > maxItems) {
+      throw getMaxItemsError('fetchAll', maxItems);
+    }
+
+    all.push(...rows);
+
+    if (done || all.length === maxItems) {
       return all;
     }
+
+    previousRows = rows;
+    previousSignature = getPageSignature(rows);
+    offset += rows.length;
   }
 
   throw new RangeError(
-    `fetchAll exceeded maxPages (${maxPages}) without reaching an empty or short page; the endpoint may be ignoring the "first" offset or repeatedly returning a full page`,
+    `fetchAll exceeded maxPages (${maxPages}) without reaching an empty page or explicit completion signal; the endpoint may be ignoring the "first" offset or repeatedly returning pages`,
   );
 }
 
@@ -119,9 +181,13 @@ export async function fetchAll<T>(
  * and optionally a hint that this is the final page; an explicit `done: true`
  * short-circuits the loop before the `maxPages`/empty-page guards run.
  */
-export type FetchPageResult<T> = T[] | { rows: T[]; done?: boolean };
+export type FetchPageResult<T> = T[] | { rows: T[]; done?: boolean } | null | undefined;
 
 function toRows<T>(result: FetchPageResult<T>): { rows: T[]; done: boolean } {
+  if (!result) {
+    return { rows: [], done: false };
+  }
+
   if (Array.isArray(result)) {
     return { rows: result, done: false };
   }
@@ -134,11 +200,11 @@ function toRows<T>(result: FetchPageResult<T>): { rows: T[]; done: boolean } {
  *
  * The same validation, advancing, and bounded-loop guarantees as
  * {@link fetchAll} apply, plus repeated-page protection: if the endpoint
- * returns the exact same non-empty array object twice in a row, iteration
- * stops to avoid an infinite loop where `first` is silently ignored.
+ * returns the same non-empty page twice in a row, iteration throws to avoid
+ * silently returning partial results where `first` is ignored.
  *
- * In addition to the `maxPages` bound, callers may short-circuit a page by
- * having `fetcher` return `{ rows, done: true }`.
+ * In addition to the `maxPages`/`maxItems` bounds, callers may short-circuit a
+ * page by having `fetcher` return `{ rows, done: true }`.
  */
 export async function* fetchAllStream<T>(
   fetcher: (first: number, max: number) => Promise<FetchPageResult<T>>,
@@ -147,37 +213,51 @@ export async function* fetchAllStream<T>(
   const pageSize = options.pageSize ?? defaultPageSize;
   const first = options.first ?? 0;
   const maxPages = options.maxPages ?? defaultMaxPages;
+  const maxItems = options.maxItems ?? defaultMaxItems;
   const { signal } = options;
 
-  validateBounds(first, pageSize, maxPages);
+  validateBounds(first, pageSize, maxPages, maxItems);
   throwIfAborted(signal);
 
   let offset = first;
   let previousPage: T[] | null = null;
+  let previousSignature: string | undefined;
+  let yieldedItems = 0;
+
+  if (maxItems === 0) {
+    return;
+  }
 
   for (let page = 0; page < maxPages; page++) {
     throwIfAborted(signal);
     const { rows, done } = toRows(await fetcher(offset, pageSize));
+    throwIfAborted(signal);
+
+    if (!rows || rows.length === 0) {
+      return;
+    }
+
+    if (isRepeatedPage(rows, previousPage, previousSignature)) {
+      throw getRepeatedPageError('fetchAllStream');
+    }
+
+    if (yieldedItems + rows.length > maxItems) {
+      throw getMaxItemsError('fetchAllStream', maxItems);
+    }
 
     yield rows;
+    yieldedItems += rows.length;
 
-    if (done || !rows || rows.length === 0) {
-      return;
-    }
-
-    if (rows.length < pageSize) {
-      return;
-    }
-
-    if (previousPage === rows) {
+    if (done || yieldedItems === maxItems) {
       return;
     }
 
     previousPage = rows;
+    previousSignature = getPageSignature(rows);
     offset += rows.length;
   }
 
   throw new RangeError(
-    `fetchAllStream exceeded maxPages (${maxPages}) without reaching an empty or short page; the endpoint may be ignoring the "first" offset or repeatedly returning a full page`,
+    `fetchAllStream exceeded maxPages (${maxPages}) without reaching an empty page or explicit completion signal; the endpoint may be ignoring the "first" offset or repeatedly returning pages`,
   );
 }

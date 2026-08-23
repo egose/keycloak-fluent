@@ -3,6 +3,7 @@ import KeycloakAdminClient, { type IdentityProviderRepresentation } from './keyc
 import RealmHandle from './realm';
 import IdentityProviderMapperHandle from './identity-provider-mapper';
 import { mergeUpdateData } from './utils/merge-update-data';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
 
 export type IdentityProviderProviderId =
   | 'saml'
@@ -52,39 +53,60 @@ export type IdentityProviderInputData = Omit<IdentityProviderRepresentationExt, 
 
 const normalizeIdentityProviderData = (
   data: Partial<IdentityProviderRepresentationExt>,
+  options: { deriveUseJwksUrl: boolean },
 ): IdentityProviderRepresentationExt => {
   const merged: IdentityProviderRepresentationExt = _merge({}, data);
   if (!merged.config) merged.config = {};
 
-  if (merged.config.jwksUrl !== '') {
-    merged.config.useJwksUrl = 'true';
-  } else if (merged.config.jwksUrl === '') {
-    merged.config.useJwksUrl = 'false';
+  if (options.deriveUseJwksUrl) {
+    merged.config.useJwksUrl =
+      typeof merged.config.jwksUrl === 'string' && merged.config.jwksUrl.trim() !== '' ? 'true' : 'false';
   }
 
   return merged;
 };
 
 const getIdentityProviderCreateData = (data: IdentityProviderInputData) =>
-  normalizeIdentityProviderData(_merge({}, defaultIdentityProviderData, data));
+  normalizeIdentityProviderData(_merge({}, defaultIdentityProviderData, data), {
+    deriveUseJwksUrl: Object.hasOwn(data.config ?? {}, 'jwksUrl'),
+  });
 
 const getIdentityProviderUpdateData = (
   identityProvider: IdentityProviderRepresentation,
   data: IdentityProviderInputData,
-) => normalizeIdentityProviderData(mergeUpdateData(identityProvider, data));
+) =>
+  normalizeIdentityProviderData(mergeUpdateData(identityProvider, data), {
+    deriveUseJwksUrl: Object.hasOwn(data.config ?? {}, 'jwksUrl'),
+  });
 
 export default class IdentityProviderHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _alias: string;
   private _identityProvider?: IdentityProviderRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._alias = alias;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._identityProvider = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get alias(): string {
@@ -92,6 +114,7 @@ export default class IdentityProviderHandle {
   }
 
   public get identityProvider(): IdentityProviderRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._identityProvider;
   }
 
@@ -100,8 +123,10 @@ export default class IdentityProviderHandle {
    * the cached representation. Returns `this` for chaining.
    */
   public rebind(newAlias: string): this {
+    if (newAlias === this._alias) return this;
     this._alias = newAlias;
     this._identityProvider = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -115,10 +140,12 @@ export default class IdentityProviderHandle {
   }
 
   public async get(): Promise<IdentityProviderRepresentation | null> {
+    this.invalidateParentCache();
     const one = await this.core.identityProviders.findOne({ realm: this.realmName, alias: this.alias });
     this._identityProvider = one ?? null;
 
     if (this._identityProvider) {
+      if (this._alias !== this._identityProvider.alias) this._identityGeneration++;
       this._alias = this._identityProvider.alias!;
     }
 

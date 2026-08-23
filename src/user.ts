@@ -16,6 +16,9 @@ import IdentityProviderHandle from './identity-provider';
 import { AbstractGroupHandle } from './groups/abstract-group';
 import { getClientByClientId } from './clients/client-lookup';
 import { assertClientRoleMappingOwnership, assertRealmRoleMappingOwnership } from './utils/role-ownership';
+import { assertOwnedHandle } from './utils/resource-ownership';
+import { fetchAll, type FetchAllOptions } from './utils/fetch-all';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
 
 export const defaultUserData = Object.freeze({
   firstName: '',
@@ -58,6 +61,7 @@ export type ReconcileUserAttributesOptions = {
   /** Only keys in this set can be removed. Without it reconciliation is additive-only. */
   managedKeys?: readonly string[];
 };
+export type ListAssignedGroupsOptions = FetchAllOptions & { briefRepresentation?: boolean; search?: string };
 
 function normalizeNames(values: readonly string[], name: string) {
   const normalized = values.map((value, index) => {
@@ -85,6 +89,115 @@ function getUserUpdateData(
   return mergeUpdateData(user, data, { username });
 }
 
+const SENSITIVE_DIAGNOSTIC_KEYS = new Set([
+  'body',
+  'clientsecret',
+  'config',
+  'credential',
+  'data',
+  'headers',
+  'password',
+  'request',
+  'response',
+  'responsedata',
+  'responsetext',
+  'secret',
+  'value',
+]);
+
+const SAFE_DIAGNOSTIC_KEYS = new Set(['code', 'error', 'errorCode', 'name', 'status', 'statusCode']);
+
+type SanitizedDiagnostic = Record<string, unknown>;
+
+function redactSecrets(value: string, secrets: readonly string[]) {
+  return secrets.reduce((redacted, secret) => {
+    if (!secret) return redacted;
+    return redacted.split(secret).join('[redacted]');
+  }, value);
+}
+
+function sanitizeDiagnosticValue(
+  value: unknown,
+  secrets: readonly string[],
+  seen: WeakSet<object>,
+  depth: number,
+): unknown {
+  if (typeof value === 'string') return redactSecrets(value, secrets).slice(0, 500);
+  if (typeof value === 'number' || typeof value === 'boolean' || value === null) return value;
+  if (typeof value === 'bigint') return value.toString();
+  if (value === undefined || typeof value === 'function' || typeof value === 'symbol') return undefined;
+  if (depth <= 0) return '[truncated]';
+
+  if (typeof value !== 'object') return String(value);
+  if (value instanceof Error) {
+    return sanitizeErrorDiagnostic(value, secrets, seen, depth - 1);
+  }
+  if (seen.has(value)) return '[circular]';
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    return value.slice(0, 20).map((entry) => sanitizeDiagnosticValue(entry, secrets, seen, depth - 1));
+  }
+
+  const sanitized: SanitizedDiagnostic = {};
+  for (const [key, entry] of Object.entries(value)) {
+    sanitized[key] = SENSITIVE_DIAGNOSTIC_KEYS.has(key.toLowerCase())
+      ? '[redacted]'
+      : sanitizeDiagnosticValue(entry, secrets, seen, depth - 1);
+  }
+
+  return sanitized;
+}
+
+function sanitizeErrorDiagnostic(
+  error: Error,
+  secrets: readonly string[],
+  seen = new WeakSet<object>(),
+  depth = 5,
+): SanitizedDiagnostic {
+  if (seen.has(error)) return { name: error.name, message: '[circular]' };
+  seen.add(error);
+
+  const diagnostic: SanitizedDiagnostic = {
+    name: redactSecrets(error.name || 'Error', secrets),
+    message: redactSecrets(error.message, secrets).slice(0, 500),
+  };
+  const source = error as Error & Record<string, unknown> & { cause?: unknown };
+
+  for (const key of SAFE_DIAGNOSTIC_KEYS) {
+    if (key in source) {
+      diagnostic[key] = sanitizeDiagnosticValue(source[key], secrets, seen, depth - 1);
+    }
+  }
+
+  for (const [key, entry] of Object.entries(source)) {
+    if (key in diagnostic || key === 'cause') continue;
+    diagnostic[key] = SENSITIVE_DIAGNOSTIC_KEYS.has(key.toLowerCase())
+      ? '[redacted]'
+      : sanitizeDiagnosticValue(entry, secrets, seen, depth - 1);
+  }
+
+  if (source.cause !== undefined) {
+    diagnostic.cause = sanitizeDiagnosticValue(source.cause, secrets, seen, depth - 1);
+  }
+
+  return diagnostic;
+}
+
+function sanitizeProvisioningCause(params: { cause?: unknown; cleanupError?: unknown; password?: string }) {
+  const secrets = params.password ? [params.password] : [];
+  const seen = new WeakSet<object>();
+  const diagnostic = sanitizeDiagnosticValue(params.cause, secrets, seen, 5);
+
+  if (params.cleanupError === undefined) return diagnostic;
+
+  return {
+    passwordError: diagnostic,
+    cleanupFailed: true,
+    cleanupError: sanitizeDiagnosticValue(params.cleanupError, secrets, seen, 5),
+  };
+}
+
 /**
  * Error thrown when user profile data was applied successfully but the
  * password reset step failed. The plaintext password is NEVER included in the
@@ -102,6 +215,15 @@ export class UserPasswordProvisioningError extends Error {
    */
   public readonly profileApplied: boolean;
 
+  /** `true` when a user account is known to persist in Keycloak after the failure. */
+  public readonly accountPersists: boolean;
+
+  /** The known enabled state of the persisted account, or `null` when unknown/not persisted. */
+  public readonly accountEnabled: boolean | null;
+
+  /** `true` when the supplied password was committed before a later provisioning step failed. */
+  public readonly passwordApplied: boolean;
+
   public readonly username: string;
   public readonly realmName: string;
 
@@ -117,32 +239,84 @@ export class UserPasswordProvisioningError extends Error {
     username: string;
     realmName: string;
     profileApplied: boolean;
+    accountPersists?: boolean;
+    accountEnabled?: boolean | null;
+    passwordApplied?: boolean;
     initialProvisioning: boolean;
     cause?: unknown;
+    cleanupError?: unknown;
+    password?: string;
   }) {
-    super(params.message, params.cause !== undefined ? { cause: params.cause } : undefined);
+    const sanitizedCause =
+      params.cause !== undefined || params.cleanupError !== undefined
+        ? sanitizeProvisioningCause({
+            cause: params.cause,
+            cleanupError: params.cleanupError,
+            password: params.password,
+          })
+        : undefined;
+    super(params.message, sanitizedCause !== undefined ? { cause: sanitizedCause } : undefined);
     this.name = 'UserPasswordProvisioningError';
     this.username = params.username;
     this.realmName = params.realmName;
     this.profileApplied = params.profileApplied;
+    this.accountPersists = params.accountPersists ?? params.profileApplied;
+    this.accountEnabled = params.accountEnabled ?? null;
+    this.passwordApplied = params.passwordApplied ?? false;
     this.initialProvisioning = params.initialProvisioning;
+  }
+
+  public toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      username: this.username,
+      realmName: this.realmName,
+      profileApplied: this.profileApplied,
+      accountPersists: this.accountPersists,
+      accountEnabled: this.accountEnabled,
+      passwordApplied: this.passwordApplied,
+      initialProvisioning: this.initialProvisioning,
+      cause: this.cause,
+    };
   }
 }
 
 export default class UserHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _username: string;
   private _userId?: string;
   private _user?: UserRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, username: string, userId?: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._username = username;
     this._userId = userId;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (
+      this.parentIdentity.invalidateIfChanged(() => {
+        this._user = undefined;
+        this._userId = undefined;
+      })
+    ) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get username(): string {
@@ -150,6 +324,7 @@ export default class UserHandle {
   }
 
   public get user(): UserRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._user;
   }
 
@@ -160,19 +335,23 @@ export default class UserHandle {
    * for chaining.
    */
   public rebind(newUsername: string): this {
+    if (newUsername === this._username) return this;
     this._username = newUsername;
     this._userId = undefined;
     this._user = undefined;
+    this._identityGeneration++;
     return this;
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     if (!id.trim()) throw new Error('Keycloak user ID must be a non-empty string');
     const one = await this.core.users.findOne({ realm: this.realmName, id, userProfileMetadata: true });
     this._user = one ?? null;
     this._userId = id;
 
     if (this._user) {
+      if (this._username !== this._user.username) this._identityGeneration++;
       this._username = this._user.username!;
     }
 
@@ -180,12 +359,14 @@ export default class UserHandle {
   }
 
   public async get(): Promise<UserRepresentation | null> {
+    this.invalidateParentCache();
     if (this._userId) return this.getById(this._userId);
 
     const ones = await this.core.users.find({ realm: this.realmName, username: this.username, exact: true });
     this._user = ones.find((v) => v.username === this.username) ?? null;
 
     if (this._user) {
+      if (this._username !== this._user.username) this._identityGeneration++;
       this._username = this._user.username!;
     }
 
@@ -224,24 +405,45 @@ export default class UserHandle {
     } catch (passwordError) {
       // Best-effort rollback: delete the just-created disabled user so that a
       // retry starts clean. If deletion also fails, keep the disabled account
-      // (unusable) and rethrow the original password error annotated with the
-      // cleanup failure on `cause`. The plaintext password is never put on
-      // either error.
-      await this.attemptCleanup(id, passwordError);
+      // (unusable) and report both failures through sanitized diagnostics.
+      // The upstream errors are never mutated or exposed directly.
+      const cleanupError = await this.attemptCleanup(id);
       throw new UserPasswordProvisioningError({
-        message: `Failed to set initial password for user "${this.username}" in realm "${this.realmName}"; the created user was removed.`,
+        message: cleanupError
+          ? `Failed to set initial password for user "${this.username}" in realm "${this.realmName}"; the disabled created user still exists because cleanup failed.`
+          : `Failed to set initial password for user "${this.username}" in realm "${this.realmName}"; the created user was removed.`,
         username: this.username,
         realmName: this.realmName,
-        profileApplied: false,
+        profileApplied: cleanupError !== undefined,
+        accountPersists: cleanupError !== undefined,
+        accountEnabled: cleanupError ? false : null,
+        passwordApplied: false,
         initialProvisioning: true,
         cause: passwordError,
+        cleanupError,
+        password,
       });
     }
 
     // Password is set; enable the user unless the caller asked for a disabled
     // account explicitly.
     if (desiredEnabled) {
-      await this.setEnabled(id, true);
+      try {
+        await this.setEnabled(id, true);
+      } catch (enableError) {
+        throw new UserPasswordProvisioningError({
+          message: `Password was set for user "${this.username}" in realm "${this.realmName}" but the final enable step failed. The disabled user persists and retrying with ensure() and the same enabled input will update it without creating a duplicate.`,
+          username: this.username,
+          realmName: this.realmName,
+          profileApplied: true,
+          accountPersists: true,
+          accountEnabled: false,
+          passwordApplied: true,
+          initialProvisioning: true,
+          cause: enableError,
+          password,
+        });
+      }
     }
 
     return this.get();
@@ -272,8 +474,12 @@ export default class UserHandle {
         username: this.username,
         realmName: this.realmName,
         profileApplied: true,
+        accountPersists: true,
+        accountEnabled: rest.enabled ?? one.enabled ?? null,
+        passwordApplied: false,
         initialProvisioning: false,
         cause: passwordError,
+        password,
       });
     }
 
@@ -307,8 +513,12 @@ export default class UserHandle {
             username: this.username,
             realmName: this.realmName,
             profileApplied: true,
+            accountPersists: true,
+            accountEnabled: rest.enabled ?? one.enabled ?? null,
+            passwordApplied: false,
             initialProvisioning: false,
             cause: passwordError,
+            password,
           });
         }
       }
@@ -326,19 +536,41 @@ export default class UserHandle {
         try {
           await this.resetPasswordById(id, password, { temporary: passwordTemporary });
         } catch (passwordError) {
-          await this.attemptCleanup(id, passwordError);
+          const cleanupError = await this.attemptCleanup(id);
           throw new UserPasswordProvisioningError({
-            message: `Failed to set initial password for user "${this.username}" in realm "${this.realmName}"; the created user was removed.`,
+            message: cleanupError
+              ? `Failed to set initial password for user "${this.username}" in realm "${this.realmName}"; the disabled created user still exists because cleanup failed.`
+              : `Failed to set initial password for user "${this.username}" in realm "${this.realmName}"; the created user was removed.`,
             username: this.username,
             realmName: this.realmName,
-            profileApplied: false,
+            profileApplied: cleanupError !== undefined,
+            accountPersists: cleanupError !== undefined,
+            accountEnabled: cleanupError ? false : null,
+            passwordApplied: false,
             initialProvisioning: true,
             cause: passwordError,
+            cleanupError,
+            password,
           });
         }
 
         if (desiredEnabled) {
-          await this.setEnabled(id, true);
+          try {
+            await this.setEnabled(id, true);
+          } catch (enableError) {
+            throw new UserPasswordProvisioningError({
+              message: `Password was set for user "${this.username}" in realm "${this.realmName}" but the final enable step failed. The disabled user persists and retrying with ensure() and the same enabled input will update it without creating a duplicate.`,
+              username: this.username,
+              realmName: this.realmName,
+              profileApplied: true,
+              accountPersists: true,
+              accountEnabled: false,
+              passwordApplied: true,
+              initialProvisioning: true,
+              cause: enableError,
+              password,
+            });
+          }
         }
       }
     }
@@ -381,22 +613,15 @@ export default class UserHandle {
    * failed. The created user was disabled at creation time, so leaving it
    * behind is safe (it cannot be used to authenticate). We still attempt to
    * delete it on a best-effort basis so retries start clean. If deletion
-   * fails, the deletion error is recorded on `cause.cleanupError` of the
-   * password error to be rethrown later; we never let the deletion error
-   * shadow the original password failure.
+   * fails, the deletion error is returned to be reported alongside the
+   * original password failure without mutating either upstream error.
    */
-  private async attemptCleanup(userId: string, passwordError: unknown): Promise<void> {
+  private async attemptCleanup(userId: string): Promise<unknown> {
     try {
       await this.core.users.del({ realm: this.realmName, id: userId });
+      return undefined;
     } catch (cleanupError) {
-      if (passwordError instanceof Error) {
-        const existingCause = (passwordError as Error & { cause?: unknown }).cause;
-        const cleanupCause =
-          existingCause === undefined
-            ? { cleanupFailed: true, cleanupError }
-            : { cleanupFailed: true, cleanupError, originalCause: existingCause };
-        (passwordError as Error & { cause?: unknown }).cause = cleanupCause;
-      }
+      return cleanupError;
     }
   }
 
@@ -447,8 +672,11 @@ export default class UserHandle {
     return client as ClientRepresentation & { id: string };
   }
 
-  private async resolveRealmRole(roleHandle: RoleHandle) {
+  private assertRealmRoleOwnership(roleHandle: RoleHandle) {
     assertRealmRoleMappingOwnership(this.core, this.realmName, roleHandle, `user "${this.username}"`);
+  }
+
+  private async resolveRealmRole(roleHandle: RoleHandle) {
     const role = roleHandle.role ?? (await RoleHandle.getByName(this.core, this.realmName, roleHandle.roleName));
     if (!role?.id) {
       throw new Error(`Role "${roleHandle.roleName}" not found in realm "${this.realmName}"`);
@@ -463,6 +691,9 @@ export default class UserHandle {
   }
 
   public async assignRealmRoles(roleHandles: readonly RoleHandle[]) {
+    for (const roleHandle of roleHandles) {
+      this.assertRealmRoleOwnership(roleHandle);
+    }
     const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRealmRole(roleHandle)));
     const user = await this.requireUser();
     if (roles.length) {
@@ -476,6 +707,9 @@ export default class UserHandle {
   }
 
   public async unassignRealmRoles(roleHandles: readonly RoleHandle[]) {
+    for (const roleHandle of roleHandles) {
+      this.assertRealmRoleOwnership(roleHandle);
+    }
     const roles = await Promise.all(roleHandles.map((roleHandle) => this.resolveRealmRole(roleHandle)));
     const user = await this.requireUser();
     if (roles.length) {
@@ -661,6 +895,7 @@ export default class UserHandle {
   }
 
   public async listAssignedClientRoles(clientHandle: ClientHandle) {
+    assertOwnedHandle(this, clientHandle, 'client', `user "${this.username}"`, 'client-role mapping read');
     const user = await this.requireUser();
     let client: ClientRepresentation | null = clientHandle.client ?? null;
     if (!client) {
@@ -681,6 +916,7 @@ export default class UserHandle {
   }
 
   public async assignGroup(groupHandle: AbstractGroupHandle) {
+    assertOwnedHandle(this, groupHandle, 'group', `user "${this.username}"`, 'group assignment');
     const user = await this.requireUser();
     let group: GroupRepresentation | null = groupHandle.group ?? null;
     if (!group) {
@@ -699,6 +935,7 @@ export default class UserHandle {
   }
 
   public async unassignGroup(groupHandle: AbstractGroupHandle) {
+    assertOwnedHandle(this, groupHandle, 'group', `user "${this.username}"`, 'group assignment');
     const user = await this.requireUser();
     let group: GroupRepresentation | null = groupHandle.group ?? null;
     if (!group) {
@@ -716,31 +953,21 @@ export default class UserHandle {
     });
   }
 
-  public async listAssignedGroups(options?: { briefRepresentation?: boolean; search?: string }) {
+  public async listAssignedGroups(options: ListAssignedGroupsOptions = {}) {
     const user = await this.requireUser();
-    const allGroups: GroupRepresentation[] = [];
-    let first = 0;
-    const max = 100;
 
-    while (true) {
-      const groups = await this.core.users.listGroups({
-        realm: this.realmName,
-        id: user.id,
-        first,
-        max,
-        briefRepresentation: options?.briefRepresentation ?? false,
-        search: options?.search,
-      });
-
-      if (!groups || groups.length === 0) {
-        break;
-      }
-
-      allGroups.push(...groups);
-      first += max;
-    }
-
-    return allGroups;
+    return fetchAll(
+      (first, max) =>
+        this.core.users.listGroups({
+          realm: this.realmName,
+          id: user.id,
+          first,
+          max,
+          briefRepresentation: options.briefRepresentation ?? false,
+          search: options.search,
+        }),
+      { pageSize: 100, ...options },
+    );
   }
 
   public async listRequiredActions() {
@@ -795,6 +1022,13 @@ export default class UserHandle {
   }
 
   public async linkFederatedIdentity(identityProviderHandle: IdentityProviderHandle, data: FederatedIdentityInputData) {
+    assertOwnedHandle(
+      this,
+      identityProviderHandle,
+      'identity provider',
+      `user "${this.username}"`,
+      'federated identity link',
+    );
     const user = await this.requireUser();
     const identityProvider = await this.resolveIdentityProvider(identityProviderHandle);
 
@@ -810,6 +1044,13 @@ export default class UserHandle {
   }
 
   public async unlinkFederatedIdentity(identityProviderHandle: IdentityProviderHandle) {
+    assertOwnedHandle(
+      this,
+      identityProviderHandle,
+      'identity provider',
+      `user "${this.username}"`,
+      'federated identity link',
+    );
     const user = await this.requireUser();
     const identityProvider = await this.resolveIdentityProvider(identityProviderHandle);
 
@@ -830,6 +1071,7 @@ export default class UserHandle {
   }
 
   public async listOfflineSessions(clientHandle: ClientHandle) {
+    assertOwnedHandle(this, clientHandle, 'client', `user "${this.username}"`, 'offline session read');
     const user = await this.requireUser();
     const client = await this.resolveClient(clientHandle);
 

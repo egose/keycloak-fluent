@@ -64,15 +64,33 @@ In practice, this library is best seen as a better orchestration layer on top of
 
 ## Supported Keycloak Versions
 
-This package currently depends on `@keycloak/keycloak-admin-client@^26.4.7`.
+This package currently depends on `@keycloak/keycloak-admin-client@^26.5.7`.
 
-Practical guidance:
+Tested matrix in this repository:
 
 - Node.js `>=20` is required
-- the current implementation is aligned with Keycloak Admin Client `26.x`
-- the test suite exercises behavior consistent with Keycloak `26.x`
+- package dependency range: `@keycloak/keycloak-admin-client@^26.5.7`
+- packed consumer minimum-upstream check: `@keycloak/keycloak-admin-client@26.5.7`
+- lockfile-resolved admin client used by local/CI checks: `@keycloak/keycloak-admin-client@26.6.3`
+- local integration sandbox server: Keycloak `26.6.1`
 
-If you are targeting an older or significantly newer Keycloak release, verify the specific endpoints you depend on, especially for newer areas such as organizations, workflows, and authentication-flow administration.
+The supported policy is Keycloak Admin Client `26.x` from `26.5.7` upward, verified at the declared minimum and at the current lockfile-resolved version. If you target an older or significantly newer Keycloak release, verify the specific endpoints you depend on, especially for newer areas such as organizations, workflows, and authentication-flow administration.
+
+## Public API Shape
+
+The supported package shape is root-only. Import runtime helpers, catchable errors, and public TypeScript types from `@egose/keycloak-fluent`; implementation subpaths are not supported public entry points.
+
+```ts
+import KeycloakAdminClientFluent, {
+  AuthenticationFlowNotFoundError,
+  DuplicateWorkflowNameError,
+  UserPasswordProvisioningError,
+  WorkflowNotFoundError,
+  createManagedKeycloakClient,
+} from '@egose/keycloak-fluent';
+
+import type { RealmHandle, UserHandle, UserInputData } from '@egose/keycloak-fluent';
+```
 
 ## Installation
 
@@ -129,6 +147,8 @@ await user.assignGroup(group);
 - `client_credentials` grant otherwise
 - `username` and `password` must be provided together
 - `password` and `refreshToken` are mutually exclusive
+- Supplied `username`, `password`, `refreshToken`, `clientId`, and `clientSecret` values must be non-empty strings
+- Authentication failures expose only bounded OAuth error fields plus safe status/code diagnostics; passwords, refresh tokens, client secrets, and arbitrary response bodies are not included in the public error graph
 
 ```ts
 await kc.simpleAuth({
@@ -388,11 +408,19 @@ The currently documented and tested surface includes:
 
 ## Development
 
+Sandbox-free local checks can run without Docker or a Keycloak server:
+
 ```bash
-npm install
-npm run build
-npm test
+pnpm install
+pnpm lint:check
+pnpm typecheck
+pnpm typecheck:tests
+pnpm test:unit
+pnpm build
+pnpm docs:check
 ```
+
+Live integration tests need the Docker/Keycloak sandbox described below. Do not run `pnpm test` or `pnpm test:integration` until the sandbox is reachable.
 
 ### Build, Type-check, And Release Verification
 
@@ -403,9 +431,11 @@ npm test
 - `npm run pack:inspect`
   Rebuilds `dist/`, runs `npm pack --dry-run --json`, and asserts the tarball contains only the intended files (`dist/index.*`, `README.md`, `LICENSE`, `CHANGELOG.md`, `package.json`) and no source maps. Useful as a guard against stale or accidental package-file drift.
 - `npm run pack:consumers`
-  Builds and packs the tarball, then installs it into isolated ESM, CJS, and TypeScript consumer projects under `.packed-consumers/` and exercises `simpleAuth()` validation plus representative handle creation in each. The TypeScript consumer additionally runs `tsc --noEmit` against the packed `.d.ts` with `skipLibCheck: false` to prove the published declarations compile in an external strict project.
+  Builds and packs the tarball, then installs it into isolated ESM, CJS, and TypeScript consumer projects under `.packed-consumers/` and exercises the real root export surface, `simpleAuth()` validation/default flow, and representative handle creation in each. TypeScript consumers also run `tsc --noEmit` with `skipLibCheck: false` against the packed `.d.ts`, including a fixture pinned to the minimum supported `@keycloak/keycloak-admin-client@26.5.7`.
 - `npm run publish:check`
-  Runs the full pre-publish chain: `lint:check` -> `typecheck` -> `test:unit` -> `build` -> `pack:inspect` -> `pack:consumers`. Publish only after this passes.
+  Runs the sandbox-free pre-publish chain: `lint:check` -> `typecheck` -> `typecheck:tests` -> `test:unit` -> `build` -> `pack:inspect` -> `pack:consumers`. The tag publish workflow adds live `test:integration` in the sandbox before publishing the exact tagged commit.
+- `npm run docs:check`
+  Verifies documentation version strings and critical public snippets against checked-in package metadata and source declarations.
 
 ### Test Layers
 
@@ -418,7 +448,7 @@ The repo intentionally has two different kinds of tests:
   Runs the live Keycloak integration tests in the rest of `tests/*.spec.ts`.
   These create real realms and resources against a running Keycloak instance through `tests/test-utils.ts`.
 - `npm test`
-  Runs the full suite.
+  Runs the full suite and therefore requires the integration sandbox to be running.
 
 The mocked tests are not meant to replace the live integration suite. They exist because some wrapper guarantees are easier and safer to assert at the admin-client call boundary than through a live server alone.
 
@@ -453,7 +483,7 @@ KEYCLOAK_PASSWORD="$CI_ADMIN_PASSWORD" \
   npm run test:integration
 ```
 
-In CI, the `.github/actions/setup-sandbox` composite action installs Docker Compose v2 (its downloaded binary is checksum-verified against the pinned SHA before use), brings the sandbox up, waits for the master realm `openid-configuration` to be reachable, runs the provided script, and tears the services down via an `EXIT` trap that fires on success, failure, and job cancellation — so cleanup and diagnostic logs run even if the script is interrupted.
+In CI, `.github/actions/setup-tools` delegates tool installation to the pinned `egose/actions/asdf-tools` action commit and the versions in `.tool-versions` (`nodejs`, `pnpm`, `picotools`, and `docker-compose`). The repository does not currently enforce a checksum for the installed Docker Compose binary. The `.github/actions/setup-sandbox` composite action then brings the sandbox up, waits for the master realm `openid-configuration` to be reachable, runs the provided script, and tears the services down via an `EXIT` trap that fires on success, failure, and job cancellation, so cleanup and diagnostic logs run even if the script is interrupted.
 
 ## License
 

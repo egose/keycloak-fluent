@@ -4,8 +4,16 @@ import RealmHandle from './realm';
 import type ClientHandle from './clients/client';
 import type ClientRoleHandle from './client-role';
 import { getClientByClientId } from './clients/client-lookup';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
 import { fetchAll } from './utils/fetch-all';
+import {
+  assertOwnedHandle,
+  assertSameResourceOwner,
+  describeResourceHandle,
+  getResourceKind,
+} from './utils/resource-ownership';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
+import { toSinglePageQuery } from './utils/single-page-query';
 
 export type RoleInputData = Omit<RoleRepresentation, 'name' | 'id'>;
 
@@ -16,15 +24,31 @@ function getRoleUpdateData(role: RoleRepresentation, data: RoleInputData, roleNa
 export default class RoleHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _roleName: string;
   private _role?: RoleRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, roleName: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._roleName = roleName;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._role = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get roleName(): string {
@@ -32,6 +56,7 @@ export default class RoleHandle {
   }
 
   public get role(): RoleRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._role;
   }
 
@@ -42,8 +67,10 @@ export default class RoleHandle {
    * for chaining.
    */
   public rebind(newRoleName: string): this {
+    if (newRoleName === this._roleName) return this;
     this._roleName = newRoleName;
     this._role = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -75,10 +102,28 @@ export default class RoleHandle {
     return role;
   }
 
+  private assertCompositeRoleOwnership(roleHandle: RoleHandle | ClientRoleHandle) {
+    const kind = getResourceKind(roleHandle);
+    if (kind !== 'realm role' && kind !== 'client role') {
+      throw new Error(
+        `${describeResourceHandle(roleHandle)} is not a role; role "${this.roleName}" cannot update composites`,
+      );
+    }
+    assertSameResourceOwner(
+      this,
+      roleHandle,
+      describeResourceHandle(roleHandle),
+      `role "${this.roleName}"`,
+      'composite role update',
+    );
+  }
+
   public async getById(id: string) {
+    this.invalidateParentCache();
     this._role = await RoleHandle.getById(this.core, this.realmName, id);
 
     if (this._role) {
+      if (this._roleName !== this._role.name) this._identityGeneration++;
       this._roleName = this._role.name!;
     }
 
@@ -86,9 +131,11 @@ export default class RoleHandle {
   }
 
   public async get(): Promise<RoleRepresentation | null> {
+    this.invalidateParentCache();
     this._role = await RoleHandle.getByName(this.core, this.realmName, this.roleName);
 
     if (this._role) {
+      if (this._roleName !== this._role.name) this._identityGeneration++;
       this._roleName = this._role.name!;
     }
 
@@ -157,6 +204,7 @@ export default class RoleHandle {
   }
 
   public async addComposite(roleHandle: RoleHandle | ClientRoleHandle) {
+    this.assertCompositeRoleOwnership(roleHandle);
     const role = await this.requireRole();
     const compositeRole = await this.resolveCompositeRole(roleHandle);
     const roleId = role.id;
@@ -169,6 +217,7 @@ export default class RoleHandle {
   }
 
   public async removeComposite(roleHandle: RoleHandle | ClientRoleHandle) {
+    this.assertCompositeRoleOwnership(roleHandle);
     const role = await this.requireRole();
     const compositeRole = await this.resolveCompositeRole(roleHandle);
     const roleId = role.id;
@@ -180,19 +229,24 @@ export default class RoleHandle {
     return this;
   }
 
-  public async listComposites(options?: { keyword?: string; page?: number; pageSize?: number }) {
+  public async listComposites(options?: {
+    keyword?: string;
+    page?: number;
+    pageSize?: number;
+    first?: number;
+    max?: number;
+  }) {
+    const { first, max } = toSinglePageQuery(options, 'RoleHandle.listComposites');
     const role = await this.requireRole();
     const roleId = role.id;
-    const page = Math.max(1, options?.page ?? 1);
-    const pageSize = Math.max(1, options?.pageSize ?? 100);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.roles.getCompositeRoles({
         realm: this.realmName,
         id: roleId,
         search: options?.keyword,
-        first: (page - 1) * pageSize,
-        max: pageSize,
+        first,
+        max,
       }),
     );
   }
@@ -202,7 +256,7 @@ export default class RoleHandle {
     const roleId = role.id;
 
     return fetchAll((first, max) =>
-      retryTransientAdminError(() =>
+      retryTransientAdminReadError(() =>
         this.core.roles.getCompositeRoles({
           realm: this.realmName,
           id: roleId,
@@ -218,7 +272,7 @@ export default class RoleHandle {
     const role = await this.requireRole();
     const roleId = role.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.roles.getCompositeRolesForRealm({
         realm: this.realmName,
         id: roleId,
@@ -227,6 +281,7 @@ export default class RoleHandle {
   }
 
   public async listClientComposites(clientHandle: ClientHandle) {
+    assertOwnedHandle(this, clientHandle, 'client', `role "${this.roleName}"`, 'client composite read');
     const role = await this.requireRole();
     const roleId = role.id;
     const client = clientHandle.client ?? (await getClientByClientId(this.core, this.realmName, clientHandle.clientId));
@@ -236,7 +291,7 @@ export default class RoleHandle {
 
     const clientId = client.id!;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.roles.getCompositeRolesForClient({
         realm: this.realmName,
         id: roleId,

@@ -5,6 +5,7 @@ import KeycloakAdminClient, {
 import type ClientHandle from '../clients/client';
 import { getClientByClientId } from '../clients/client-lookup';
 import { mergeUpdateData } from '../utils/merge-update-data';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from '../utils/handle-identity';
 
 export type ProtocolMapperProtocol = 'openid-connect' | 'saml';
 
@@ -29,16 +30,32 @@ function getProtocolMapperUpdateData(
 
 export default class ProtocolMapperHandle {
   public readonly core: KeycloakAdminClient;
-  public readonly realmName: string;
   public readonly clientHandle: ClientHandle;
   private _mapperName: string;
   private _clientProtocolMapper?: ProtocolMapperRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, clientHandle: ClientHandle, mapperName: string) {
     this.core = core;
     this.clientHandle = clientHandle;
-    this.realmName = clientHandle.realmName;
     this._mapperName = mapperName;
+    this.parentIdentity = new ParentIdentityTracker(clientHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._clientProtocolMapper = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.clientHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.clientHandle);
   }
 
   public get mapperName(): string {
@@ -46,6 +63,7 @@ export default class ProtocolMapperHandle {
   }
 
   public get clientProtocolMapper(): ProtocolMapperRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._clientProtocolMapper;
   }
 
@@ -54,8 +72,10 @@ export default class ProtocolMapperHandle {
    * clears the cached representation. Returns `this` for chaining.
    */
   public rebind(newMapperName: string): this {
+    if (newMapperName === this._mapperName) return this;
     this._mapperName = newMapperName;
     this._clientProtocolMapper = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -95,6 +115,7 @@ export default class ProtocolMapperHandle {
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     const client = await this.resolveClient();
     const one = await this.core.clients.findProtocolMapperById({
       realm: this.realmName,
@@ -104,6 +125,7 @@ export default class ProtocolMapperHandle {
     this._clientProtocolMapper = one ?? null;
 
     if (this._clientProtocolMapper) {
+      if (this._mapperName !== this._clientProtocolMapper.name) this._identityGeneration++;
       this._mapperName = this._clientProtocolMapper.name!;
     }
 
@@ -111,6 +133,7 @@ export default class ProtocolMapperHandle {
   }
 
   public async get(): Promise<ProtocolMapperRepresentation | null> {
+    this.invalidateParentCache();
     const client = await this.resolveClient();
     const one = await this.core.clients.findProtocolMapperByName({
       realm: this.realmName,
@@ -120,6 +143,7 @@ export default class ProtocolMapperHandle {
     this._clientProtocolMapper = one ?? null;
 
     if (this._clientProtocolMapper) {
+      if (this._mapperName !== this._clientProtocolMapper.name) this._identityGeneration++;
       this._mapperName = this._clientProtocolMapper.name!;
     }
 

@@ -4,6 +4,7 @@ import KeycloakAdminClient, {
   type IdentityProviderRepresentation,
 } from './keycloak-admin-client';
 import IdentityProviderHandle from './identity-provider';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
 
 export type IdentityProviderMapperInputData = Omit<
   IdentityProviderMapperRepresentation,
@@ -22,26 +23,50 @@ function getIdentityProviderMapperUpdateData(
 export default class IdentityProviderMapperHandle {
   public readonly core: KeycloakAdminClient;
   public readonly identityProviderHandle: IdentityProviderHandle;
-  public readonly realmName: string;
   private _alias: string;
   private _identityProvider?: IdentityProviderRepresentation | null;
   private _mapperName: string;
   private _identityProviderMapper?: IdentityProviderMapperRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, identityProviderHandle: IdentityProviderHandle, mapperName: string) {
     this.core = core;
     this.identityProviderHandle = identityProviderHandle;
-    this.realmName = identityProviderHandle.realmName;
     this._alias = identityProviderHandle.alias;
     this._identityProvider = identityProviderHandle.identityProvider ?? null;
     this._mapperName = mapperName;
+    this.parentIdentity = new ParentIdentityTracker(identityProviderHandle);
+  }
+
+  private invalidateParentCache() {
+    if (
+      this.parentIdentity.invalidateIfChanged(() => {
+        this._identityProvider = undefined;
+        this._identityProviderMapper = undefined;
+        this._alias = this.identityProviderHandle.alias;
+      })
+    ) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.identityProviderHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.identityProviderHandle);
   }
 
   public get alias(): string {
+    this.invalidateParentCache();
     return this._alias;
   }
 
   public get identityProvider(): IdentityProviderRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._identityProvider;
   }
 
@@ -50,6 +75,7 @@ export default class IdentityProviderMapperHandle {
   }
 
   public get identityProviderMapper(): IdentityProviderMapperRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._identityProviderMapper;
   }
 
@@ -58,8 +84,10 @@ export default class IdentityProviderMapperHandle {
    * clears the cached mapper representation. Returns `this` for chaining.
    */
   public rebind(newMapperName: string): this {
+    if (newMapperName === this._mapperName) return this;
     this._mapperName = newMapperName;
     this._identityProviderMapper = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -95,6 +123,7 @@ export default class IdentityProviderMapperHandle {
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     const identityProvider = await this.resolveIdentityProvider();
     const one = await this.core.identityProviders.findOneMapper({
       realm: this.realmName,
@@ -104,6 +133,7 @@ export default class IdentityProviderMapperHandle {
     this._identityProviderMapper = one ?? null;
 
     if (this._identityProviderMapper?.name) {
+      if (this._mapperName !== this._identityProviderMapper.name) this._identityGeneration++;
       this._mapperName = this._identityProviderMapper.name;
     }
 
@@ -111,6 +141,7 @@ export default class IdentityProviderMapperHandle {
   }
 
   public async get(): Promise<IdentityProviderMapperRepresentation | null> {
+    this.invalidateParentCache();
     const identityProvider = await this.resolveIdentityProvider();
     const mappers = await this.core.identityProviders.findMappers({
       realm: this.realmName,
@@ -119,6 +150,7 @@ export default class IdentityProviderMapperHandle {
     this._identityProviderMapper = mappers.find((mapper) => mapper.name === this.mapperName) ?? null;
 
     if (this._identityProviderMapper?.name) {
+      if (this._mapperName !== this._identityProviderMapper.name) this._identityGeneration++;
       this._mapperName = this._identityProviderMapper.name;
     }
 

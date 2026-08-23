@@ -4,6 +4,10 @@ import { UnmanagedAttributePolicy } from '@keycloak/keycloak-admin-client/lib/de
 import RealmHandle from '../src/realm';
 import GroupHandle from '../src/groups/group';
 
+function transientStatus(status: number) {
+  return Object.assign(new Error(`HTTP ${status}`), { response: { status }, responseData: { error: 'unknown_error' } });
+}
+
 describe('Implementation Consistency: Regressions', () => {
   test('service account user lookup resolves the client lazily', async () => {
     const core = {
@@ -67,6 +71,66 @@ describe('Implementation Consistency: Regressions', () => {
       max: 100,
       briefRepresentation: false,
     });
+  });
+
+  test('user assigned group listing continues after server-capped short pages without skipping rows', async () => {
+    const groups = Array.from({ length: 125 }, (_, index) => ({ id: `group-${index}`, name: `group-${index}` }));
+    const calls: Array<{ first: number; max: number }> = [];
+    const core = {
+      users: {
+        find: vi.fn().mockResolvedValue([{ id: 'user-1', username: 'alice' }]),
+        listGroups: vi.fn().mockImplementation(({ first, max }: { first: number; max: number }) => {
+          calls.push({ first, max });
+          return Promise.resolve(groups.slice(first, first + 50));
+        }),
+      },
+    } as any;
+
+    const userHandle = new RealmHandle(core, 'demo').user('alice');
+
+    await expect(userHandle.listAssignedGroups({ pageSize: 100, maxPages: 10 })).resolves.toEqual(groups);
+    expect(calls).toEqual([
+      { first: 0, max: 100 },
+      { first: 50, max: 100 },
+      { first: 100, max: 100 },
+      { first: 125, max: 100 },
+    ]);
+  });
+
+  test('user assigned group listing exposes maxPages and maxItems bounds', async () => {
+    const core = {
+      users: {
+        find: vi.fn().mockResolvedValue([{ id: 'user-1', username: 'alice' }]),
+        listGroups: vi
+          .fn()
+          .mockImplementation(({ first }: { first: number }) =>
+            Promise.resolve(Array.from({ length: 3 }, (_, index) => ({ id: `group-${first + index}` }))),
+          ),
+      },
+    } as any;
+
+    const userHandle = new RealmHandle(core, 'demo').user('alice');
+
+    await expect(userHandle.listAssignedGroups({ pageSize: 10, maxPages: 1 })).rejects.toThrow(/maxPages \(1\)/);
+    await expect(userHandle.listAssignedGroups({ pageSize: 10, maxItems: 5 })).rejects.toThrow(/maxItems \(5\)/);
+  });
+
+  test('user assigned group listing exposes AbortSignal cancellation before listing groups', async () => {
+    const controller = new AbortController();
+    controller.abort(new Error('cancelled before listing groups'));
+    const core = {
+      users: {
+        find: vi.fn().mockResolvedValue([{ id: 'user-1', username: 'alice' }]),
+        listGroups: vi.fn().mockResolvedValue([]),
+      },
+    } as any;
+
+    const userHandle = new RealmHandle(core, 'demo').user('alice');
+
+    await expect(userHandle.listAssignedGroups({ signal: controller.signal })).rejects.toThrow(
+      'cancelled before listing groups',
+    );
+    expect(core.users.listGroups).not.toHaveBeenCalled();
   });
 
   test('user required action addition resolves the user lazily and avoids duplicates', async () => {
@@ -256,6 +320,104 @@ describe('Implementation Consistency: Regressions', () => {
         }),
       }),
     );
+  });
+
+  test('identity provider update preserves existing jwks usage when jwks url is omitted', async () => {
+    const core = {
+      identityProviders: {
+        findOne: vi.fn().mockResolvedValue({
+          alias: 'demo-idp',
+          providerId: 'oidc',
+          config: {
+            clientId: 'existing-client',
+            useJwksUrl: 'false',
+          },
+        }),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const identityProviderHandle = new RealmHandle(core, 'demo').identityProvider('demo-idp');
+
+    await identityProviderHandle.update({
+      providerId: 'oidc',
+      config: {
+        clientId: 'updated-client',
+      },
+    });
+
+    expect(core.identityProviders.update).toHaveBeenCalledWith(
+      { realm: 'demo', alias: 'demo-idp' },
+      expect.objectContaining({
+        config: expect.objectContaining({
+          clientId: 'updated-client',
+          useJwksUrl: 'false',
+        }),
+      }),
+    );
+  });
+
+  test('identity provider ensure preserves existing jwks usage when jwks url is omitted', async () => {
+    const core = {
+      identityProviders: {
+        findOne: vi.fn().mockResolvedValue({
+          alias: 'demo-idp',
+          providerId: 'oidc',
+          config: {
+            useJwksUrl: 'false',
+          },
+        }),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    await new RealmHandle(core, 'demo').identityProvider('demo-idp').ensure({ providerId: 'oidc' });
+
+    expect(core.identityProviders.update).toHaveBeenCalledWith(
+      { realm: 'demo', alias: 'demo-idp' },
+      expect.objectContaining({
+        config: expect.objectContaining({
+          useJwksUrl: 'false',
+        }),
+      }),
+    );
+  });
+
+  test.each([
+    ['', 'false'],
+    ['   ', 'false'],
+    ['https://issuer.example/jwks', 'true'],
+  ])('identity provider update derives jwks usage from explicit jwks url %j', async (jwksUrl, useJwksUrl) => {
+    const core = {
+      identityProviders: {
+        findOne: vi.fn().mockResolvedValue({
+          alias: 'demo-idp',
+          providerId: 'oidc',
+          config: {
+            useJwksUrl: useJwksUrl === 'true' ? 'false' : 'true',
+          },
+        }),
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+    } as any;
+
+    const updateData = {
+      providerId: 'oidc' as const,
+      config: { jwksUrl },
+    };
+
+    await new RealmHandle(core, 'demo').identityProvider('demo-idp').update(updateData);
+
+    expect(core.identityProviders.update).toHaveBeenCalledWith(
+      { realm: 'demo', alias: 'demo-idp' },
+      expect.objectContaining({
+        config: expect.objectContaining({
+          jwksUrl,
+          useJwksUrl,
+        }),
+      }),
+    );
+    expect(updateData.config).toEqual({ jwksUrl });
   });
 
   test('client scope update preserves existing nested attributes', async () => {
@@ -833,6 +995,7 @@ describe('Implementation Consistency: Regressions', () => {
               attributes: { owner: ['alice'] },
             },
           ])
+          .mockResolvedValueOnce([])
           .mockResolvedValueOnce([
             {
               id: 'child-1',
@@ -840,7 +1003,8 @@ describe('Implementation Consistency: Regressions', () => {
               path: '/parent/team-a',
               attributes: { owner: ['alice'] },
             },
-          ]),
+          ])
+          .mockResolvedValueOnce([]),
         updateChildGroup: vi.fn().mockResolvedValue(undefined),
       },
     } as any;
@@ -866,12 +1030,12 @@ describe('Implementation Consistency: Regressions', () => {
       groups: {
         find: vi.fn().mockResolvedValue([{ id: 'group-1', name: 'parent', path: '/parent' }]),
         findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'parent', path: '/parent' }),
-        listSubGroups: vi.fn().mockImplementation(({ parentId }: { parentId: string }) => {
-          if (parentId === 'group-1') {
+        listSubGroups: vi.fn().mockImplementation(({ parentId, first }: { parentId: string; first?: number }) => {
+          if (parentId === 'group-1' && first === 0) {
             return Promise.resolve([{ id: 'child-1', name: 'child', path: '/parent/child' }]);
           }
 
-          if (parentId === 'child-1') {
+          if (parentId === 'child-1' && first === 0) {
             return Promise.resolve([
               {
                 id: 'nested-1',
@@ -1080,7 +1244,10 @@ describe('Implementation Consistency: Regressions', () => {
 
           return Promise.resolve([]);
         }),
-        listSubGroups: vi.fn().mockResolvedValue([{ id: 'child-1', name: 'team-a' }]),
+        listSubGroups: vi
+          .fn()
+          .mockResolvedValueOnce([{ id: 'child-1', name: 'team-a' }])
+          .mockResolvedValueOnce([]),
       },
     } as any;
 
@@ -1100,12 +1267,24 @@ describe('Implementation Consistency: Regressions', () => {
     });
   });
 
-  test('group lookup retries transient root lookup failures', async () => {
+  test('group lookup does not retry plain unknown_error messages', async () => {
+    const core = {
+      groups: {
+        find: vi.fn().mockRejectedValue(new Error('unknown_error')),
+        findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'parent', path: '/parent' }),
+      },
+    } as any;
+
+    await expect(GroupHandle.getByName(core, 'demo', 'parent')).rejects.toThrow('unknown_error');
+    expect(core.groups.find).toHaveBeenCalledTimes(1);
+  });
+
+  test('group lookup retries structured transient root lookup failures', async () => {
     const core = {
       groups: {
         find: vi
           .fn()
-          .mockRejectedValueOnce(new Error('unknown_error'))
+          .mockRejectedValueOnce(transientStatus(503))
           .mockResolvedValueOnce([{ id: 'group-1', name: 'parent', path: '/parent' }]),
         findOne: vi.fn().mockResolvedValue({ id: 'group-1', name: 'parent', path: '/parent' }),
       },
@@ -1151,6 +1330,13 @@ describe('Implementation Consistency: Regressions', () => {
       first: 1000,
       max: 1000,
     });
+    expect(core.groups.listSubGroups).toHaveBeenNthCalledWith(3, {
+      realm: 'demo',
+      parentId: 'parent-1',
+      briefRepresentation: false,
+      first: 1001,
+      max: 1000,
+    });
   });
 
   test('realm role composite addition resolves composite role lazily', async () => {
@@ -1175,10 +1361,10 @@ describe('Implementation Consistency: Regressions', () => {
     ]);
   });
 
-  test('group path traversal retries transient subgroup lookup failures', async () => {
+  test('group path traversal retries structured transient subgroup lookup failures', async () => {
     const listSubGroups = vi
       .fn()
-      .mockRejectedValueOnce(new Error('unknown_error'))
+      .mockRejectedValueOnce(transientStatus(502))
       .mockResolvedValueOnce([{ id: 'child-1', name: 'child' }]);
 
     const core = {
@@ -1194,12 +1380,19 @@ describe('Implementation Consistency: Regressions', () => {
       name: 'child',
     });
 
-    expect(listSubGroups).toHaveBeenCalledTimes(2);
-    expect(listSubGroups).toHaveBeenLastCalledWith({
+    expect(listSubGroups).toHaveBeenCalledTimes(3);
+    expect(listSubGroups).toHaveBeenNthCalledWith(2, {
       realm: 'demo',
       parentId: 'parent-1',
       briefRepresentation: false,
       first: 0,
+      max: 1000,
+    });
+    expect(listSubGroups).toHaveBeenNthCalledWith(3, {
+      realm: 'demo',
+      parentId: 'parent-1',
+      briefRepresentation: false,
+      first: 1,
       max: 1000,
     });
   });
