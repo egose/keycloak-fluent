@@ -7,6 +7,14 @@ sidebar_position: 0
 
 `KeycloakAdminClientFluent` is the root entry point for the library. It wraps a `@keycloak/keycloak-admin-client` instance and gives you fluent access to realm-scoped handles, root-scoped system helpers, and convenience authentication helpers.
 
+The package intentionally exposes one supported import path: `@egose/keycloak-fluent`. Runtime helpers, catchable errors, and public TypeScript types are exported from that root path; subpath imports are not part of the public contract.
+
+## Supported Keycloak Versions
+
+The package dependency range is `@keycloak/keycloak-admin-client@^26.5.7`. Packed consumer checks compile the public declarations against the minimum supported admin client `26.5.7` and the current lockfile-resolved admin client `26.6.3`; live integration tests target the repository sandbox server, Keycloak `26.6.1`.
+
+Use Keycloak Admin Client `26.x` from `26.5.7` upward unless you have verified the exact endpoints you need against another server/client version.
+
 ## Constructor
 
 ```ts
@@ -59,6 +67,7 @@ Chooses the grant type for you:
 - `client_credentials` grant otherwise
 - `username` and `password` must be provided together
 - `password` and `refreshToken` are mutually exclusive
+- Supplied `username`, `password`, `refreshToken`, `clientId`, and `clientSecret` values must be non-empty strings
 
 ```ts
 await kc.simpleAuth({ username: 'admin', password: 'admin' }); // pragma: allowlist secret
@@ -68,7 +77,43 @@ await kc.simpleAuth({ clientId: 'svc-admin', clientSecret: 'secret' }); // pragm
 
 By default, `clientId` is `admin-cli`.
 
-Authentication failures are rethrown with a `Keycloak authentication failed: ...` message while preserving the underlying cause.
+Authentication failures are rethrown with a `Keycloak authentication failed: ...` message. The public error message and `cause` expose only bounded OAuth error fields and safe status/code diagnostics; passwords, refresh tokens, client secrets, and arbitrary response bodies are not included.
+
+The `SimpleAuthOptions` type is available from the root package export:
+
+```ts
+import type { SimpleAuthOptions } from '@egose/keycloak-fluent';
+```
+
+## Public Exports
+
+Import supported symbols from the package root only:
+
+```ts
+import KeycloakAdminClientFluent, {
+  AuthenticationFlowNotFoundError,
+  DuplicateWorkflowNameError,
+  UserPasswordProvisioningError,
+  WorkflowNotFoundError,
+  createManagedKeycloakClient,
+} from '@egose/keycloak-fluent';
+
+import type {
+  ClientHandle,
+  RealmHandle,
+  UserHandle,
+  UserInputData,
+  WorkflowListOptions,
+} from '@egose/keycloak-fluent';
+```
+
+Supported root exports include:
+
+- Runtime: the default `KeycloakAdminClientFluent` class, `createManagedKeycloakClient`, handle classes, and documented catchable error classes.
+- Types: supported handle classes, input and option types, query types, and Keycloak representation aliases used by public method signatures.
+- Paths: only `@egose/keycloak-fluent` is supported. Do not import from implementation subpaths such as `@egose/keycloak-fluent/user`.
+
+The public API is snapshot-tested for ESM runtime exports, CJS runtime exports, and declaration exports in packed consumers.
 
 ### `realm(name)`
 

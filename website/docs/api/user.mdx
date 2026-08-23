@@ -278,8 +278,12 @@ export const defaultUserData = Object.freeze({
 The input data type for creating or updating a user.
 
 ```typescript
+import type { UserInputData } from '@egose/keycloak-fluent';
+
 export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {
   password?: string;
+  /** Whether a supplied password must be changed on first login. Defaults to false. */
+  passwordTemporary?: boolean;
 };
 ```
 
@@ -287,14 +291,24 @@ export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {
 
 Error thrown when password setup fails after user profile data has been
 applied. The plaintext password is never present in any field of this error
-or its `cause`.
+or its sanitized `cause`. Import it from the package root:
+
+```typescript
+import { UserPasswordProvisioningError } from '@egose/keycloak-fluent';
+```
 
 ```typescript
 export class UserPasswordProvisioningError extends Error {
   readonly username: string;
   readonly realmName: string;
-  /** true when the preceding profile update/disabled user persists in Keycloak. */
+  /** true when profile state is known to persist in Keycloak. */
   readonly profileApplied: boolean;
+  /** true when a user account is known to persist in Keycloak after the failure. */
+  readonly accountPersists: boolean;
+  /** the known enabled state of the persisted account, or null when unknown/not persisted. */
+  readonly accountEnabled: boolean | null;
+  /** true when the supplied password was committed before a later provisioning step failed. */
+  readonly passwordApplied: boolean;
   /** true for the create/ensure-create path; false for updates of an existing user. */
   readonly initialProvisioning: boolean;
 }
@@ -302,12 +316,17 @@ export class UserPasswordProvisioningError extends Error {
 
 - On the **create / ensure-create** path, a password failure triggers a
   best-effort deletion of the just-created disabled user. When that deletion
-  succeeds, `profileApplied` is `false` (no account left behind). When the
-  deletion also fails, `profileApplied` stays `false` and the disabled,
-  unusable account is left in Keycloak; the cleanup failure is annotated on
-  the password error's `cause`.
+  succeeds, `accountPersists` is `false`, `accountEnabled` is `null`, and
+  `passwordApplied` is `false`. When deletion also fails, `accountPersists`
+  and `profileApplied` are `true`, `accountEnabled` is `false`, and the
+  sanitized public `cause` reports both the password and cleanup failures.
 - On the **update** path, the profile update has already committed and is not
-  rolled back. `profileApplied` is `true` and `initialProvisioning` is `false`.
+  rolled back. `profileApplied` and `accountPersists` are `true`,
+  `passwordApplied` is `false`, and `initialProvisioning` is `false`.
+- If the final enable step fails after a password was applied,
+  `passwordApplied` is `true`, `accountPersists` is `true`, and
+  `accountEnabled` is `false`. Retrying with `ensure()` and the same enabled
+  input updates and enables the existing user instead of creating a duplicate.
 
 ---
 

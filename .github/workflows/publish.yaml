@@ -5,14 +5,24 @@ on:
     tags:
     - v*.*.*
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  build-and-publish:
+  static-verification:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        ref: ${{ github.sha }}
 
     - name: Setup Tools
       uses: ./.github/actions/setup-tools
@@ -20,14 +30,80 @@ jobs:
     - name: Setup NPM Packages
       uses: ./.github/actions/setup-npm
 
-    - name: Pre-publish verification (lint, typecheck, unit tests, build, pack inspection, consumer checks)
+    - name: Validate release workflow invariants
+      run: pnpm release:workflow:check
+
+    - name: Pre-publish verification (lint, typecheck, test typecheck, unit tests, build, pack inspection, consumer checks)
       run: pnpm publish:check
 
-    - name: Publish Packages
+  integration-verification:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Setup Tools
+      uses: ./.github/actions/setup-tools
+
+    - name: Setup NPM Packages
+      uses: ./.github/actions/setup-npm
+
+    - name: Live integration verification for tagged commit
+      uses: ./.github/actions/setup-sandbox
+      with:
+        script: pnpm test:integration
+
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs:
+    - static-verification
+    - integration-verification
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        ref: ${{ github.sha }}
+
+    - name: Setup Tools
+      uses: ./.github/actions/setup-tools
+
+    - name: Setup NPM Packages
+      uses: ./.github/actions/setup-npm
+
+    - name: Build publishable dist from verified commit
+      run: pnpm build
+
+    - name: Ensure package version is not already published
       run: |
-        cat >"/home/runner/.npmrc" <<EOF
-        //registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}
-        registry=https://registry.npmjs.org/
-        always-auth=true
-        EOF
-        npm-publish-package
+        set -euo pipefail
+        PACKAGE_SPEC="$(node -p "const pkg = require('./package.json'); pkg.name + '@' + pkg.version")"
+        if npm view "$PACKAGE_SPEC" version >/dev/null 2>&1; then
+          echo "$PACKAGE_SPEC is already published. Refusing duplicate publication."
+          exit 1
+        fi
+
+    - name: Publish package
+      env:
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      run: |
+        set -euo pipefail
+        NPM_CONFIG_USERCONFIG="$(mktemp)"
+        export NPM_CONFIG_USERCONFIG
+        cleanup() {
+          rm -f "$NPM_CONFIG_USERCONFIG"
+        }
+        trap cleanup EXIT
+        umask 077
+        printf '%s\n' \
+          "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" \
+          "registry=https://registry.npmjs.org/" \
+          "always-auth=true" >"$NPM_CONFIG_USERCONFIG"
+        npm publish --ignore-scripts --access public

@@ -1,5 +1,5 @@
 import KeycloakAdminClient, { type WhoAmIRepresentation } from './keycloak-admin-client';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminReadError } from './utils/retry';
 
 export default class WhoAmIHandle {
   public core: KeycloakAdminClient;
@@ -13,7 +13,7 @@ export default class WhoAmIHandle {
   }
 
   public async get(): Promise<WhoAmIRepresentation> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.whoAmI.find({
         currentRealm: this.currentRealm,
         realm: this.realmName,

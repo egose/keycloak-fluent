@@ -4,7 +4,8 @@ import KeycloakAdminClient, {
   type ComponentTypeRepresentation,
 } from './keycloak-admin-client';
 import RealmHandle from './realm';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
 
 export type ComponentLookupData = Pick<ComponentRepresentation, 'parentId' | 'providerId' | 'providerType' | 'subType'>;
 export type ComponentInputData = Omit<ComponentRepresentation, 'id' | 'name'>;
@@ -24,10 +25,11 @@ function getComponentCreateData(componentLookup: ComponentLookupData, data: Comp
 export default class ComponentHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _componentName: string;
   public readonly componentLookup: ComponentLookupData;
   private _component?: ComponentRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(
     core: KeycloakAdminClient,
@@ -37,9 +39,24 @@ export default class ComponentHandle {
   ) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._componentName = componentName;
     this.componentLookup = componentLookup ?? {};
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._component = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get componentName(): string {
@@ -47,6 +64,7 @@ export default class ComponentHandle {
   }
 
   public get component(): ComponentRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._component;
   }
 
@@ -55,13 +73,15 @@ export default class ComponentHandle {
    * the cached representation. Returns `this` for chaining.
    */
   public rebind(newComponentName: string): this {
+    if (newComponentName === this._componentName) return this;
     this._componentName = newComponentName;
     this._component = undefined;
+    this._identityGeneration++;
     return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
-    const one = await retryTransientAdminError(() => core.components.findOne({ realm, id }));
+    const one = await retryTransientAdminReadError(() => core.components.findOne({ realm, id }));
     return one ?? null;
   }
 
@@ -113,9 +133,11 @@ export default class ComponentHandle {
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     this._component = await ComponentHandle.getById(this.core, this.realmName, id);
 
     if (this._component?.name) {
+      if (this._componentName !== this._component.name) this._identityGeneration++;
       this._componentName = this._component.name;
     }
 
@@ -123,7 +145,8 @@ export default class ComponentHandle {
   }
 
   public async get(): Promise<ComponentRepresentation | null> {
-    const components = await retryTransientAdminError(() =>
+    this.invalidateParentCache();
+    const components = await retryTransientAdminReadError(() =>
       this.core.components.find({
         realm: this.realmName,
         name: this.componentName,
@@ -135,6 +158,7 @@ export default class ComponentHandle {
     this._component = this.resolveUniqueComponent(components);
 
     if (this._component?.name) {
+      if (this._componentName !== this._component.name) this._identityGeneration++;
       this._componentName = this._component.name;
     }
 
@@ -228,7 +252,7 @@ export default class ComponentHandle {
     const component = await this.requireComponent();
     const componentId = component.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.components.listSubComponents({
         realm: this.realmName,
         id: componentId,

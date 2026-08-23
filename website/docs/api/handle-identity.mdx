@@ -74,10 +74,11 @@ await clientHandle.ensure({ description: 'B' });
 
 ### Child handles follow the parent automatically
 
-Per the parent-as-source-of-truth contract (HANDLE-01), child handles read
-the parent's identity live. Rebinding a parent re-targets every existing
-child on the child's next operation — there is no separate "invalidate"
-call you need to make.
+Child handles derive their parent routing identity from a shared identity
+version contract. Rebinding a parent bumps that version, so existing children
+notice the parent-generation change, clear any cached representation from the
+old parent, and re-resolve on their next operation. There is no separate
+"invalidate" call and no child `rebind()` call you need to make.
 
 ```ts
 const clientHandle = realm.client('app-a');
@@ -87,16 +88,22 @@ await clientHandle.get(); // resolves app-a
 await roleHandle.get(); // resolves the reader role on app-a
 
 clientHandle.rebind('app-b');
-roleHandle.rebind(roleHandle.roleName); // clear child cache; same role name
 
 await roleHandle.get(); // now resolves the reader role on app-b
 ```
 
-The same pattern applies to client-scope protocol mappers (`rebind` on the
-parent `ClientScopeHandle`, then `rebind` on the child mapper). Child handles
-without a meaningful identity of their own (group children) still expose
-`rebind(newGroupName)` to clear the cached group representation while
-changing the local group name.
+The same transitive behavior applies across multiple levels, including realm
+children, client roles, client protocol mappers, client-scope protocol mappers,
+identity-provider mappers, and nested groups. For example, rebinding a
+`ClientScopeHandle` automatically invalidates an already-resolved protocol
+mapper under that scope, and rebinding a parent group changes the live path
+used by existing child-group handles. Realm-owned cached descendants such as
+`UserStorageProviderHandle.providerName` also clear cached values after a realm
+rebind before their next operation or cache read.
+
+If neither the local identity nor any parent identity changed, handles keep
+their cached parent representation and preserve the no-duplicate-lookup fast
+path.
 
 ## Which Handles Support `rebind`?
 
@@ -119,9 +126,13 @@ changing the local group name.
 | `ClientScopeProtocolMapperHandle` | new mapper name |
 | `AttackDetectionHandle` | new user id |
 
-`CacheHandle` and `ClientPoliciesHandle` have no per-handle identity beyond the
-realm, so they do not expose `rebind`; use `RealmHandle.rebind` to retarget
-their realm.
+`UserStorageProviderHandle` is keyed by its provider ID and does not expose a
+local `rebind()` method; when its parent realm is rebound, it follows the new
+realm and invalidates its cached provider name automatically.
+
+`CacheHandle` and `ClientPoliciesHandle` have no local cached representation or
+per-handle identity beyond the realm, so they do not expose `rebind`; use
+`RealmHandle.rebind` to retarget their realm.
 
 ## Contract Stability
 

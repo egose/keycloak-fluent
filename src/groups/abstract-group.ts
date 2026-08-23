@@ -8,23 +8,50 @@ import type RoleHandle from '../role';
 import type ClientHandle from '../clients/client';
 import type ClientRoleHandle from '../client-role';
 import { getClientByClientId } from '../clients/client-lookup';
-import { retryTransientAdminError } from '../utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from '../utils/retry';
 import { fetchAll } from '../utils/fetch-all';
 import { assertClientRoleMappingOwnership, assertRealmRoleMappingOwnership } from '../utils/role-ownership';
+import { assertOwnedHandle } from '../utils/resource-ownership';
+import { makeHandleIdentityVersion, ParentIdentityTracker, type HandleIdentitySource } from '../utils/handle-identity';
 
 const groupMembersPageSize = 1000;
 
 export abstract class AbstractGroupHandle {
   public readonly core: KeycloakAdminClient;
-  public readonly realmName: string;
+  private readonly getRealmName: () => string;
   private _groupName: string;
   private _group?: GroupRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentitySource?: HandleIdentitySource;
+  private readonly parentIdentity?: ParentIdentityTracker;
 
-  constructor(core: KeycloakAdminClient, realmName: string, groupName: string) {
+  constructor(
+    core: KeycloakAdminClient,
+    realmName: string | (() => string),
+    groupName: string,
+    parentIdentity?: HandleIdentitySource,
+  ) {
     this.core = core;
-    this.realmName = realmName;
+    this.getRealmName = typeof realmName === 'function' ? realmName : () => realmName;
     this._groupName = groupName;
     this._group = null;
+    this.parentIdentitySource = parentIdentity;
+    this.parentIdentity = parentIdentity ? new ParentIdentityTracker(parentIdentity) : undefined;
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity?.invalidateIfChanged(() => (this._group = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.getRealmName();
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.parentIdentitySource);
   }
 
   public get groupName(): string {
@@ -32,7 +59,12 @@ export abstract class AbstractGroupHandle {
   }
 
   public get group(): GroupRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._group;
+  }
+
+  public get groupPath(): string {
+    return `/${this.groupName}`;
   }
 
   /**
@@ -43,9 +75,11 @@ export abstract class AbstractGroupHandle {
    * from application code. Identity changes belong to {@link rebind}.
    */
   protected _setResolvedGroup(rep: GroupRepresentation | null, canonicalGroupName?: string): void {
+    this.invalidateParentCache();
     this._group = rep;
-    if (canonicalGroupName !== undefined) {
+    if (canonicalGroupName !== undefined && canonicalGroupName !== this._groupName) {
       this._groupName = canonicalGroupName;
+      this._identityGeneration++;
     }
   }
 
@@ -56,8 +90,10 @@ export abstract class AbstractGroupHandle {
    * the source of truth for parent identity). Returns `this` for chaining.
    */
   public rebind(newGroupName: string): this {
+    if (newGroupName === this._groupName) return this;
     this._groupName = newGroupName;
     this._group = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -121,7 +157,7 @@ export abstract class AbstractGroupHandle {
 
     return fetchAll(
       (first, max) =>
-        retryTransientAdminError(() =>
+        retryTransientAdminReadError(() =>
           this.core.groups.listMembers({
             realm: this.realmName,
             id: one.id,
@@ -168,7 +204,7 @@ export abstract class AbstractGroupHandle {
     const group = await this.requireGroup();
     const groupId = group.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.groups.listRealmRoleMappings({
         realm: this.realmName,
         id: groupId,
@@ -223,6 +259,7 @@ export abstract class AbstractGroupHandle {
   }
 
   public async listAssignedClientRoles(clientHandle: ClientHandle): Promise<RoleRepresentation[]> {
+    assertOwnedHandle(this, clientHandle, 'client', `group "${this.groupName}"`, 'client-role mapping read');
     const group = await this.requireGroup();
     const groupId = group.id;
     const client = clientHandle.client ?? (await getClientByClientId(this.core, this.realmName, clientHandle.clientId));
@@ -232,7 +269,7 @@ export abstract class AbstractGroupHandle {
 
     const clientUniqueId = client.id!;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.groups.listClientRoleMappings({
         realm: this.realmName,
         id: groupId,

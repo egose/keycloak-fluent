@@ -1,6 +1,7 @@
 import KeycloakAdminClient, { type SynchronizationResultRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
 
 export type UserStorageSyncAction = 'triggerFullSync' | 'triggerChangedUsersSync';
 export type UserStorageMapperSyncDirection = 'fedToKeycloak' | 'keycloakToFed';
@@ -12,23 +13,41 @@ export type UserStorageProviderNameResponse = {
 export default class UserStorageProviderHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   public readonly providerId: string;
   private _providerName?: string;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, providerId: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this.providerId = providerId;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._providerName = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get providerName(): string | undefined {
+    this.invalidateParentCache();
     return this._providerName;
   }
 
   public async getName(): Promise<UserStorageProviderNameResponse> {
-    const result = await retryTransientAdminError(() =>
+    this.invalidateParentCache();
+    const result = await retryTransientAdminReadError(() =>
       this.core.userStorageProvider.name({
         realm: this.realmName,
         id: this.providerId,

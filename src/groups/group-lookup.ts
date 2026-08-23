@@ -1,5 +1,6 @@
 import type { default as KeycloakAdminClient, GroupRepresentation } from '../keycloak-admin-client';
 import { fetchAll } from '../utils/fetch-all';
+import { retryTransientAdminReadError } from '../utils/retry';
 
 const groupLookupPageSize = 1000;
 
@@ -15,14 +16,6 @@ function normalizeGroupPath(groupPath: string) {
   }
 
   return groupPathParts;
-}
-
-function isTransientGroupLookupError(error: unknown) {
-  return error instanceof Error && error.message.includes('unknown_error');
-}
-
-async function sleep(ms: number) {
-  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function getRootGroupPath(groupName: string) {
@@ -47,60 +40,39 @@ export async function getGroupById(core: KeycloakAdminClient, realm: string, id:
 }
 
 export async function getGroupByName(core: KeycloakAdminClient, realm: string, groupName: string, attempts = 3) {
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    try {
-      const groups = await core.groups.find({ realm, search: groupName, exact: true, briefRepresentation: false });
-      const rootGroups = getExactGroupNameMatches(groups, groupName).filter(
-        (group) => group.path === getRootGroupPath(groupName),
-      );
-      const rootGroup = ensureUniqueGroupMatch(
-        rootGroups,
-        `Group "${groupName}" is ambiguous in realm "${realm}". Use a group path to disambiguate nested groups.`,
-      );
+  const groups = await retryTransientAdminReadError(
+    () => core.groups.find({ realm, search: groupName, exact: true, briefRepresentation: false }),
+    { attempts },
+  );
+  const rootGroups = getExactGroupNameMatches(groups, groupName).filter(
+    (group) => group.path === getRootGroupPath(groupName),
+  );
+  const rootGroup = ensureUniqueGroupMatch(
+    rootGroups,
+    `Group "${groupName}" is ambiguous in realm "${realm}". Use a group path to disambiguate nested groups.`,
+  );
 
-      if (!rootGroup?.id) {
-        return null;
-      }
-
-      return getGroupById(core, realm, rootGroup.id);
-    } catch (error) {
-      if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
-        throw error;
-      }
-
-      await sleep(50 * (attempt + 1));
-    }
+  if (!rootGroup?.id) {
+    return null;
   }
 
-  return null;
+  return getGroupById(core, realm, rootGroup.id);
 }
 
 export async function listSubGroups(core: KeycloakAdminClient, realm: string, parentId: string, attempts = 3) {
   return fetchAll(
-    async (first, max) => {
-      let page: GroupRepresentation[] | null = null;
-
-      for (let attempt = 0; attempt < attempts; attempt++) {
-        try {
-          page = await core.groups.listSubGroups({
+    (first, max) =>
+      retryTransientAdminReadError(
+        () =>
+          core.groups.listSubGroups({
             realm,
             parentId,
             briefRepresentation: false,
             first,
             max,
-          });
-          break;
-        } catch (error) {
-          if (!isTransientGroupLookupError(error) || attempt === attempts - 1) {
-            throw error;
-          }
-
-          await sleep(50 * (attempt + 1));
-        }
-      }
-
-      return page ?? [];
-    },
+          }),
+        { attempts },
+      ),
     { pageSize: groupLookupPageSize },
   );
 }

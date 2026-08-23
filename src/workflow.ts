@@ -1,24 +1,15 @@
 import { mergeUpdateData } from './utils/merge-update-data';
 import KeycloakAdminClient, { type WorkflowRepresentation } from './keycloak-admin-client';
 import RealmHandle from './realm';
-import { getErrorStatus, getResponseErrorMessage, retryTransientAdminError } from './utils/retry';
+import {
+  getErrorStatus,
+  getResponseErrorMessage,
+  retryTransientAdminError,
+  retryTransientAdminReadError,
+} from './utils/retry';
 import { fetchAll, fetchAllStream, type FetchAllOptions } from './utils/fetch-all';
-
-function getPaginationBounds(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
-  if (options?.first !== undefined || options?.max !== undefined) {
-    const first = options.first ?? 0;
-    const max = options.max ?? 100;
-    return { first, max };
-  }
-
-  const page = Math.max(1, options?.page ?? 1);
-  const pageSize = Math.max(1, options?.pageSize ?? 100);
-
-  return {
-    first: (page - 1) * pageSize,
-    max: pageSize,
-  };
-}
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
+import { toSinglePageQuery } from './utils/single-page-query';
 
 export type WorkflowInputData = Omit<WorkflowRepresentation, 'id' | 'name'>;
 
@@ -75,12 +66,13 @@ export class DuplicateWorkflowNameError extends Error {
  * Pagination/slicing options accepted by {@link WorkflowHandle.list}.
  *
  * As with the other handles, callers may use either `page`/`pageSize`
- * (1-indexed) or raw `first`/`max` offset/limit values. When both are
- * supplied, `first`/`max` take precedence. `list()` requests exactly one page
- * from the Keycloak workflows endpoint (admin `/admin/realms/{realm}/workflows`
- * accepts `first` and `max` query parameters) and returns the page the server
- * produced without re-slicing it. Use {@link WorkflowHandle.listAll} /
- * {@link WorkflowHandle.listAllStream} to iterate the full collection.
+ * (1-indexed) or raw `first`/`max` offset/limit values. Supplying both styles
+ * is invalid because precedence would be ambiguous. `list()` requests exactly
+ * one page from the Keycloak workflows endpoint (admin
+ * `/admin/realms/{realm}/workflows` accepts `first` and `max` query parameters)
+ * and returns the page the server produced without re-slicing it. Use
+ * {@link WorkflowHandle.listAll} / {@link WorkflowHandle.listAllStream} to
+ * iterate the full collection.
  */
 export type WorkflowListOptions = {
   page?: number;
@@ -91,22 +83,38 @@ export type WorkflowListOptions = {
 
 /**
  * Full-collection iteration options. Inherits PAGE-01 validation and bounds
- * (`pageSize`, `first`, `maxPages`, `signal`) from {@link FetchAllOptions}.
+ * (`pageSize`, `first`, `maxPages`, `maxItems`, `signal`) from {@link FetchAllOptions}.
  */
 export type WorkflowListAllOptions = FetchAllOptions;
 
 export default class WorkflowHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _workflowName: string;
   private _workflow?: WorkflowRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, workflowName: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._workflowName = workflowName;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._workflow = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get workflowName(): string {
@@ -114,6 +122,7 @@ export default class WorkflowHandle {
   }
 
   public get workflow(): WorkflowRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._workflow;
   }
 
@@ -122,8 +131,10 @@ export default class WorkflowHandle {
    * cached representation. Returns `this` for chaining.
    */
   public rebind(newWorkflowName: string): this {
+    if (newWorkflowName === this._workflowName) return this;
     this._workflowName = newWorkflowName;
     this._workflow = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -143,8 +154,8 @@ export default class WorkflowHandle {
     realm: string,
     options?: WorkflowListOptions,
   ): Promise<WorkflowRepresentation[]> {
-    const { first, max } = getPaginationBounds(options);
-    return retryTransientAdminError(
+    const { first, max } = toSinglePageQuery(options, 'WorkflowHandle.list');
+    return retryTransientAdminReadError(
       () => core.workflows.find({ realm, first, max }) as Promise<WorkflowRepresentation[]>,
     );
   }
@@ -164,7 +175,7 @@ export default class WorkflowHandle {
    */
   static async getById(core: KeycloakAdminClient, realm: string, id: string): Promise<WorkflowRepresentation | null> {
     try {
-      const workflow = await retryTransientAdminError(
+      const workflow = await retryTransientAdminReadError(
         () => core.workflows.findOne({ id, realm, includeId: true }) as Promise<WorkflowRepresentation | undefined>,
       );
       return workflow ?? null;
@@ -196,7 +207,7 @@ export default class WorkflowHandle {
     realm: string,
     workflowName: string,
   ): Promise<WorkflowRepresentation | null> {
-    const workflows = (await retryTransientAdminError(
+    const workflows = (await retryTransientAdminReadError(
       () =>
         core.workflows.find({
           realm,
@@ -226,9 +237,11 @@ export default class WorkflowHandle {
   }
 
   public async getById(id: string): Promise<WorkflowRepresentation | null> {
+    this.invalidateParentCache();
     this._workflow = await WorkflowHandle.getById(this.core, this.realmName, id);
 
     if (this._workflow?.name) {
+      if (this._workflowName !== this._workflow.name) this._identityGeneration++;
       this._workflowName = this._workflow.name;
     }
 
@@ -236,6 +249,7 @@ export default class WorkflowHandle {
   }
 
   public async get(): Promise<WorkflowRepresentation | null> {
+    this.invalidateParentCache();
     if (this.workflow?.id) {
       return this.workflow;
     }
@@ -243,6 +257,7 @@ export default class WorkflowHandle {
     this._workflow = await WorkflowHandle.getByName(this.core, this.realmName, this.workflowName);
 
     if (this._workflow?.name) {
+      if (this._workflowName !== this._workflow.name) this._identityGeneration++;
       this._workflowName = this._workflow.name;
     }
 
@@ -368,7 +383,7 @@ export default class WorkflowHandle {
     const opts = options ?? {};
     return fetchAll<WorkflowRepresentation>(
       (first, max) =>
-        retryTransientAdminError(
+        retryTransientAdminReadError(
           () => this.core.workflows.find({ realm: this.realmName, first, max }) as Promise<WorkflowRepresentation[]>,
         ),
       opts,
@@ -384,7 +399,7 @@ export default class WorkflowHandle {
     const opts = options ?? {};
     yield* fetchAllStream<WorkflowRepresentation>(
       (first, max) =>
-        retryTransientAdminError(
+        retryTransientAdminReadError(
           () => this.core.workflows.find({ realm: this.realmName, first, max }) as Promise<WorkflowRepresentation[]>,
         ),
       opts,

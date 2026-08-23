@@ -27,27 +27,13 @@ import ProtocolMapperHandle from '../protocol-mappers/protocol-mapper';
 import UserAttributeProtocolMapperHandle from '../protocol-mappers/user-attribute-protocol-mapper';
 import HardcodedClaimProtocolMapperHandle from '../protocol-mappers/hardcoded-claim-protocol-mapper';
 import AudienceProtocolMapperHandle from '../protocol-mappers/audience-protocol-mapper';
-import { retryTransientAdminError } from '../utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from '../utils/retry';
 import { fetchAll, fetchAllStream, type FetchAllOptions } from '../utils/fetch-all';
 import { mergeUpdateData } from '../utils/merge-update-data';
 import { assertClientRoleMappingOwnership, assertRealmRoleMappingOwnership } from '../utils/role-ownership';
-
-function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
-  if (options?.first !== undefined || options?.max !== undefined) {
-    return {
-      first: options.first ?? 0,
-      max: options.max ?? 100,
-    };
-  }
-
-  const page = Math.max(1, options?.page ?? 1);
-  const pageSize = Math.max(1, options?.pageSize ?? 100);
-
-  return {
-    first: (page - 1) * pageSize,
-    max: pageSize,
-  };
-}
+import { assertOwnedHandle } from '../utils/resource-ownership';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from '../utils/handle-identity';
+import { toSinglePageQuery } from '../utils/single-page-query';
 
 function getClientUpdateData(client: ClientRepresentation, data: ClientInputData, clientId: string) {
   return mergeUpdateData(client, data, { clientId });
@@ -105,15 +91,31 @@ export type AuthorizationScopeListAllOptions = FetchAllOptions & {
 export default class ClientHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _clientId: string;
   private _client?: ClientRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, clientId: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._clientId = clientId;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._client = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get clientId(): string {
@@ -121,6 +123,7 @@ export default class ClientHandle {
   }
 
   public get client(): ClientRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._client;
   }
 
@@ -133,8 +136,9 @@ export default class ClientHandle {
    */
   public _setResolvedClient(rep: ClientRepresentation, canonicalClientId?: string): void {
     this._client = rep;
-    if (canonicalClientId !== undefined) {
+    if (canonicalClientId !== undefined && canonicalClientId !== this._clientId) {
       this._clientId = canonicalClientId;
+      this._identityGeneration++;
     }
   }
 
@@ -149,8 +153,10 @@ export default class ClientHandle {
    * Returns `this` for chaining.
    */
   public rebind(newClientId: string): this {
+    if (newClientId === this._clientId) return this;
     this._clientId = newClientId;
     this._client = undefined;
+    this._identityGeneration++;
     return this;
   }
 
@@ -213,9 +219,11 @@ export default class ClientHandle {
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     this._client = await ClientHandle.getById(this.core, this.realmName, id);
 
     if (this._client) {
+      if (this._clientId !== this._client.clientId) this._identityGeneration++;
       this._clientId = this._client.clientId!;
     }
 
@@ -223,9 +231,11 @@ export default class ClientHandle {
   }
 
   public async get(): Promise<ClientRepresentation | null> {
+    this.invalidateParentCache();
     this._client = await ClientHandle.getByClientId(this.core, this.realmName, this.clientId);
 
     if (this._client) {
+      if (this._clientId !== this._client.clientId) this._identityGeneration++;
       this._clientId = this._client.clientId!;
     }
 
@@ -322,6 +332,7 @@ export default class ClientHandle {
   }
 
   public async addDefaultClientScope(clientScopeHandle: ClientScopeHandle) {
+    assertOwnedHandle(this, clientScopeHandle, 'client scope', `client "${this.clientId}"`, 'client-scope assignment');
     const client = await this.requireClient();
     const clientScope = await this.resolveClientScope(clientScopeHandle);
     const clientInternalId = client.id;
@@ -339,6 +350,7 @@ export default class ClientHandle {
   }
 
   public async removeDefaultClientScope(clientScopeHandle: ClientScopeHandle) {
+    assertOwnedHandle(this, clientScopeHandle, 'client scope', `client "${this.clientId}"`, 'client-scope assignment');
     const client = await this.requireClient();
     const clientScope = await this.resolveClientScope(clientScopeHandle);
     const clientInternalId = client.id;
@@ -359,7 +371,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listDefaultClientScopes({
         realm: this.realmName,
         id: clientInternalId,
@@ -368,6 +380,7 @@ export default class ClientHandle {
   }
 
   public async addOptionalClientScope(clientScopeHandle: ClientScopeHandle) {
+    assertOwnedHandle(this, clientScopeHandle, 'client scope', `client "${this.clientId}"`, 'client-scope assignment');
     const client = await this.requireClient();
     const clientScope = await this.resolveClientScope(clientScopeHandle);
     const clientInternalId = client.id;
@@ -385,6 +398,7 @@ export default class ClientHandle {
   }
 
   public async removeOptionalClientScope(clientScopeHandle: ClientScopeHandle) {
+    assertOwnedHandle(this, clientScopeHandle, 'client scope', `client "${this.clientId}"`, 'client-scope assignment');
     const client = await this.requireClient();
     const clientScope = await this.resolveClientScope(clientScopeHandle);
     const clientInternalId = client.id;
@@ -405,7 +419,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listOptionalClientScopes({
         realm: this.realmName,
         id: clientInternalId,
@@ -417,7 +431,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getClientSecret({
         realm: this.realmName,
         id: clientInternalId,
@@ -453,7 +467,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listProtocolMappers({
         realm: this.realmName,
         id: clientInternalId,
@@ -465,7 +479,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.findProtocolMappersByProtocol({
         realm: this.realmName,
         id: clientInternalId,
@@ -495,7 +509,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listScopeMappings({
         realm: this.realmName,
         id: clientInternalId,
@@ -549,7 +563,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listRealmScopeMappings({
         realm: this.realmName,
         id: clientInternalId,
@@ -561,7 +575,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listAvailableRealmScopeMappings({
         realm: this.realmName,
         id: clientInternalId,
@@ -573,7 +587,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listCompositeRealmScopeMappings({
         realm: this.realmName,
         id: clientInternalId,
@@ -582,6 +596,7 @@ export default class ClientHandle {
   }
 
   public async addClientScopeMappings(targetClientHandle: ClientHandle, roleHandles: ClientRoleHandle[]) {
+    assertOwnedHandle(this, targetClientHandle, 'client', `client "${this.clientId}"`, 'client-scope role mapping');
     for (const roleHandle of roleHandles) {
       this.assertClientScopeRoleOwnership(targetClientHandle, roleHandle);
     }
@@ -606,6 +621,7 @@ export default class ClientHandle {
   }
 
   public async removeClientScopeMappings(targetClientHandle: ClientHandle, roleHandles: ClientRoleHandle[]) {
+    assertOwnedHandle(this, targetClientHandle, 'client', `client "${this.clientId}"`, 'client-scope role mapping');
     for (const roleHandle of roleHandles) {
       this.assertClientScopeRoleOwnership(targetClientHandle, roleHandle);
     }
@@ -630,12 +646,13 @@ export default class ClientHandle {
   }
 
   public async listClientScopeMappings(targetClientHandle: ClientHandle) {
+    assertOwnedHandle(this, targetClientHandle, 'client', `client "${this.clientId}"`, 'client-scope role mapping');
     const client = await this.requireClient();
     const targetClient = await this.resolveTargetClient(targetClientHandle);
     const clientInternalId = client.id;
     const targetClientId = targetClient.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listClientScopeMappings({
         realm: this.realmName,
         id: clientInternalId,
@@ -645,12 +662,13 @@ export default class ClientHandle {
   }
 
   public async listAvailableClientScopeMappings(targetClientHandle: ClientHandle) {
+    assertOwnedHandle(this, targetClientHandle, 'client', `client "${this.clientId}"`, 'client-scope role mapping');
     const client = await this.requireClient();
     const targetClient = await this.resolveTargetClient(targetClientHandle);
     const clientInternalId = client.id;
     const targetClientId = targetClient.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listAvailableClientScopeMappings({
         realm: this.realmName,
         id: clientInternalId,
@@ -660,12 +678,13 @@ export default class ClientHandle {
   }
 
   public async listCompositeClientScopeMappings(targetClientHandle: ClientHandle) {
+    assertOwnedHandle(this, targetClientHandle, 'client', `client "${this.clientId}"`, 'client-scope role mapping');
     const client = await this.requireClient();
     const targetClient = await this.resolveTargetClient(targetClientHandle);
     const clientInternalId = client.id;
     const targetClientId = targetClient.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listCompositeClientScopeMappings({
         realm: this.realmName,
         id: clientInternalId,
@@ -682,11 +701,11 @@ export default class ClientHandle {
     user?: string;
     client?: string;
   }): Promise<UserSessionRepresentation[]> {
+    const { first, max } = toSinglePageQuery(options, 'ClientHandle.listSessions');
     const client = await this.requireClient();
     const clientInternalId = client.id;
-    const { first, max } = getPaginationParams(options);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listSessions({
         realm: this.realmName,
         id: clientInternalId,
@@ -704,11 +723,11 @@ export default class ClientHandle {
     first?: number;
     max?: number;
   }): Promise<UserSessionRepresentation[]> {
+    const { first, max } = toSinglePageQuery(options, 'ClientHandle.listOfflineSessions');
     const client = await this.requireClient();
     const clientInternalId = client.id;
-    const { first, max } = getPaginationParams(options);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listOfflineSessions({
         realm: this.realmName,
         id: clientInternalId,
@@ -723,7 +742,7 @@ export default class ClientHandle {
     const clientInternalId = client.id;
 
     return fetchAll((first, max) =>
-      retryTransientAdminError(() =>
+      retryTransientAdminReadError(() =>
         this.core.clients.listSessions({
           realm: this.realmName,
           id: clientInternalId,
@@ -741,7 +760,7 @@ export default class ClientHandle {
     const clientInternalId = client.id;
 
     return fetchAll((first, max) =>
-      retryTransientAdminError(() =>
+      retryTransientAdminReadError(() =>
         this.core.clients.listOfflineSessions({
           realm: this.realmName,
           id: clientInternalId,
@@ -756,7 +775,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getSessionCount({
         realm: this.realmName,
         id: clientInternalId,
@@ -768,7 +787,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getOfflineSessionCount({
         realm: this.realmName,
         id: clientInternalId,
@@ -792,7 +811,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getInstallationProviders({
         realm: this.realmName,
         id: clientInternalId,
@@ -847,7 +866,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.testNodesAvailable({
         realm: this.realmName,
         id: clientInternalId,
@@ -859,7 +878,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getKeyInfo({
         realm: this.realmName,
         id: clientInternalId,
@@ -885,7 +904,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.downloadKey(
         {
           realm: this.realmName,
@@ -949,7 +968,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listFineGrainPermissions({
         realm: this.realmName,
         id: clientInternalId,
@@ -976,7 +995,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getResourceServer({
         realm: this.realmName,
         id: clientInternalId,
@@ -1020,7 +1039,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.exportResource({
         realm: this.realmName,
         id: clientInternalId,
@@ -1032,7 +1051,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.evaluateResource(
         {
           realm: this.realmName,
@@ -1044,11 +1063,11 @@ export default class ClientHandle {
   }
 
   public async listResources(query?: AuthorizationResourceQuery): Promise<ResourceRepresentation[]> {
+    const { first, max } = toSinglePageQuery(query, 'ClientHandle.listResources');
     const client = await this.requireClient();
     const clientInternalId = client.id;
-    const { first, max } = getPaginationParams(query);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listResources({
         realm: this.realmName,
         id: clientInternalId,
@@ -1077,7 +1096,7 @@ export default class ClientHandle {
 
     return fetchAll<ResourceRepresentation>(
       (first, max) =>
-        retryTransientAdminError(() =>
+        retryTransientAdminReadError(() =>
           this.core.clients.listResources({
             realm: this.realmName,
             id: clientInternalId,
@@ -1098,7 +1117,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getResource({
         realm: this.realmName,
         id: clientInternalId,
@@ -1154,11 +1173,11 @@ export default class ClientHandle {
   }
 
   public async listAuthorizationPolicies(query?: AuthorizationPolicyQuery): Promise<PolicyRepresentation[]> {
+    const { first, max } = toSinglePageQuery(query, 'ClientHandle.listAuthorizationPolicies');
     const client = await this.requireClient();
     const clientInternalId = client.id;
-    const { first, max } = getPaginationParams(query);
 
-    const policies = await retryTransientAdminError(() =>
+    const policies = await retryTransientAdminReadError(() =>
       this.core.clients.listPolicies({
         realm: this.realmName,
         id: clientInternalId,
@@ -1181,7 +1200,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.findPolicyByName({
         realm: this.realmName,
         id: clientInternalId,
@@ -1210,7 +1229,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(
+    return retryTransientAdminReadError(
       () =>
         this.core.clients.findOnePolicyWithType({
           realm: this.realmName,
@@ -1257,7 +1276,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listDependentPolicies({
         realm: this.realmName,
         id: clientInternalId,
@@ -1270,7 +1289,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listPolicyProviders({
         realm: this.realmName,
         id: clientInternalId,
@@ -1279,11 +1298,11 @@ export default class ClientHandle {
   }
 
   public async listAuthorizationScopes(query?: AuthorizationScopeQuery): Promise<ScopeRepresentation[]> {
+    const { first, max } = toSinglePageQuery(query, 'ClientHandle.listAuthorizationScopes');
     const client = await this.requireClient();
     const clientInternalId = client.id;
-    const { first, max } = getPaginationParams(query);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listAllScopes({
         realm: this.realmName,
         id: clientInternalId,
@@ -1309,7 +1328,7 @@ export default class ClientHandle {
 
     return fetchAll<ScopeRepresentation>(
       (first, max) =>
-        retryTransientAdminError(() =>
+        retryTransientAdminReadError(() =>
           this.core.clients.listAllScopes({
             realm: this.realmName,
             id: clientInternalId,
@@ -1327,7 +1346,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listAllPermissionsByScope({
         realm: this.realmName,
         id: clientInternalId,
@@ -1340,7 +1359,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.listAllResourcesByScope({
         realm: this.realmName,
         id: clientInternalId,
@@ -1353,7 +1372,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getAuthorizationScope({
         realm: this.realmName,
         id: clientInternalId,
@@ -1409,11 +1428,11 @@ export default class ClientHandle {
   }
 
   public async findAuthorizationPermissions(query?: AuthorizationPermissionQuery): Promise<PolicyRepresentation[]> {
+    const { first, max } = toSinglePageQuery(query, 'ClientHandle.findAuthorizationPermissions');
     const client = await this.requireClient();
     const clientInternalId = client.id;
-    const { first, max } = getPaginationParams(query);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.findPermissions({
         realm: this.realmName,
         id: clientInternalId,
@@ -1433,7 +1452,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.findOnePermission({
         realm: this.realmName,
         id: clientInternalId,
@@ -1496,7 +1515,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getAssociatedScopes({
         realm: this.realmName,
         id: clientInternalId,
@@ -1509,7 +1528,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getAssociatedResources({
         realm: this.realmName,
         id: clientInternalId,
@@ -1522,7 +1541,7 @@ export default class ClientHandle {
     const client = await this.requireClient();
     const clientInternalId = client.id;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.clients.getAssociatedPolicies({
         realm: this.realmName,
         id: clientInternalId,

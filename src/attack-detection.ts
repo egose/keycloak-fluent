@@ -1,18 +1,20 @@
 import KeycloakAdminClient from './keycloak-admin-client';
 import RealmHandle from './realm';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
 
 export default class AttackDetectionHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _userId?: string;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, userId?: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._userId = userId;
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
   }
 
   public get userId(): string | undefined {
@@ -44,7 +46,7 @@ export default class AttackDetectionHandle {
   public async get(userId?: string) {
     const resolvedUserId = this.requireUserId(userId);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.attackDetection.findOne({
         realm: this.realmName,
         id: resolvedUserId,

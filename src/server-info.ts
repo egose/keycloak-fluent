@@ -2,7 +2,7 @@ import KeycloakAdminClient, {
   type EffectiveMessageBundleRepresentation,
   type ServerInfoRepresentation,
 } from './keycloak-admin-client';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminReadError } from './utils/retry';
 
 export type EffectiveMessageBundleQuery = {
   realm: string;
@@ -20,12 +20,12 @@ export default class ServerInfoHandle {
   }
 
   public async get(): Promise<ServerInfoRepresentation> {
-    return retryTransientAdminError(() => this.core.serverInfo.find({}));
+    return retryTransientAdminReadError(() => this.core.serverInfo.find({}));
   }
 
   public async getEffectiveMessageBundles(
     query: EffectiveMessageBundleQuery,
   ): Promise<EffectiveMessageBundleRepresentation[]> {
-    return retryTransientAdminError(() => this.core.serverInfo.findEffectiveMessageBundles(query));
+    return retryTransientAdminReadError(() => this.core.serverInfo.findEffectiveMessageBundles(query));
   }
 }

@@ -2,6 +2,13 @@ import { describe, expect, test, vi } from 'vitest';
 import KeycloakAdminClientFluent from '../src/index';
 import RealmHandle from '../src/realm';
 
+function transportError(status: number) {
+  return Object.assign(new Error(`HTTP ${status}`), {
+    response: { status },
+    responseData: { error: 'unknown_error' },
+  });
+}
+
 describe('Implementation Consistency: Resource Handles', () => {
   test('organization handle supports CRUD, membership, invitations, and identity provider linking', async () => {
     const inviteFormData = new FormData();
@@ -253,6 +260,17 @@ describe('Implementation Consistency: Resource Handles', () => {
     expect(core.attackDetection.findOne).toHaveBeenCalledWith({ realm: 'demo', id: 'user-1' });
     expect(core.attackDetection.del).toHaveBeenCalledWith({ realm: 'demo', id: 'user-1' });
     expect(core.attackDetection.delAll).toHaveBeenCalledWith({ realm: 'demo' });
+  });
+
+  test('cache-clearing mutations retain the documented explicit retry opt-in', async () => {
+    const core = {
+      cache: {
+        clearUserCache: vi.fn().mockRejectedValueOnce(transportError(503)).mockResolvedValueOnce(undefined),
+      },
+    } as any;
+
+    await expect(new RealmHandle(core, 'demo').cache().clearUserCache()).resolves.toBeUndefined();
+    expect(core.cache.clearUserCache).toHaveBeenCalledTimes(2);
   });
 
   test('attack detection forUser binds the user id for later calls', async () => {

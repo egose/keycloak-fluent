@@ -33,10 +33,10 @@ import KeycloakAdminClientFluent from '../src/index';
  * existing handle by mutating its routing identity (`realmName`, parent
  * identity like `clientId`/`scopeName`/`roleName`/...) nor by overwriting
  * its cached representation (`client`/`role`/`group`/...). The only supported
- * way to re-target a handle is the public `rebind(newId)` method on each
- * parent handle, which clears the cached representation atomically with
- * the identity change so existing children re-resolve against the new
- * target (per HANDLE-01's parent-as-source-of-truth design).
+ * way to re-target a handle is the public `rebind(newId)` method, which
+ * clears the local cached representation atomically with the identity
+ * change. Existing descendants detect parent identity-version changes,
+ * clear stale caches automatically, and re-resolve against the new target.
  *
  * `.core` / `.realmHandle` remain public and mutable-on-construction but
  * are declared `readonly` so they cannot be redirected after construction;
@@ -270,6 +270,10 @@ export function bad() {
   realm.realmName = 'other';
   // @ts-expect-error realmName on a sub-handle is readonly
   cli.realmName = 'other';
+  // @ts-expect-error realmName on cache handle is a readonly getter
+  new CacheHandle(coreStub, realm).realmName = 'other';
+  // @ts-expect-error realmName on client-policies handle is a readonly getter
+  new ClientPoliciesHandle(coreStub, realm).realmName = 'other';
   // @ts-expect-error user username is a readonly getter
   new UserHandle(coreStub, realm, 'u').username = 'other';
   // @ts-expect-error organization alias is a readonly getter

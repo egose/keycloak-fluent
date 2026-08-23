@@ -7,25 +7,11 @@ import KeycloakAdminClient, {
 import type IdentityProviderHandle from './identity-provider';
 import RealmHandle from './realm';
 import type UserHandle from './user';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
 import { fetchAll } from './utils/fetch-all';
-
-function getPaginationParams(options?: { page?: number; pageSize?: number; first?: number; max?: number }) {
-  if (options?.first !== undefined || options?.max !== undefined) {
-    return {
-      first: options.first ?? 0,
-      max: options.max ?? 100,
-    };
-  }
-
-  const page = Math.max(1, options?.page ?? 1);
-  const pageSize = Math.max(1, options?.pageSize ?? 100);
-
-  return {
-    first: (page - 1) * pageSize,
-    max: pageSize,
-  };
-}
+import { assertOwnedHandle } from './utils/resource-ownership';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
+import { toSinglePageQuery } from './utils/single-page-query';
 
 function getOrganizationUpdateData(
   organization: OrganizationRepresentation,
@@ -44,15 +30,31 @@ export type OrganizationInputData = Omit<OrganizationRepresentation, 'id' | 'ali
 export default class OrganizationHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _organizationAlias: string;
   private _organization?: OrganizationRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, organizationAlias: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._organizationAlias = organizationAlias;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._organization = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get organizationAlias(): string {
@@ -60,6 +62,7 @@ export default class OrganizationHandle {
   }
 
   public get organization(): OrganizationRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._organization;
   }
 
@@ -68,18 +71,20 @@ export default class OrganizationHandle {
    * cached representation. Returns `this` for chaining.
    */
   public rebind(newOrganizationAlias: string): this {
+    if (newOrganizationAlias === this._organizationAlias) return this;
     this._organizationAlias = newOrganizationAlias;
     this._organization = undefined;
+    this._identityGeneration++;
     return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
-    const one = await retryTransientAdminError(() => core.organizations.findOne({ realm, id }));
+    const one = await retryTransientAdminReadError(() => core.organizations.findOne({ realm, id }));
     return one ?? null;
   }
 
   static async getByAlias(core: KeycloakAdminClient, realm: string, organizationAlias: string) {
-    const organizations = await retryTransientAdminError(() =>
+    const organizations = await retryTransientAdminReadError(() =>
       core.organizations.find({
         realm,
         search: organizationAlias,
@@ -123,9 +128,11 @@ export default class OrganizationHandle {
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     this._organization = await OrganizationHandle.getById(this.core, this.realmName, id);
 
     if (this._organization?.alias) {
+      if (this._organizationAlias !== this._organization.alias) this._identityGeneration++;
       this._organizationAlias = this._organization.alias;
     }
 
@@ -133,9 +140,11 @@ export default class OrganizationHandle {
   }
 
   public async get(): Promise<OrganizationRepresentation | null> {
+    this.invalidateParentCache();
     this._organization = await OrganizationHandle.getByAlias(this.core, this.realmName, this.organizationAlias);
 
     if (this._organization?.alias) {
+      if (this._organizationAlias !== this._organization.alias) this._identityGeneration++;
       this._organizationAlias = this._organization.alias;
     }
 
@@ -246,10 +255,10 @@ export default class OrganizationHandle {
     exact?: boolean;
     search?: string;
   }): Promise<UserRepresentation[]> {
+    const { first, max } = toSinglePageQuery(options, 'OrganizationHandle.listMembers');
     const organization = await this.requireOrganization();
-    const { first, max } = getPaginationParams(options);
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.organizations.listMembers({
         realm: this.realmName,
         orgId: organization.id,
@@ -270,7 +279,7 @@ export default class OrganizationHandle {
     const organization = await this.requireOrganization();
 
     return fetchAll((first, max) =>
-      retryTransientAdminError(() =>
+      retryTransientAdminReadError(() =>
         this.core.organizations.listMembers({
           realm: this.realmName,
           orgId: organization.id,
@@ -285,6 +294,13 @@ export default class OrganizationHandle {
   }
 
   public async addMember(userHandle: UserHandle) {
+    assertOwnedHandle(
+      this,
+      userHandle,
+      'user',
+      `organization "${this.organizationAlias}"`,
+      'organization membership update',
+    );
     const organization = await this.requireOrganization();
     const user = await this.resolveUser(userHandle);
 
@@ -300,6 +316,13 @@ export default class OrganizationHandle {
   }
 
   public async removeMember(userHandle: UserHandle) {
+    assertOwnedHandle(
+      this,
+      userHandle,
+      'user',
+      `organization "${this.organizationAlias}"`,
+      'organization membership update',
+    );
     const organization = await this.requireOrganization();
     const user = await this.resolveUser(userHandle);
 
@@ -345,7 +368,7 @@ export default class OrganizationHandle {
   public async listIdentityProviders(): Promise<IdentityProviderRepresentation[]> {
     const organization = await this.requireOrganization();
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.organizations.listIdentityProviders({
         realm: this.realmName,
         orgId: organization.id,
@@ -354,6 +377,13 @@ export default class OrganizationHandle {
   }
 
   public async linkIdentityProvider(identityProviderHandle: IdentityProviderHandle) {
+    assertOwnedHandle(
+      this,
+      identityProviderHandle,
+      'identity provider',
+      `organization "${this.organizationAlias}"`,
+      'organization identity-provider link',
+    );
     const organization = await this.requireOrganization();
     const identityProvider = await this.resolveIdentityProvider(identityProviderHandle);
 
@@ -369,6 +399,13 @@ export default class OrganizationHandle {
   }
 
   public async unlinkIdentityProvider(identityProviderHandle: IdentityProviderHandle) {
+    assertOwnedHandle(
+      this,
+      identityProviderHandle,
+      'identity provider',
+      `organization "${this.organizationAlias}"`,
+      'organization identity-provider link',
+    );
     const organization = await this.requireOrganization();
     const identityProvider = await this.resolveIdentityProvider(identityProviderHandle);
 

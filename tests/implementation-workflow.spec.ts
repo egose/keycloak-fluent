@@ -1,13 +1,19 @@
 import { describe, expect, test, vi } from 'vitest';
 import RealmHandle from '../src/realm';
-import { DuplicateWorkflowNameError, WorkflowNotFoundError, type WorkflowListOptions } from '../src/workflow';
+import {
+  DuplicateWorkflowNameError,
+  WorkflowNotFoundError,
+  type WorkflowListAllOptions,
+  type WorkflowListOptions,
+} from '../src/workflow';
+import { createMockAdminClient } from './test-utils';
 
 describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
   describe('WorkflowHandle.getById', () => {
     test('uses server-side findOne(id) and terminates as soon as the unique match is known', async () => {
       const findOne = vi.fn().mockResolvedValueOnce({ id: 'wf-1', name: 'approval', enabled: true });
       const find = vi.fn();
-      const core = { workflows: { findOne, find } } as any;
+      const core = createMockAdminClient({ workflows: { findOne, find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.getById('wf-1')).resolves.toEqual({
@@ -24,7 +30,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
     test('returns null when the id is not found (catchNotFound -> undefined)', async () => {
       const findOne = vi.fn().mockResolvedValueOnce(undefined);
       const find = vi.fn();
-      const core = { workflows: { findOne, find } } as any;
+      const core = createMockAdminClient({ workflows: { findOne, find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.getById('missing-id')).resolves.toBeNull();
@@ -46,7 +52,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
       });
       const findOne = vi.fn().mockRejectedValueOnce(networkError);
       const find = vi.fn();
-      const core = { workflows: { findOne, find } } as any;
+      const core = createMockAdminClient({ workflows: { findOne, find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.getById('00000000-0000-0000-0000-000000000000')).resolves.toBeNull();
@@ -69,7 +75,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         responseData: { error: 'Some other validation failure' },
       });
       const findOne = vi.fn().mockRejectedValueOnce(networkError);
-      const core = { workflows: { findOne } } as any;
+      const core = createMockAdminClient({ workflows: { findOne } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       // The original transport error is rethrown unchanged (not coerced to
@@ -84,7 +90,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
     test('forwards search + exact:true to the server, never fetching the full list', async () => {
       const find = vi.fn().mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }]);
       const findOne = vi.fn();
-      const core = { workflows: { find, findOne } } as any;
+      const core = createMockAdminClient({ workflows: { find, findOne } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.get()).resolves.toEqual({
@@ -104,7 +110,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
 
     test('returns null when no workflow matches the name exactly', async () => {
       const find = vi.fn().mockResolvedValueOnce([]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('does-not-exist');
       await expect(handle.get()).resolves.toBeNull();
@@ -121,7 +127,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         { id: 'wf-1', name: 'approval', enabled: true },
         { id: 'wf-2', name: 'approval', enabled: false },
       ]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       const firstAttempt = handle.get();
@@ -142,7 +148,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
 
     test('reuses the cached representation on a second get() call without re-fetching', async () => {
       const find = vi.fn().mockResolvedValueOnce([{ id: 'wf-1', name: 'approval', enabled: true }]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.get()).resolves.toEqual({ id: 'wf-1', name: 'approval', enabled: true });
@@ -156,7 +162,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
   describe('WorkflowHandle.requireWorkflow', () => {
     test('throws WorkflowNotFoundError (not a generic Error) when the workflow is missing', async () => {
       const find = vi.fn().mockResolvedValueOnce([]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
 
@@ -180,7 +186,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         { id: 'wf-1', name: 'approval' },
         { id: 'wf-2', name: 'auto-approval' },
       ]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.list({ page: 1, pageSize: 10 })).resolves.toEqual([
@@ -194,7 +200,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
 
     test('forwards first/max directly when only those are supplied', async () => {
       const find = vi.fn().mockResolvedValueOnce([{ id: 'wf-2', name: 'auto-approval' }]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       const opts: WorkflowListOptions = { first: 50, max: 25 };
@@ -205,7 +211,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
 
     test('uses page=1 / pageSize=100 by default (no full collection load)', async () => {
       const find = vi.fn().mockResolvedValueOnce([]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.list()).resolves.toEqual([]);
@@ -220,7 +226,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         { id: 'wf-2', name: 'auto-approval' },
         { id: 'wf-3', name: 'review' },
       ]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       const opts: WorkflowListOptions = { page: 2, pageSize: 1 };
@@ -235,15 +241,16 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
   });
 
   describe('WorkflowHandle.listAll (full-collection iteration via fetchAll)', () => {
-    test('pages until a short page is returned; advances by returned rows (not requested max)', async () => {
+    test('pages until an empty page is returned; advances by returned rows (not requested max)', async () => {
       const find = vi
         .fn()
         .mockResolvedValueOnce([
           { id: 'wf-1', name: 'approval' },
           { id: 'wf-2', name: 'auto-approval' },
         ])
-        .mockResolvedValueOnce([{ id: 'wf-3', name: 'review' }]);
-      const core = { workflows: { find } } as any;
+        .mockResolvedValueOnce([{ id: 'wf-3', name: 'review' }])
+        .mockResolvedValueOnce([]);
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.listAll({ pageSize: 2 })).resolves.toEqual([
@@ -252,9 +259,10 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         { id: 'wf-3', name: 'review' },
       ]);
 
-      expect(core.workflows.find).toHaveBeenCalledTimes(2);
+      expect(core.workflows.find).toHaveBeenCalledTimes(3);
       expect(core.workflows.find).toHaveBeenNthCalledWith(1, { realm: 'demo', first: 0, max: 2 });
       expect(core.workflows.find).toHaveBeenNthCalledWith(2, { realm: 'demo', first: 2, max: 2 });
+      expect(core.workflows.find).toHaveBeenNthCalledWith(3, { realm: 'demo', first: 3, max: 2 });
     });
 
     test('continues when the page is an exact multiple of pageSize (terminates at empty page)', async () => {
@@ -265,7 +273,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
           { id: 'wf-2', name: 'auto-approval' },
         ])
         .mockResolvedValueOnce([]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.listAll({ pageSize: 2 })).resolves.toEqual([
@@ -277,8 +285,12 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
     });
 
     test('aborts with RangeError when maxPages is exceeded', async () => {
-      const find = vi.fn().mockResolvedValue([{ id: 'wf-1', name: 'approval' }]);
-      const core = { workflows: { find } } as any;
+      let counter = 0;
+      const find = vi.fn().mockImplementation(() => {
+        counter += 1;
+        return Promise.resolve([{ id: `wf-${counter}`, name: `w${counter}` }]);
+      });
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.listAll({ pageSize: 1, maxPages: 3 })).rejects.toBeInstanceOf(RangeError);
@@ -288,19 +300,19 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
 
     test('validates pageSize/first/maxPages before the first fetch', async () => {
       const find = vi.fn();
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
-      await expect(handle.listAll({ pageSize: 0 } as any)).rejects.toBeInstanceOf(RangeError);
-      await expect(handle.listAll({ first: -1 } as any)).rejects.toBeInstanceOf(RangeError);
-      await expect(handle.listAll({ maxPages: 0 } as any)).rejects.toBeInstanceOf(RangeError);
+      await expect(handle.listAll({ pageSize: 0 } satisfies WorkflowListAllOptions)).rejects.toBeInstanceOf(RangeError);
+      await expect(handle.listAll({ first: -1 } satisfies WorkflowListAllOptions)).rejects.toBeInstanceOf(RangeError);
+      await expect(handle.listAll({ maxPages: 0 } satisfies WorkflowListAllOptions)).rejects.toBeInstanceOf(RangeError);
 
       expect(core.workflows.find).not.toHaveBeenCalled();
     });
 
     test('passes AbortSignal through fetchAll', async () => {
       const find = vi.fn().mockResolvedValue([{ id: 'wf-1', name: 'approval' }]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       const controller = new AbortController();
@@ -308,21 +320,28 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
       await expect(handle.listAll({ pageSize: 10, signal: controller.signal })).rejects.toThrow();
     });
 
-    test('terminates after a short first page when the server caps below requested pageSize', async () => {
-      const find = vi.fn().mockResolvedValueOnce([
-        { id: 'wf-1', name: 'approval' },
-        { id: 'wf-2', name: 'auto-approval' },
-      ]);
-      const core = { workflows: { find } } as any;
+    test('continues after a short first page when the server caps below requested pageSize', async () => {
+      const find = vi
+        .fn()
+        .mockResolvedValueOnce([
+          { id: 'wf-1', name: 'approval' },
+          { id: 'wf-2', name: 'auto-approval' },
+        ])
+        .mockResolvedValueOnce([{ id: 'wf-3', name: 'review' }])
+        .mockResolvedValueOnce([]);
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       await expect(handle.listAll({ pageSize: 100 })).resolves.toEqual([
         { id: 'wf-1', name: 'approval' },
         { id: 'wf-2', name: 'auto-approval' },
+        { id: 'wf-3', name: 'review' },
       ]);
 
-      expect(core.workflows.find).toHaveBeenCalledTimes(1);
-      expect(core.workflows.find).toHaveBeenCalledWith({ realm: 'demo', first: 0, max: 100 });
+      expect(core.workflows.find).toHaveBeenCalledTimes(3);
+      expect(core.workflows.find).toHaveBeenNthCalledWith(1, { realm: 'demo', first: 0, max: 100 });
+      expect(core.workflows.find).toHaveBeenNthCalledWith(2, { realm: 'demo', first: 2, max: 100 });
+      expect(core.workflows.find).toHaveBeenNthCalledWith(3, { realm: 'demo', first: 3, max: 100 });
     });
   });
 
@@ -333,7 +352,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         .mockResolvedValueOnce([{ id: 'wf-1', name: 'approval' }])
         .mockResolvedValueOnce([{ id: 'wf-2', name: 'auto-approval' }])
         .mockResolvedValueOnce([]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       const pages: any[] = [];
@@ -341,7 +360,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         pages.push(page);
       }
 
-      expect(pages).toEqual([[{ id: 'wf-1', name: 'approval' }], [{ id: 'wf-2', name: 'auto-approval' }], []]);
+      expect(pages).toEqual([[{ id: 'wf-1', name: 'approval' }], [{ id: 'wf-2', name: 'auto-approval' }]]);
       expect(core.workflows.find).toHaveBeenCalledTimes(3);
     });
 
@@ -351,7 +370,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         counter += 1;
         return Promise.resolve([{ id: `wf-${counter}`, name: `w${counter}` }]);
       });
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const handle = new RealmHandle(core, 'demo').workflow('approval');
       const iterator = handle.listAllStream({ pageSize: 1, maxPages: 2 });
@@ -376,7 +395,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
         { id: 'wf-1', name: 'approval' },
         { id: 'wf-2', name: 'auto-approval' },
       ]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const realmHandle = new RealmHandle(core, 'demo');
       await expect(realmHandle.searchWorkflows('appr', { page: 2, pageSize: 25 })).resolves.toEqual([
@@ -396,7 +415,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
 
     test('forwards first/max directly when supplied', async () => {
       const find = vi.fn().mockResolvedValueOnce([]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const realmHandle = new RealmHandle(core, 'demo');
       await realmHandle.searchWorkflows('foo', { first: 40, max: 20 });
@@ -412,7 +431,7 @@ describe('Implementation Consistency: Workflow Lookup and Pagination', () => {
 
     test('defaults to page=1 / pageSize=100', async () => {
       const find = vi.fn().mockResolvedValueOnce([]);
-      const core = { workflows: { find } } as any;
+      const core = createMockAdminClient({ workflows: { find } });
 
       const realmHandle = new RealmHandle(core, 'demo');
       await realmHandle.searchWorkflows('appr');

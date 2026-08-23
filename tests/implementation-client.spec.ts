@@ -1,14 +1,54 @@
 import { describe, expect, test, vi } from 'vitest';
 import RealmHandle from '../src/realm';
 import type { AuthorizationResourceQuery, AuthorizationScopeQuery } from '../src/clients/client';
+import type { ResourceEvaluation, ResourceServerRepresentation } from '../src/keycloak-admin-client';
+import { createMockAdminClient } from './test-utils';
+
+function transportError(status: number) {
+  return Object.assign(new Error(`HTTP ${status}`), {
+    response: { status },
+    responseData: { error: 'unknown_error' },
+  });
+}
 
 describe('Implementation Consistency: Clients', () => {
+  test('client create/update/delete do not replay ambiguous transient mutation failures', async () => {
+    const createCore = createMockAdminClient({
+      clients: {
+        find: vi.fn().mockResolvedValue([]),
+        create: vi.fn().mockRejectedValue(transportError(503)),
+      },
+    });
+    await expect(new RealmHandle(createCore, 'demo').client('app-client').create({})).rejects.toThrow('HTTP 503');
+    expect(createCore.clients.create).toHaveBeenCalledTimes(1);
+
+    const updateCore = createMockAdminClient({
+      clients: {
+        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
+        update: vi.fn().mockRejectedValue(transportError(503)),
+      },
+    });
+    await expect(new RealmHandle(updateCore, 'demo').client('app-client').update({ enabled: true })).rejects.toThrow(
+      'HTTP 503',
+    );
+    expect(updateCore.clients.update).toHaveBeenCalledTimes(1);
+
+    const deleteCore = createMockAdminClient({
+      clients: {
+        find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
+        del: vi.fn().mockRejectedValue(transportError(503)),
+      },
+    });
+    await expect(new RealmHandle(deleteCore, 'demo').client('app-client').delete()).rejects.toThrow('HTTP 503');
+    expect(deleteCore.clients.del).toHaveBeenCalledTimes(1);
+  });
+
   test('client getById forwards the provided internal id', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         findOne: vi.fn().mockResolvedValue({ id: 'internal-id', clientId: 'resolved-client' }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('public-client-id');
@@ -20,12 +60,12 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client role handle resolves its client lazily', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         findRole: vi.fn().mockResolvedValue({ id: 'role-1', name: 'reader' }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const roleHandle = realmHandle.client('app-client').role('reader');
@@ -39,12 +79,12 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('protocol mapper handle resolves its client lazily', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         findProtocolMapperByName: vi.fn().mockResolvedValue({ id: 'mapper-1', name: 'email-mapper' }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const mapperHandle = realmHandle.client('app-client').protocolMapper('email-mapper');
@@ -58,14 +98,14 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('child handles follow parent client rebinding after getById', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         findOne: vi.fn().mockResolvedValue({ id: 'client-1', clientId: 'resolved-client' }),
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'resolved-client' }]),
         findRole: vi.fn().mockResolvedValue({ id: 'role-1', name: 'reader' }),
         findProtocolMapperByName: vi.fn().mockResolvedValue({ id: 'mapper-1', name: 'email-mapper' }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('placeholder-client-id');
@@ -93,7 +133,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client default scope assignment resolves client and scope lazily', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         addDefaultClientScope: vi.fn().mockResolvedValue(undefined),
@@ -101,7 +141,7 @@ describe('Implementation Consistency: Clients', () => {
       clientScopes: {
         find: vi.fn().mockResolvedValue([{ id: 'scope-1', name: 'profile' }]),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -117,12 +157,12 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client secret retrieval resolves the client lazily', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         getClientSecret: vi.fn().mockResolvedValue({ value: 'secret-1' }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -135,7 +175,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client update preserves existing fields while applying partial changes', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([
           {
@@ -151,7 +191,7 @@ describe('Implementation Consistency: Clients', () => {
         ]),
         update: vi.fn().mockResolvedValue(undefined),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -175,7 +215,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client update replaces explicit array fields instead of merging them by index', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([
           {
@@ -190,7 +230,7 @@ describe('Implementation Consistency: Clients', () => {
         ]),
         update: vi.fn().mockResolvedValue(undefined),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -212,7 +252,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client scope mapping helpers resolve clients and roles lazily', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([
           { id: 'client-1', clientId: 'app-client' },
@@ -234,7 +274,7 @@ describe('Implementation Consistency: Clients', () => {
       roles: {
         findOneByName: vi.fn().mockResolvedValue({ id: 'role-1', name: 'manage-users' }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -281,7 +321,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client protocol mapper and session helpers use lazy resolution and pagination', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         listProtocolMappers: vi.fn().mockResolvedValue([{ id: 'mapper-1', name: 'email' }]),
@@ -294,7 +334,7 @@ describe('Implementation Consistency: Clients', () => {
         getSessionCount: vi.fn().mockResolvedValue({ count: 2 }),
         getOfflineSessionCount: vi.fn().mockResolvedValue({ count: 1 }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -335,7 +375,7 @@ describe('Implementation Consistency: Clients', () => {
   test('client admin helpers forward revocation, installation, cluster, key, and permission operations', async () => {
     const buffer = new ArrayBuffer(8);
     const formData = new FormData();
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         generateRegistrationAccessToken: vi.fn().mockResolvedValue({ registrationAccessToken: 'rat-1' }),
@@ -353,7 +393,7 @@ describe('Implementation Consistency: Clients', () => {
         listFineGrainPermissions: vi.fn().mockResolvedValue({ enabled: true, resource: 'client-1' }),
         updateFineGrainPermission: vi.fn().mockResolvedValue({ enabled: false, resource: 'client-1' }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -398,7 +438,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client authorization resource server and resource helpers forward correctly', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         getResourceServer: vi.fn().mockResolvedValue({ id: 'rs-1', policyEnforcementMode: 'ENFORCING' }),
@@ -412,20 +452,30 @@ describe('Implementation Consistency: Clients', () => {
         updateResource: vi.fn().mockResolvedValue(undefined),
         delResource: vi.fn().mockResolvedValue(undefined),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
 
     await expect(clientHandle.getResourceServer()).resolves.toEqual({ id: 'rs-1', policyEnforcementMode: 'ENFORCING' });
-    await expect(clientHandle.updateResourceServer({ policyEnforcementMode: 'PERMISSIVE' } as any)).resolves.toEqual({
+    await expect(
+      clientHandle.updateResourceServer({ policyEnforcementMode: 'PERMISSIVE' } satisfies ResourceServerRepresentation),
+    ).resolves.toEqual({
       id: 'rs-1',
       policyEnforcementMode: 'ENFORCING',
     });
-    await expect(clientHandle.importResourceServer({ resources: [] } as any)).resolves.toEqual({ imported: true });
+    await expect(
+      clientHandle.importResourceServer({ resources: [] } satisfies ResourceServerRepresentation),
+    ).resolves.toEqual({
+      imported: true,
+    });
     await expect(clientHandle.exportResourceServer()).resolves.toEqual({ id: 'rs-1', resources: [] });
     await expect(
-      clientHandle.evaluateAuthorization({ userId: 'user-1', entitlements: false, context: { attributes: {} } } as any),
+      clientHandle.evaluateAuthorization({
+        userId: 'user-1',
+        entitlements: false,
+        context: { attributes: {} },
+      } satisfies ResourceEvaluation),
     ).resolves.toEqual({ status: 'PERMIT', results: [] });
     await expect(clientHandle.listResources({ name: 'invoice', page: 2, pageSize: 25 })).resolves.toEqual([
       { _id: 'resource-1', name: 'invoice' },
@@ -464,7 +514,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('client authorization policy, scope, and permission helpers forward correctly', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         listPolicies: vi.fn().mockResolvedValue([{ id: 'policy-1', name: 'allow-admins' }]),
@@ -491,7 +541,7 @@ describe('Implementation Consistency: Clients', () => {
         getAssociatedResources: vi.fn().mockResolvedValue([{ _id: 'resource-1', name: 'invoice' }]),
         getAssociatedPolicies: vi.fn().mockResolvedValue([{ id: 'policy-1', name: 'allow-admins' }]),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -600,13 +650,13 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('listResources and listAuthorizationScopes forward every supported declared filter', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         listResources: vi.fn().mockResolvedValue([{ _id: 'resource-1' }]),
         listAllScopes: vi.fn().mockResolvedValue([{ id: 'scope-1' }]),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -647,7 +697,7 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('listResourcesAll and listAuthorizationScopesAll iterate with fetchAll and forward supported filters', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         listResources: vi.fn().mockImplementation(async (payload) => {
@@ -657,7 +707,7 @@ describe('Implementation Consistency: Clients', () => {
           return payload.first === 0 ? [{ id: `scope-${payload.first}` }] : [];
         }),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');
@@ -693,12 +743,12 @@ describe('Implementation Consistency: Clients', () => {
   });
 
   test('listResourcesAll rejects invalid fetchAll bounds per PAGE-01', async () => {
-    const core = {
+    const core = createMockAdminClient({
       clients: {
         find: vi.fn().mockResolvedValue([{ id: 'client-1', clientId: 'app-client' }]),
         listResources: vi.fn(),
       },
-    } as any;
+    });
 
     const realmHandle = new RealmHandle(core, 'demo');
     const clientHandle = realmHandle.client('app-client');

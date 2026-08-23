@@ -10,7 +10,8 @@ import KeycloakAdminClient, {
   type RequiredActionProviderRepresentation,
 } from './keycloak-admin-client';
 import RealmHandle from './realm';
-import { retryTransientAdminError } from './utils/retry';
+import { retryTransientAdminError, retryTransientAdminReadError } from './utils/retry';
+import { makeHandleIdentityVersion, ParentIdentityTracker } from './utils/handle-identity';
 
 export const defaultAuthenticationFlowData = Object.freeze({
   description: '',
@@ -65,15 +66,31 @@ function getAuthenticationFlowUpdateData(
 export default class AuthenticationFlowHandle {
   public readonly core: KeycloakAdminClient;
   public readonly realmHandle: RealmHandle;
-  public readonly realmName: string;
   private _alias: string;
   private _flow?: AuthenticationFlowRepresentation | null;
+  private _identityGeneration = 0;
+  private readonly parentIdentity: ParentIdentityTracker;
 
   constructor(core: KeycloakAdminClient, realmHandle: RealmHandle, alias: string) {
     this.core = core;
     this.realmHandle = realmHandle;
-    this.realmName = realmHandle.realmName;
     this._alias = alias;
+    this.parentIdentity = new ParentIdentityTracker(realmHandle);
+  }
+
+  private invalidateParentCache() {
+    if (this.parentIdentity.invalidateIfChanged(() => (this._flow = undefined))) {
+      this._identityGeneration++;
+    }
+  }
+
+  public get realmName(): string {
+    return this.realmHandle.realmName;
+  }
+
+  public get identityVersion(): string {
+    this.invalidateParentCache();
+    return makeHandleIdentityVersion(this._identityGeneration, this.realmHandle);
   }
 
   public get alias(): string {
@@ -81,6 +98,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public get flow(): AuthenticationFlowRepresentation | null | undefined {
+    this.invalidateParentCache();
     return this._flow;
   }
 
@@ -89,18 +107,20 @@ export default class AuthenticationFlowHandle {
    * representation. Returns `this` for chaining.
    */
   public rebind(newAlias: string): this {
+    if (newAlias === this._alias) return this;
     this._alias = newAlias;
     this._flow = undefined;
+    this._identityGeneration++;
     return this;
   }
 
   static async getById(core: KeycloakAdminClient, realm: string, id: string) {
-    const one = await retryTransientAdminError(() => core.authenticationManagement.getFlow({ realm, flowId: id }));
+    const one = await retryTransientAdminReadError(() => core.authenticationManagement.getFlow({ realm, flowId: id }));
     return one ?? null;
   }
 
   static async getByAlias(core: KeycloakAdminClient, realm: string, alias: string) {
-    const flows = await retryTransientAdminError(() => core.authenticationManagement.getFlows({ realm }));
+    const flows = await retryTransientAdminReadError(() => core.authenticationManagement.getFlows({ realm }));
     return flows.find((flow) => flow.alias === alias) ?? null;
   }
 
@@ -114,9 +134,11 @@ export default class AuthenticationFlowHandle {
   }
 
   public async getById(id: string) {
+    this.invalidateParentCache();
     this._flow = await AuthenticationFlowHandle.getById(this.core, this.realmName, id);
 
     if (this._flow?.alias) {
+      if (this._alias !== this._flow.alias) this._identityGeneration++;
       this._alias = this._flow.alias;
     }
 
@@ -124,9 +146,11 @@ export default class AuthenticationFlowHandle {
   }
 
   public async get(): Promise<AuthenticationFlowRepresentation | null> {
+    this.invalidateParentCache();
     this._flow = await AuthenticationFlowHandle.getByAlias(this.core, this.realmName, this.alias);
 
     if (this._flow?.alias) {
+      if (this._alias !== this._flow.alias) this._identityGeneration++;
       this._alias = this._flow.alias;
     }
 
@@ -241,7 +265,7 @@ export default class AuthenticationFlowHandle {
     const flow = await this.requireFlow();
     const flowAlias = flowAliasOverride ?? flow.alias;
 
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getExecutions({
         realm: this.realmName,
         flow: flowAlias,
@@ -336,7 +360,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async listClientAuthenticatorProviders(): Promise<AuthenticationProviderRepresentation[]> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getClientAuthenticatorProviders({
         realm: this.realmName,
       } as any),
@@ -344,7 +368,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async listAuthenticatorProviders(): Promise<AuthenticationProviderRepresentation[]> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getAuthenticatorProviders({
         realm: this.realmName,
       } as any),
@@ -352,7 +376,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async listFormActionProviders(): Promise<AuthenticationProviderRepresentation[]> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getFormActionProviders({
         realm: this.realmName,
       } as any),
@@ -360,7 +384,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async listFormProviders(): Promise<AuthenticationProviderRepresentation[]> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getFormProviders({
         realm: this.realmName,
       } as any),
@@ -368,7 +392,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async getConfigDescription(providerId: string): Promise<AuthenticatorConfigInfoRepresentation> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getConfigDescription({
         realm: this.realmName,
         providerId,
@@ -386,7 +410,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async getConfig(id: string): Promise<AuthenticatorConfigRepresentation> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getConfig({
         realm: this.realmName,
         id,
@@ -419,7 +443,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async listRequiredActions(): Promise<RequiredActionProviderRepresentation[]> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getRequiredActions({
         realm: this.realmName,
       } as any),
@@ -427,7 +451,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async getRequiredAction(alias: string): Promise<RequiredActionProviderRepresentation> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getRequiredActionForAlias({
         realm: this.realmName,
         alias,
@@ -477,7 +501,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async getRequiredActionConfigDescription(alias: string): Promise<RequiredActionConfigInfoRepresentation> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getRequiredActionConfigDescription({
         realm: this.realmName,
         alias,
@@ -486,7 +510,7 @@ export default class AuthenticationFlowHandle {
   }
 
   public async getRequiredActionConfig(alias: string): Promise<RequiredActionConfigRepresentation> {
-    return retryTransientAdminError(() =>
+    return retryTransientAdminReadError(() =>
       this.core.authenticationManagement.getRequiredActionConfig({
         realm: this.realmName,
         alias,
