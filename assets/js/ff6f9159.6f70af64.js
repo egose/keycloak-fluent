@@ -622,7 +622,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {\n  password?: string;\n};\n"
+        children: "import type { UserInputData } from '@egose/keycloak-fluent';\n\nexport type UserInputData = Omit<UserRepresentation, 'username' | 'id'> & {\n  password?: string;\n  /** Whether a supplied password must be changed on first login. Defaults to false. */\n  passwordTemporary?: boolean;\n};\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "userpasswordprovisioningerror",
@@ -630,41 +630,82 @@ function _createMdxContent(props) {
         children: "UserPasswordProvisioningError"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["Error thrown when password setup fails after user profile data has been\napplied. The plaintext password is never present in any field of this error\nor its ", (0,jsx_runtime.jsx)(_components.code, {
+      children: ["Error thrown when password setup fails after user profile data has been\napplied. The plaintext password is never present in any field of this error\nor its sanitized ", (0,jsx_runtime.jsx)(_components.code, {
         children: "cause"
-      }), "."]
+      }), ". Import it from the package root:"]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export class UserPasswordProvisioningError extends Error {\n  readonly username: string;\n  readonly realmName: string;\n  /** true when the preceding profile update/disabled user persists in Keycloak. */\n  readonly profileApplied: boolean;\n  /** true for the create/ensure-create path; false for updates of an existing user. */\n  readonly initialProvisioning: boolean;\n}\n"
+        children: "import { UserPasswordProvisioningError } from '@egose/keycloak-fluent';\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-typescript",
+        children: "export class UserPasswordProvisioningError extends Error {\n  readonly username: string;\n  readonly realmName: string;\n  /** true when profile state is known to persist in Keycloak. */\n  readonly profileApplied: boolean;\n  /** true when a user account is known to persist in Keycloak after the failure. */\n  readonly accountPersists: boolean;\n  /** the known enabled state of the persisted account, or null when unknown/not persisted. */\n  readonly accountEnabled: boolean | null;\n  /** true when the supplied password was committed before a later provisioning step failed. */\n  readonly passwordApplied: boolean;\n  /** true for the create/ensure-create path; false for updates of an existing user. */\n  readonly initialProvisioning: boolean;\n}\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
       children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: ["On the ", (0,jsx_runtime.jsx)(_components.strong, {
           children: "create / ensure-create"
         }), " path, a password failure triggers a\nbest-effort deletion of the just-created disabled user. When that deletion\nsucceeds, ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "profileApplied"
+          children: "accountPersists"
         }), " is ", (0,jsx_runtime.jsx)(_components.code, {
           children: "false"
-        }), " (no account left behind). When the\ndeletion also fails, ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "profileApplied"
-        }), " stays ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "accountEnabled"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "null"
+        }), ", and\n", (0,jsx_runtime.jsx)(_components.code, {
+          children: "passwordApplied"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
           children: "false"
-        }), " and the disabled,\nunusable account is left in Keycloak; the cleanup failure is annotated on\nthe password error's ", (0,jsx_runtime.jsx)(_components.code, {
+        }), ". When deletion also fails, ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "accountPersists"
+        }), "\nand ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "profileApplied"
+        }), " are ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "true"
+        }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "accountEnabled"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "false"
+        }), ", and the\nsanitized public ", (0,jsx_runtime.jsx)(_components.code, {
           children: "cause"
-        }), "."]
+        }), " reports both the password and cleanup failures."]
       }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
         children: ["On the ", (0,jsx_runtime.jsx)(_components.strong, {
           children: "update"
         }), " path, the profile update has already committed and is not\nrolled back. ", (0,jsx_runtime.jsx)(_components.code, {
           children: "profileApplied"
-        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
-          children: "true"
         }), " and ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "accountPersists"
+        }), " are ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "true"
+        }), ",\n", (0,jsx_runtime.jsx)(_components.code, {
+          children: "passwordApplied"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "false"
+        }), ", and ", (0,jsx_runtime.jsx)(_components.code, {
           children: "initialProvisioning"
         }), " is ", (0,jsx_runtime.jsx)(_components.code, {
           children: "false"
         }), "."]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: ["If the final enable step fails after a password was applied,\n", (0,jsx_runtime.jsx)(_components.code, {
+          children: "passwordApplied"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "true"
+        }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "accountPersists"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "true"
+        }), ", and\n", (0,jsx_runtime.jsx)(_components.code, {
+          children: "accountEnabled"
+        }), " is ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "false"
+        }), ". Retrying with ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "ensure()"
+        }), " and the same enabled\ninput updates and enables the existing user instead of creating a duplicate."]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.p, {
       children: "This API provides a comprehensive interface for managing Keycloak users and their associated roles, groups, and attributes."

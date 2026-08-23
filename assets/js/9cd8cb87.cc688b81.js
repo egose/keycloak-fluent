@@ -36,6 +36,10 @@ const assets = {
 
 
 const toc = [{
+  "value": "Supported Keycloak Versions",
+  "id": "supported-keycloak-versions",
+  "level": 2
+}, {
   "value": "Constructor",
   "id": "constructor",
   "level": 2
@@ -55,6 +59,10 @@ const toc = [{
   "value": "<code>simpleAuth({ username?, password?, refreshToken?, clientId?, clientSecret? })</code>",
   "id": "simpleauth-username-password-refreshtoken-clientid-clientsecret-",
   "level": 3
+}, {
+  "value": "Public Exports",
+  "id": "public-exports",
+  "level": 2
 }, {
   "value": "<code>realm(name)</code>",
   "id": "realmname",
@@ -102,6 +110,29 @@ function _createMdxContent(props) {
       }), " is the root entry point for the library. It wraps a ", (0,jsx_runtime.jsx)(_components.code, {
         children: "@keycloak/keycloak-admin-client"
       }), " instance and gives you fluent access to realm-scoped handles, root-scoped system helpers, and convenience authentication helpers."]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["The package intentionally exposes one supported import path: ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "@egose/keycloak-fluent"
+      }), ". Runtime helpers, catchable errors, and public TypeScript types are exported from that root path; subpath imports are not part of the public contract."]
+    }), "\n", (0,jsx_runtime.jsx)(_components.h2, {
+      id: "supported-keycloak-versions",
+      children: "Supported Keycloak Versions"
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["The package dependency range is ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "@keycloak/keycloak-admin-client@^26.5.7"
+      }), ". Packed consumer checks compile the public declarations against the minimum supported admin client ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "26.5.7"
+      }), " and the current lockfile-resolved admin client ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "26.6.3"
+      }), "; live integration tests target the repository sandbox server, Keycloak ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "26.6.1"
+      }), "."]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["Use Keycloak Admin Client ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "26.x"
+      }), " from ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "26.5.7"
+      }), " upward unless you have verified the exact endpoints you need against another server/client version."]
     }), "\n", (0,jsx_runtime.jsx)(_components.h2, {
       id: "constructor",
       children: "Constructor"
@@ -179,6 +210,18 @@ function _createMdxContent(props) {
         }), " and ", (0,jsx_runtime.jsx)(_components.code, {
           children: "refreshToken"
         }), " are mutually exclusive"]
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: ["Supplied ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "username"
+        }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "password"
+        }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "refreshToken"
+        }), ", ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "clientId"
+        }), ", and ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "clientSecret"
+        }), " values must be non-empty strings"]
       }), "\n"]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
@@ -194,7 +237,48 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: ["Authentication failures are rethrown with a ", (0,jsx_runtime.jsx)(_components.code, {
         children: "Keycloak authentication failed: ..."
-      }), " message while preserving the underlying cause."]
+      }), " message. The public error message and ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "cause"
+      }), " expose only bounded OAuth error fields and safe status/code diagnostics; passwords, refresh tokens, client secrets, and arbitrary response bodies are not included."]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["The ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "SimpleAuthOptions"
+      }), " type is available from the root package export:"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-ts",
+        children: "import type { SimpleAuthOptions } from '@egose/keycloak-fluent';\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.h2, {
+      id: "public-exports",
+      children: "Public Exports"
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Import supported symbols from the package root only:"
+    }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
+      children: (0,jsx_runtime.jsx)(_components.code, {
+        className: "language-ts",
+        children: "import KeycloakAdminClientFluent, {\n  AuthenticationFlowNotFoundError,\n  DuplicateWorkflowNameError,\n  UserPasswordProvisioningError,\n  WorkflowNotFoundError,\n  createManagedKeycloakClient,\n} from '@egose/keycloak-fluent';\n\nimport type {\n  ClientHandle,\n  RealmHandle,\n  UserHandle,\n  UserInputData,\n  WorkflowListOptions,\n} from '@egose/keycloak-fluent';\n"
+      })
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "Supported root exports include:"
+    }), "\n", (0,jsx_runtime.jsxs)(_components.ul, {
+      children: ["\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: ["Runtime: the default ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "KeycloakAdminClientFluent"
+        }), " class, ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "createManagedKeycloakClient"
+        }), ", handle classes, and documented catchable error classes."]
+      }), "\n", (0,jsx_runtime.jsx)(_components.li, {
+        children: "Types: supported handle classes, input and option types, query types, and Keycloak representation aliases used by public method signatures."
+      }), "\n", (0,jsx_runtime.jsxs)(_components.li, {
+        children: ["Paths: only ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "@egose/keycloak-fluent"
+        }), " is supported. Do not import from implementation subpaths such as ", (0,jsx_runtime.jsx)(_components.code, {
+          children: "@egose/keycloak-fluent/user"
+        }), "."]
+      }), "\n"]
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "The public API is snapshot-tested for ESM runtime exports, CJS runtime exports, and declaration exports in packed consumers."
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "realmname",
       children: (0,jsx_runtime.jsx)(_components.code, {

@@ -202,23 +202,23 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "child-handles-follow-the-parent-automatically",
       children: "Child handles follow the parent automatically"
-    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
-      children: "Per the parent-as-source-of-truth contract (HANDLE-01), child handles read\nthe parent's identity live. Rebinding a parent re-targets every existing\nchild on the child's next operation — there is no separate \"invalidate\"\ncall you need to make."
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["Child handles derive their parent routing identity from a shared identity\nversion contract. Rebinding a parent bumps that version, so existing children\nnotice the parent-generation change, clear any cached representation from the\nold parent, and re-resolve on their next operation. There is no separate\n\"invalidate\" call and no child ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "rebind()"
+      }), " call you need to make."]
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-ts",
-        children: "const clientHandle = realm.client('app-a');\nconst roleHandle = clientHandle.role('reader');\n\nawait clientHandle.get(); // resolves app-a\nawait roleHandle.get(); // resolves the reader role on app-a\n\nclientHandle.rebind('app-b');\nroleHandle.rebind(roleHandle.roleName); // clear child cache; same role name\n\nawait roleHandle.get(); // now resolves the reader role on app-b\n"
+        children: "const clientHandle = realm.client('app-a');\nconst roleHandle = clientHandle.role('reader');\n\nawait clientHandle.get(); // resolves app-a\nawait roleHandle.get(); // resolves the reader role on app-a\n\nclientHandle.rebind('app-b');\n\nawait roleHandle.get(); // now resolves the reader role on app-b\n"
       })
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
-      children: ["The same pattern applies to client-scope protocol mappers (", (0,jsx_runtime.jsx)(_components.code, {
-        children: "rebind"
-      }), " on the\nparent ", (0,jsx_runtime.jsx)(_components.code, {
+      children: ["The same transitive behavior applies across multiple levels, including realm\nchildren, client roles, client protocol mappers, client-scope protocol mappers,\nidentity-provider mappers, and nested groups. For example, rebinding a\n", (0,jsx_runtime.jsx)(_components.code, {
         children: "ClientScopeHandle"
-      }), ", then ", (0,jsx_runtime.jsx)(_components.code, {
-        children: "rebind"
-      }), " on the child mapper). Child handles\nwithout a meaningful identity of their own (group children) still expose\n", (0,jsx_runtime.jsx)(_components.code, {
-        children: "rebind(newGroupName)"
-      }), " to clear the cached group representation while\nchanging the local group name."]
+      }), " automatically invalidates an already-resolved protocol\nmapper under that scope, and rebinding a parent group changes the live path\nused by existing child-group handles. Realm-owned cached descendants such as\n", (0,jsx_runtime.jsx)(_components.code, {
+        children: "UserStorageProviderHandle.providerName"
+      }), " also clear cached values after a realm\nrebind before their next operation or cache read."]
+    }), "\n", (0,jsx_runtime.jsx)(_components.p, {
+      children: "If neither the local identity nor any parent identity changed, handles keep\ntheir cached parent representation and preserve the no-duplicate-lookup fast\npath."
     }), "\n", (0,jsx_runtime.jsxs)(_components.h2, {
       id: "which-handles-support-rebind",
       children: ["Which Handles Support ", (0,jsx_runtime.jsx)(_components.code, {
@@ -372,14 +372,20 @@ function _createMdxContent(props) {
       })]
     }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
       children: [(0,jsx_runtime.jsx)(_components.code, {
+        children: "UserStorageProviderHandle"
+      }), " is keyed by its provider ID and does not expose a\nlocal ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "rebind()"
+      }), " method; when its parent realm is rebound, it follows the new\nrealm and invalidates its cached provider name automatically."]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: [(0,jsx_runtime.jsx)(_components.code, {
         children: "CacheHandle"
       }), " and ", (0,jsx_runtime.jsx)(_components.code, {
         children: "ClientPoliciesHandle"
-      }), " have no per-handle identity beyond the\nrealm, so they do not expose ", (0,jsx_runtime.jsx)(_components.code, {
+      }), " have no local cached representation or\nper-handle identity beyond the realm, so they do not expose ", (0,jsx_runtime.jsx)(_components.code, {
         children: "rebind"
-      }), "; use ", (0,jsx_runtime.jsx)(_components.code, {
+      }), "; use\n", (0,jsx_runtime.jsx)(_components.code, {
         children: "RealmHandle.rebind"
-      }), " to retarget\ntheir realm."]
+      }), " to retarget their realm."]
     }), "\n", (0,jsx_runtime.jsx)(_components.h2, {
       id: "contract-stability",
       children: "Contract Stability"

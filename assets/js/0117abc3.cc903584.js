@@ -293,6 +293,30 @@ function _createMdxContent(props) {
           }), "\n"]
         }), "\n"]
       }), "\n"]
+    }), "\n", (0,jsx_runtime.jsxs)(_components.p, {
+      children: ["When ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "data.config.jwksUrl"
+      }), " is provided, ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "useJwksUrl"
+      }), " is normalized from that value: empty or whitespace-only strings set ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "useJwksUrl"
+      }), " to ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "'false'"
+      }), ", and non-empty strings set it to ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "'true'"
+      }), ". When ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "jwksUrl"
+      }), " is omitted, ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "create()"
+      }), " keeps the default ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "useJwksUrl: 'false'"
+      }), ", while ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "update()"
+      }), " and the update branch of ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "ensure()"
+      }), " preserve the identity provider's existing ", (0,jsx_runtime.jsx)(_components.code, {
+        children: "useJwksUrl"
+      }), " setting."]
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h4, {
       id: "discard",
       children: (0,jsx_runtime.jsx)(_components.code, {
@@ -362,7 +386,7 @@ function _createMdxContent(props) {
     }), "\n", (0,jsx_runtime.jsx)(_components.pre, {
       children: (0,jsx_runtime.jsx)(_components.code, {
         className: "language-typescript",
-        children: "export const defaultIdentityProviderData = Object.freeze({\n  displayName: '',\n  providerId: '',\n  config: {\n    metadataDescriptorUrl: '',\n    authorizationUrl: '',\n    tokenUrl: '',\n    jwksUrl: '',\n    logoutUrl: '',\n    userInfoUrl: '',\n    tokenIntrospectionUrl: '',\n    issuer: '',\n    validateSignature: 'true',\n    pkceEnabled: 'false',\n    clientAuthMethod: 'client_secret_post',\n    clientId: '',\n    clientSecret: '',\n    clientAssertionSigningAlg: '',\n    useJwksUrl: 'true',\n    guiOrder: '',\n  },\n});\n"
+        children: "export const defaultIdentityProviderData = Object.freeze({\n  displayName: '',\n  providerId: '',\n  config: {\n    metadataDescriptorUrl: '',\n    authorizationUrl: '',\n    tokenUrl: '',\n    jwksUrl: '',\n    logoutUrl: '',\n    userInfoUrl: '',\n    tokenIntrospectionUrl: '',\n    issuer: '',\n    clientAuthMethod: 'client_secret_post',\n    clientId: '',\n    clientSecret: '',\n    clientAssertionSigningAlg: '',\n    useJwksUrl: 'false',\n    validateSignature: 'false',\n    pkceEnabled: 'false',\n    guiOrder: '',\n  },\n});\n"
       })
     }), "\n", (0,jsx_runtime.jsx)(_components.hr, {}), "\n", (0,jsx_runtime.jsx)(_components.h3, {
       id: "types",
