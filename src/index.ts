@@ -1,5 +1,5 @@
 import KeycloakAdminClient, { type ConnectionConfig, type Credentials, type GrantTypes } from './keycloak-admin-client';
-import { getToken } from '@keycloak/keycloak-admin-client/lib/utils/auth';
+import { getToken } from '@keycloak/keycloak-admin-client/lib/utils/auth.js';
 import RealmHandle from './realm';
 import ServerInfoHandle from './server-info';
 import WhoAmIHandle from './who-am-i';
