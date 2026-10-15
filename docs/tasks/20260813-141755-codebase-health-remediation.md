@@ -822,6 +822,14 @@ Completion evidence:
 
 Status: blocked
 
+Review: 2026-10-14
+
+- Disposition: still blocked (read-only reconciliation; status unchanged)
+- Evidence: follow-up plan `20260823-114944-codebase-health-follow-up.md` Task API-02 (Status: completed) records the maintainer decision (retain root-only package shape, no supported subpaths) and implementation (`src/index.ts` root exports: default client, `createManagedKeycloakClient`, `SimpleAuthOptions`, documented catchable errors `AuthenticationFlowNotFoundError`/`DuplicateWorkflowNameError`/`UserPasswordProvisioningError`/`WorkflowNotFoundError`, handle classes, public option/input/query types; `pnpm pack:consumers` + `pnpm publish:check` passed)
+- Verification: not run in this pass (pack/consumer/snapshot checks not re-executed; `src/index.ts` export lines read only)
+- Remaining work: maintainer to confirm whether API-02 satisfies API-01's intent and unblock/close API-01, or scope any residual export/snapshot work here; no status change made in this pass
+- Forward link: see follow-up API-02 for decision + completion evidence; backward link recorded here, not a status flip
+
 Priority: P1
 
 Suggested agent: library API and TypeScript specialist
